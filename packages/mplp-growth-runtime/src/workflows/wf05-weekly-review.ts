@@ -128,6 +128,33 @@ export async function runWeeklyReview(
     runtimeExecutionCount++;
 
     // ========================================================================
+    // Stage 2.5: compute delta (v0.3.0 since_last)
+    // Read prev FIRST, then diff against just-created current snapshot
+    // ========================================================================
+    let delta: Record<string, number> | undefined;
+    let noPreviousSnapshot = false;
+    if (input.since_last) {
+      const allSnapshots = await ctx.psg.query<MetricSnapshotNode>({
+        type: "domain:MetricSnapshot",
+        context_id: input.context_id,
+        filter: { period: "weekly" },
+      });
+      // Sort by snapshot_at descending, skip current (just created)
+      const sorted = allSnapshots
+        .filter((s) => s.id !== snapshot.id)
+        .toSorted((a, b) => b.snapshot_at.localeCompare(a.snapshot_at));
+      if (sorted.length > 0) {
+        const prev = sorted[0].metrics;
+        delta = {};
+        for (const key of Object.keys(metrics)) {
+          delta[key] = metrics[key] - (prev[key] || 0);
+        }
+      } else {
+        noPreviousSnapshot = true;
+      }
+    }
+
+    // ========================================================================
     // Stage 3: write_review
     // ========================================================================
     const stage3Id = uuidv4();
@@ -135,23 +162,48 @@ export async function runWeeklyReview(
 
     // Generate suggestions based on metrics
     const suggestions: string[] = [];
+    const actionItems: Array<{
+      command: string;
+      reason: string;
+      priority: number;
+      expected_effect: string;
+    }> = [];
+
     if (metrics.assets_published === 0) {
       suggestions.push("No content published this week — consider running /create and /publish");
+      actionItems.push({
+        command: "/create thread",
+        reason: "No content published this week",
+        priority: 1,
+        expected_effect: "Creates a new draft content asset ready for review",
+      });
     }
     if (metrics.interactions_pending > 0) {
       suggestions.push(
         `${metrics.interactions_pending} interactions pending — run /inbox to process`,
       );
+      actionItems.push({
+        command: "/inbox",
+        reason: `${metrics.interactions_pending} interactions pending`,
+        priority: 2,
+        expected_effect: "Processes pending interactions and generates draft replies",
+      });
     }
     if (metrics.assets_draft > 2) {
       suggestions.push(`${metrics.assets_draft} drafts queued — review and publish or archive`);
+      actionItems.push({
+        command: "/publish --latest x",
+        reason: `${metrics.assets_draft} drafts queued`,
+        priority: 3,
+        expected_effect: "Publishes most recent reviewed asset to X with export pack",
+      });
     }
     if (suggestions.length === 0) {
       suggestions.push("Strong execution this week — maintain current cadence");
     }
 
     // Create review memo as ContentAsset
-    const reviewContent = [
+    const reviewLines = [
       `# Weekly Review — ${weekStart}`,
       "",
       "## Metrics",
@@ -160,10 +212,26 @@ export async function runWeeklyReview(
       `- Assets published: ${metrics.assets_published} / ${metrics.assets_total}`,
       `- Interactions: ${metrics.interactions_responded} responded / ${metrics.interactions_total} total`,
       `- Confirms: ${metrics.confirms_approved} approved / ${metrics.confirms_total} total`,
-      "",
-      "## Suggestions",
-      ...suggestions.map((s) => `- ${s}`),
-    ].join("\n");
+    ];
+
+    if (delta) {
+      reviewLines.push("", "## Delta (vs previous week)");
+      for (const [key, val] of Object.entries(delta)) {
+        const sign = val >= 0 ? "+" : "";
+        reviewLines.push(`- ${key}: ${sign}${val}`);
+      }
+    }
+
+    reviewLines.push("", "## Suggestions", ...suggestions.map((s) => `- ${s}`));
+
+    if (actionItems.length > 0) {
+      reviewLines.push("", "## Action Items");
+      for (const item of actionItems) {
+        reviewLines.push(`- [P${item.priority}] \`${item.command}\` — ${item.reason}`);
+      }
+    }
+
+    const reviewContent = reviewLines.join("\n");
 
     const reviewAsset: ContentAssetNode = createContentAsset({
       context_id: input.context_id,
@@ -215,7 +283,10 @@ export async function runWeeklyReview(
         snapshot_id: snapshot.id,
         review_asset_id: reviewAsset.id,
         metrics,
+        delta,
+        no_previous_snapshot: noPreviousSnapshot,
         suggestions,
+        action_items: actionItems,
         week_start: weekStart,
       },
       events: {

@@ -131,24 +131,52 @@ export function formatInboxCard(result: WorkflowRunResult): CommandCard {
 export function formatReviewCard(result: WorkflowRunResult): CommandCard {
   const outputs = result.outputs as Record<string, unknown>;
   const metrics = outputs.metrics as Record<string, number> | undefined;
+  const delta = outputs.delta as Record<string, number> | undefined;
   const suggestions = (outputs.suggestions as string[]) || [];
+  const actionItems =
+    (outputs.action_items as Array<{
+      command: string;
+      reason: string;
+      priority: number;
+      expected_effect?: string;
+    }>) || [];
 
-  const metricsSummary = metrics
-    ? `Published: ${metrics.assets_published} | Interactions: ${metrics.interactions_responded}/${metrics.interactions_total} | Plans: ${metrics.plans_created}`
-    : "No metrics available";
+  let metricsSummary: string;
+  if (metrics && delta) {
+    const fmt = (key: string) => {
+      const d = delta[key];
+      return d !== undefined ? ` (${d >= 0 ? "+" : ""}${d})` : "";
+    };
+    metricsSummary = `Published: ${metrics.assets_published}${fmt("assets_published")} | Interactions: ${metrics.interactions_responded}/${metrics.interactions_total}${fmt("interactions_responded")} | Plans: ${metrics.plans_created}${fmt("plans_created")}`;
+  } else if (metrics) {
+    metricsSummary = `Published: ${metrics.assets_published} | Interactions: ${metrics.interactions_responded}/${metrics.interactions_total} | Plans: ${metrics.plans_created}`;
+  } else {
+    metricsSummary = "No metrics available";
+  }
+
+  const nextActions = [
+    ...suggestions.map((s) => `💡 ${s}`),
+    ...actionItems.map(
+      (a) =>
+        `🎯 [P${a.priority}] \`${a.command}\` — ${a.reason}${a.expected_effect ? ` → ${a.expected_effect}` : ""}`,
+    ),
+    "`/brief` — Start next week planning",
+  ];
 
   return {
     emoji: "📊",
     title: `Weekly Review — ${outputs.week_start}`,
-    summary: `${metricsSummary}\nSnapshot: ${outputs.snapshot_id}\nSuggestions: ${suggestions.length}`,
+    summary: `${metricsSummary}\nSnapshot: ${outputs.snapshot_id}\nSuggestions: ${suggestions.length}${delta ? " | 📈 Delta included" : ""}`,
     planId: result.plan?.plan_id,
     traceId: result.trace?.trace_id,
     assetId: outputs.review_asset_id as string,
-    nextActions: [...suggestions.map((s) => `💡 ${s}`), "`/brief` — Start next week planning"],
+    nextActions,
     metadata: {
       snapshot_id: outputs.snapshot_id,
       review_asset_id: outputs.review_asset_id,
       metrics,
+      delta,
+      action_items: actionItems,
       run_id: result.run_id,
     },
   };
@@ -216,6 +244,120 @@ export function formatErrorCard(workflow: string, error: string): CommandCard {
     summary: `Error: ${error}`,
     nextActions: ["Check the error message", "Run `/brief` to verify context exists"],
     metadata: {},
+  };
+}
+
+/**
+ * Format /approve --list output (v0.3.0) — grouped by plan category
+ */
+export function formatApproveListCard(
+  confirms: Array<{ confirm_id: string; category: string; status: string }>,
+): CommandCard {
+  if (confirms.length === 0) {
+    return {
+      emoji: "📋",
+      title: "Approval Queue — Empty",
+      summary: "No pending confirms",
+      nextActions: ["`/outreach` — Generate new outreach packs", "`/inbox` — Process interactions"],
+      metadata: { count: 0 },
+    };
+  }
+
+  // Group by plan category (outreach, publish, inbox, review, other)
+  const groups: Record<string, string[]> = {};
+  for (const c of confirms) {
+    const key = c.category || "other";
+    if (!groups[key]) {
+      groups[key] = [];
+    }
+    groups[key].push(c.confirm_id.slice(0, 8));
+  }
+
+  const groupSummary = Object.entries(groups)
+    .map(([cat, ids]) => `${cat}: ${ids.length} pending`)
+    .join("\n");
+
+  return {
+    emoji: "📋",
+    title: `Approval Queue — ${confirms.length} pending`,
+    summary: groupSummary,
+    nextActions: [
+      "`/approve --all` — Approve all pending",
+      ...confirms.slice(0, 3).map((c) => `\`/approve ${c.confirm_id}\` — Approve individually`),
+    ],
+    metadata: { count: confirms.length, groups },
+  };
+}
+
+/**
+ * Format /approve --all output (v0.3.0) — with approved/failed counts
+ */
+export function formatBatchApproveCard(
+  results: Array<{ confirm_id: string; status: string; target_name?: string; error?: string }>,
+): CommandCard {
+  const approved = results.filter((r) => r.status === "approved");
+  const failed = results.filter((r) => r.status === "failed");
+  const names = approved
+    .filter((r) => r.target_name)
+    .map((r) => r.target_name)
+    .join(", ");
+
+  let summary = `Approved: ${approved.length} / Failed: ${failed.length}\nTargets contacted: ${names || "N/A"}`;
+  if (failed.length > 0) {
+    summary += `\nFailures:\n${failed.map((f) => `  • ${f.confirm_id.slice(0, 8)}: ${f.error}`).join("\n")}`;
+  }
+
+  return {
+    emoji: failed.length > 0 ? "⚠️" : "✅",
+    title: `Batch Approved — ${approved.length}/${results.length}`,
+    summary,
+    nextActions: [
+      "`/review` — Check updated metrics",
+      "`/outreach --segment <type> --channel <ch>` — Next batch",
+    ],
+    metadata: { approved_count: approved.length, failed_count: failed.length, results },
+  };
+}
+
+/**
+ * Format batch outreach output (v0.3.0) — with processed/skipped/failed counts
+ */
+export function formatBatchOutreachCard(
+  results: Array<{
+    target_name: string;
+    success: boolean;
+    skipped?: boolean;
+    confirm_id?: string;
+    error?: string;
+  }>,
+  channel: string,
+  dryRun: boolean,
+): CommandCard {
+  const processed = results.filter((r) => !r.skipped && r.success);
+  const skipped = results.filter((r) => r.skipped);
+  const failed = results.filter((r) => !r.skipped && !r.success);
+
+  let summary = `Channel: ${channel}\nProcessed: ${processed.length} | Skipped: ${skipped.length} | Failed: ${failed.length}`;
+  if (dryRun) {
+    summary += "\nMode: 🔍 DRY RUN (no state changes)";
+  }
+  if (skipped.length > 0) {
+    summary += `\nSkipped (existing outreach): ${skipped.map((s) => s.target_name).join(", ")}`;
+  }
+  if (failed.length > 0) {
+    summary += `\nFailed: ${failed.map((f) => `${f.target_name}: ${f.error}`).join(", ")}`;
+  }
+
+  const nextActions = dryRun
+    ? [`\`/outreach --segment ... --channel ${channel}\` — Run for real (remove --dry-run)`]
+    : ["`/approve --list` — View pending approvals", "`/approve --all` — Batch approve all"];
+
+  return {
+    emoji: dryRun ? "🔍" : "📨",
+    title: `Batch Outreach — ${processed.length} targets via ${channel}${dryRun ? " (dry run)" : ""}`,
+    summary,
+    nextActions,
+    metadata: { results, channel, dry_run: dryRun },
   };
 }
 

@@ -38,6 +38,9 @@ import {
   formatReviewCard,
   formatOutreachCard,
   formatApproveCard,
+  formatApproveListCard,
+  formatBatchApproveCard,
+  formatBatchOutreachCard,
   formatErrorCard,
   renderCardToMarkdown,
   type CommandCard,
@@ -167,19 +170,100 @@ export async function cmdBrief(): Promise<string> {
 
 /**
  * /create command handler
- * @param args - Command arguments: <type> [audience] [channel]
+ * @param args - Command arguments: <type> [audience] [channel] [--template <id>] [--topic <t>]
  */
 export async function cmdCreate(args: string[]): Promise<string> {
   try {
     const { psg, vsl, eventEmitter, contextId } = await init();
 
-    // Parse arguments
-    const assetType = args[0] as ContentFactoryInput["asset_type"];
+    // Parse --template and --topic flags
+    let templateId: string | undefined;
+    let topic: string | undefined;
+    const positional: string[] = [];
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === "--template" && args[i + 1]) {
+        templateId = args[++i];
+      } else if (args[i] === "--topic" && args[i + 1]) {
+        topic = args[++i];
+      } else {
+        positional.push(args[i]);
+      }
+    }
+
+    // Template mode: clone existing template asset
+    if (templateId) {
+      const templateAsset = await psg.getNode<ContentAssetNode>("domain:ContentAsset", templateId);
+      if (!templateAsset) {
+        return renderCardToMarkdown(
+          formatErrorCard("Content Factory", `Template not found: ${templateId}`),
+        );
+      }
+      if (!templateAsset.is_template) {
+        return renderCardToMarkdown(
+          formatErrorCard("Content Factory", `Asset ${templateId} is not a template`),
+        );
+      }
+
+      // Clone template content with placeholder substitution
+      let clonedContent = templateAsset.content;
+      const clonedTitle = topic
+        ? templateAsset.title.replace(/template/i, topic)
+        : templateAsset.title;
+      if (topic) {
+        clonedContent = clonedContent.replace(/\{\{topic\}\}/gi, topic);
+      }
+      const audience = positional[1] as string | undefined;
+      if (audience) {
+        clonedContent = clonedContent.replace(/\{\{audience\}\}/gi, audience);
+      }
+
+      // Detect unreplaced placeholders and warn
+      const unreplaced = clonedContent.match(/\{\{\w+\}\}/g);
+      const warnings = unreplaced
+        ? `Unreplaced placeholders: ${[...new Set(unreplaced)].join(", ")}`
+        : undefined;
+
+      // Clone inherits the REAL asset_type from template
+      const { createContentAsset } = await import("../psg/growth-nodes.js");
+      const newAsset = createContentAsset({
+        context_id: contextId,
+        asset_type: templateAsset.asset_type,
+        title: clonedTitle,
+        content: clonedContent,
+      });
+      (newAsset as any).template_id = templateId;
+      (newAsset as any).is_template = false;
+      newAsset.platform_variants = { ...templateAsset.platform_variants };
+      await psg.putNode(newAsset);
+
+      return renderCardToMarkdown(
+        formatCreateCard({
+          run_id: `template-clone-${newAsset.id.slice(0, 8)}`,
+          workflow_id: "WF-02",
+          success: true,
+          plan: {} as any,
+          trace: {} as any,
+          outputs: {
+            asset_id: newAsset.id,
+            asset_type: newAsset.asset_type,
+            title: newAsset.title,
+            content_preview: newAsset.content.slice(0, 100),
+            variants: Object.keys(newAsset.platform_variants),
+            template_id: templateId,
+            warnings,
+          },
+          events: { pipeline_stage_count: 0, graph_update_count: 1, runtime_execution_count: 0 },
+        }),
+      );
+    }
+
+    // Standard mode
+    const assetType = positional[0] as ContentFactoryInput["asset_type"];
     if (!assetType) {
       return renderCardToMarkdown(
         formatErrorCard(
           "Content Factory",
-          "Missing asset type. Usage: /create <type> [audience] [channel]",
+          "Missing asset type. Usage: /create <type> [audience] [channel] [--template <id>]",
         ),
       );
     }
@@ -194,8 +278,8 @@ export async function cmdCreate(args: string[]): Promise<string> {
       );
     }
 
-    const audience = args[1] as ContentFactoryInput["audience"] | undefined;
-    const channels = args[2] ? [args[2] as ChannelProfileNode["platform"]] : undefined;
+    const audience = positional[1] as ContentFactoryInput["audience"] | undefined;
+    const channels = positional[2] ? [positional[2] as ChannelProfileNode["platform"]] : undefined;
 
     const result = await runContentFactory(
       {
@@ -203,6 +287,7 @@ export async function cmdCreate(args: string[]): Promise<string> {
         asset_type: assetType,
         audience,
         channels,
+        topic,
       },
       { psg, vsl, eventEmitter },
     );
@@ -223,18 +308,59 @@ export async function cmdCreate(args: string[]): Promise<string> {
 
 /**
  * /publish command handler
- * @param args - Command arguments: <asset_id> <channel>
+ * @param args - Command arguments: <asset_id> <channel> | --latest <channel>
  */
 export async function cmdPublish(args: string[]): Promise<string> {
   try {
     const { psg, vsl, eventEmitter, contextId, basePath } = await init();
 
-    const assetId = args[0];
-    const channel = args[1] as ChannelProfileNode["platform"];
+    // v0.3.0: --latest mode
+    let assetId: string;
+    let channel: ChannelProfileNode["platform"];
+
+    if (args[0] === "--latest") {
+      channel = args[1] as ChannelProfileNode["platform"];
+      if (!channel) {
+        return renderCardToMarkdown(
+          formatErrorCard("Publish Pack", "Missing channel. Usage: /publish --latest <channel>"),
+        );
+      }
+      // Find most recent reviewed, non-template asset with matching channel variant
+      const reviewedAssets = await psg.query<ContentAssetNode>({
+        type: "domain:ContentAsset",
+        context_id: contextId,
+        filter: { status: "reviewed" },
+      });
+      // Filter: exclude templates, require channel variant
+      const eligible = reviewedAssets.filter(
+        (a) => !a.is_template && a.platform_variants[channel] !== undefined,
+      );
+      if (eligible.length === 0) {
+        const reason =
+          reviewedAssets.length === 0
+            ? "No reviewed assets found. Run /create first."
+            : `No reviewed asset with variant for channel '${channel}'. Available: ${
+                reviewedAssets
+                  .filter((a) => !a.is_template)
+                  .map((a) => `${a.title} [${Object.keys(a.platform_variants).join(",")}]`)
+                  .join("; ") || "none"
+              }`;
+        return renderCardToMarkdown(formatErrorCard("Publish Pack", reason));
+      }
+      // Sort by created_at descending, pick most recent eligible
+      const sorted = eligible.toSorted((a, b) => b.created_at.localeCompare(a.created_at));
+      assetId = sorted[0].id;
+    } else {
+      assetId = args[0];
+      channel = args[1] as ChannelProfileNode["platform"];
+    }
 
     if (!assetId || !channel) {
       return renderCardToMarkdown(
-        formatErrorCard("Publish Pack", "Missing arguments. Usage: /publish <asset_id> <channel>"),
+        formatErrorCard(
+          "Publish Pack",
+          "Missing arguments. Usage: /publish <asset_id> <channel> | /publish --latest <channel>",
+        ),
       );
     }
 
@@ -346,21 +472,24 @@ export async function cmdInbox(args: string[]): Promise<string> {
 
 /**
  * /review command handler
- * @param args - Optional: --week <ISO date>
+ * @param args - Optional: --week <ISO date> | --since-last
  */
 export async function cmdReview(args: string[]): Promise<string> {
   try {
     const { psg, vsl, eventEmitter, contextId } = await init();
 
     let weekStart: string | undefined;
+    let sinceLast = false;
     for (let i = 0; i < args.length; i++) {
       if (args[i] === "--week" && args[i + 1]) {
         weekStart = args[++i];
+      } else if (args[i] === "--since-last") {
+        sinceLast = true;
       }
     }
 
     const result = await runWeeklyReview(
-      { context_id: contextId, week_start: weekStart },
+      { context_id: contextId, week_start: weekStart, since_last: sinceLast },
       { psg, vsl, eventEmitter },
     );
 
@@ -378,25 +507,143 @@ export async function cmdReview(args: string[]): Promise<string> {
 
 /**
  * /outreach command handler
- * @param args - Command arguments: <target_id> <channel:email|linkedin|x>
+ * @param args - <target_id> <ch> | --segment <org_type> --channel <ch> [--limit N] [--dry-run]
  */
 export async function cmdOutreach(args: string[]): Promise<string> {
   try {
     const { psg, vsl, eventEmitter, contextId } = await init();
 
-    const targetId = args[0];
-    const channel = args[1] as OutreachInput["channel"];
+    // Parse all flags
+    let segment: string | undefined;
+    let channel: OutreachInput["channel"] | undefined;
+    let limit = 10;
+    let dryRun = false;
+    let goal: string | undefined;
+    let tone: string | undefined;
+    const positional: string[] = [];
+
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === "--segment" && args[i + 1]) {
+        segment = args[++i];
+      } else if (args[i] === "--channel" && args[i + 1]) {
+        channel = args[++i] as OutreachInput["channel"];
+      } else if (args[i] === "--limit" && args[i + 1]) {
+        limit = parseInt(args[++i], 10) || 10;
+      } else if (args[i] === "--dry-run") {
+        dryRun = true;
+      } else if (args[i] === "--goal" && args[i + 1]) {
+        goal = args[++i];
+      } else if (args[i] === "--tone" && args[i + 1]) {
+        tone = args[++i];
+      } else {
+        positional.push(args[i]);
+      }
+    }
+
+    const validChannels = ["email", "linkedin", "x"];
+
+    // v0.3.0: Batch mode (--segment)
+    if (segment) {
+      if (!channel) {
+        return renderCardToMarkdown(
+          formatErrorCard(
+            "Outreach",
+            "Batch mode requires --channel. Usage: /outreach --segment <org_type> --channel <ch>",
+          ),
+        );
+      }
+      if (!validChannels.includes(channel)) {
+        return renderCardToMarkdown(
+          formatErrorCard(
+            "Outreach",
+            `Invalid channel: ${channel}. Valid: ${validChannels.join(", ")}`,
+          ),
+        );
+      }
+
+      // Query matching OTs (only research status)
+      const allTargets = await psg.query<OutreachTargetNode>({
+        type: "domain:OutreachTarget",
+        context_id: contextId,
+        filter: { status: "research", org_type: segment },
+      });
+
+      if (allTargets.length === 0) {
+        return renderCardToMarkdown(
+          formatErrorCard("Outreach", `No research-status targets found for segment: ${segment}`),
+        );
+      }
+
+      // Skip rule: exclude targets that already have a drafted/reviewed outreach asset
+      const existingAssets = await psg.query<ContentAssetNode>({
+        type: "domain:ContentAsset",
+        context_id: contextId,
+        filter: { asset_type: "outreach_email" },
+      });
+      const alreadyDraftedTargetNames = new Set(
+        existingAssets
+          .filter((a) => ["draft", "reviewed", "published"].includes(a.status))
+          .map((a) => a.title), // title contains target name
+      );
+
+      const eligible = allTargets.filter(
+        (t) => !alreadyDraftedTargetNames.has(`Outreach: ${t.name} via ${channel}`),
+      );
+      const targets = eligible.slice(0, limit);
+      const skippedCount = allTargets.length - eligible.length;
+
+      if (targets.length === 0) {
+        return renderCardToMarkdown(
+          formatErrorCard(
+            "Outreach",
+            `All ${allTargets.length} targets already have outreach packs (${skippedCount} skipped). No new targets to process.`,
+          ),
+        );
+      }
+
+      // Run WF-06 per target
+      const results: Array<{
+        target_name: string;
+        success: boolean;
+        skipped: boolean;
+        confirm_id?: string;
+        error?: string;
+      }> = [];
+      for (const target of targets) {
+        const result = await runOutreach(
+          { context_id: contextId, target_id: target.id, channel, goal, tone, dry_run: dryRun },
+          { psg, vsl, eventEmitter },
+        );
+        const outputs = result.outputs as Record<string, unknown>;
+        results.push({
+          target_name: target.name,
+          success: result.success,
+          skipped: false,
+          confirm_id: outputs.confirm_id as string | undefined,
+          error: result.error,
+        });
+      }
+      // Add skipped entries
+      for (const t of allTargets.filter((t) => !eligible.includes(t)).slice(0, 5)) {
+        results.push({ target_name: t.name, success: true, skipped: true });
+      }
+
+      return renderCardToMarkdown(formatBatchOutreachCard(results, channel, dryRun));
+    }
+
+    // Single mode
+    const targetId = positional[0];
+    channel = channel || (positional[1] as OutreachInput["channel"]);
 
     if (!targetId || !channel) {
       return renderCardToMarkdown(
         formatErrorCard(
           "Outreach",
-          "Missing args. Usage: /outreach <target_id> <channel:email|linkedin|x>",
+          "Missing args. Usage: /outreach <target_id> <channel> | /outreach --segment <org_type> --channel <ch>",
         ),
       );
     }
 
-    const validChannels = ["email", "linkedin", "x"];
     if (!validChannels.includes(channel)) {
       return renderCardToMarkdown(
         formatErrorCard(
@@ -406,19 +653,8 @@ export async function cmdOutreach(args: string[]): Promise<string> {
       );
     }
 
-    // Optional flags
-    let goal: string | undefined;
-    let tone: string | undefined;
-    for (let i = 2; i < args.length; i++) {
-      if (args[i] === "--goal" && args[i + 1]) {
-        goal = args[++i];
-      } else if (args[i] === "--tone" && args[i + 1]) {
-        tone = args[++i];
-      }
-    }
-
     const result = await runOutreach(
-      { context_id: contextId, target_id: targetId, channel, goal, tone },
+      { context_id: contextId, target_id: targetId, channel, goal, tone, dry_run: dryRun },
       { psg, vsl, eventEmitter },
     );
 
@@ -436,16 +672,146 @@ export async function cmdOutreach(args: string[]): Promise<string> {
 
 /**
  * /approve command handler
- * @param args - Command arguments: <confirm_id>
+ * @param args - <confirm_id> | --list | --all
  */
 export async function cmdApprove(args: string[]): Promise<string> {
   try {
     const { psg, vsl, eventEmitter } = await init();
 
+    // v0.3.0: --list mode — group by plan category
+    if (args[0] === "--list") {
+      const allConfirms = await psg.query<any>({
+        type: "Confirm",
+      });
+      const pending = allConfirms.filter((c: any) => c.status === "pending");
+
+      // Classify each confirm by loading its linked Plan
+      const classified: Array<{ confirm_id: string; category: string; status: string }> = [];
+      for (const c of pending) {
+        let category = "other";
+        if (c.target_id) {
+          const plans = await psg.query<any>({
+            type: "Plan",
+            filter: { plan_id: c.target_id },
+          });
+          if (plans.length > 0) {
+            const stepDescs = (plans[0].steps || []).map((s: any) => s.description || "").join(" ");
+            if (
+              stepDescs.includes("outreach") ||
+              (stepDescs.includes("Draft") && stepDescs.includes("Policy compliance"))
+            ) {
+              category = "outreach";
+            } else if (
+              stepDescs.includes("Format content for channel") ||
+              stepDescs.includes("Record published")
+            ) {
+              category = "publish";
+            } else if (
+              stepDescs.includes("Ingest interactions") ||
+              stepDescs.includes("Generate draft replies")
+            ) {
+              category = "inbox";
+            } else if (
+              stepDescs.includes("Collect metrics") ||
+              stepDescs.includes("MetricSnapshot")
+            ) {
+              category = "review";
+            }
+          }
+        }
+        classified.push({ confirm_id: c.confirm_id, category, status: c.status });
+      }
+
+      return renderCardToMarkdown(formatApproveListCard(classified));
+    }
+
+    // v0.3.0: --all mode (batch approve with failure isolation)
+    if (args[0] === "--all") {
+      const allConfirms = await psg.query<any>({
+        type: "Confirm",
+      });
+      const pending = allConfirms.filter((c: any) => c.status === "pending");
+
+      if (pending.length === 0) {
+        return renderCardToMarkdown(formatErrorCard("Approve", "No pending confirms to approve"));
+      }
+
+      const results: Array<{
+        confirm_id: string;
+        status: string;
+        target_name?: string;
+        error?: string;
+      }> = [];
+
+      for (const confirm of pending) {
+        try {
+          // Approve each confirm
+          const approved: Confirm = {
+            ...confirm,
+            status: "approved",
+            decisions: [
+              ...(confirm.decisions || []),
+              {
+                decision_id: uuidv4(),
+                status: "approved",
+                decided_by_role: "user",
+                decided_at: new Date().toISOString(),
+                reason: "Batch approved via /approve --all",
+              },
+            ],
+          };
+          await psg.putNode(approved as any);
+
+          // Side-effects: transition drafted OTs to contacted
+          const targets = await psg.query<OutreachTargetNode>({
+            type: "domain:OutreachTarget",
+            filter: { status: "drafted" },
+          });
+          let targetName: string | undefined;
+          if (targets.length > 0) {
+            const target = targets[0];
+            targetName = target.name;
+            target.status = "contacted";
+            target.last_contact_at = new Date().toISOString();
+            await psg.putNode(target);
+          }
+
+          // Side-effects: transition pending interactions to responded
+          const interactions = await psg.query<InteractionNode>({
+            type: "domain:Interaction",
+            filter: { status: "pending" },
+          });
+          for (const interaction of interactions) {
+            if (interaction.response?.includes("[Draft asset:")) {
+              const transitioned = transitionInteraction(interaction, "responded");
+              await psg.putNode(transitioned);
+              break;
+            }
+          }
+
+          results.push({
+            confirm_id: confirm.confirm_id,
+            status: "approved",
+            target_name: targetName,
+          });
+        } catch (err) {
+          // Failure isolation: single confirm failure doesn't block others
+          results.push({
+            confirm_id: confirm.confirm_id,
+            status: "failed",
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+
+      return renderCardToMarkdown(formatBatchApproveCard(results));
+    }
+
+    // Single mode
     const confirmId = args[0];
     if (!confirmId) {
       return renderCardToMarkdown(
-        formatErrorCard("Approve", "Missing args. Usage: /approve <confirm_id>"),
+        formatErrorCard("Approve", "Missing args. Usage: /approve <confirm_id> | --list | --all"),
       );
     }
 

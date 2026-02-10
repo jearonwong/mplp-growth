@@ -188,6 +188,35 @@ export async function runOutreach(
     runtimeExecutionCount++;
 
     // ========================================================================
+    // DRY-RUN EXIT: return draft + policy result without state writes
+    // ========================================================================
+    if (input.dry_run) {
+      return {
+        run_id,
+        workflow_id: "WF-06",
+        success: true,
+        plan: null as any,
+        trace: null as any,
+        outputs: {
+          target_id: input.target_id,
+          target_name: target.name,
+          channel: input.channel,
+          asset_id: asset.id,
+          draft_content: draftContent,
+          goal,
+          tone,
+          policy_loaded: !!policy,
+          dry_run: true,
+        },
+        events: {
+          pipeline_stage_count: pipelineStageCount,
+          graph_update_count: graphUpdateCount,
+          runtime_execution_count: runtimeExecutionCount,
+        },
+      };
+    }
+
+    // ========================================================================
     // Stage 4: confirm_outreach_plan
     // ========================================================================
     const stage4Id = uuidv4();

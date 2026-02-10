@@ -1,0 +1,37 @@
+{
+  "name": "@openclaw/mplp-growth-runtime",
+  "version": "0.1.0",
+  "description": "MPLP Growth Copilot Runtime - PSG/VSL/AEL kernel for marketing growth",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seed": "npx tsx src/seed.ts",
+    "cli": "npx tsx src/commands/cli.ts",
+    "test:phase2": "vitest run src/phase2-gates.test.ts",
+    "test:phase3": "vitest run src/phase3-workflows.test.ts",
+    "test:phase4": "vitest run src/phase4-commands.test.ts",
+    "test:phase5": "vitest run src/phase5-demo-readme.test.ts",
+    "test:all": "vitest run"
+  },
+  "dependencies": {
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.8",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "keywords": [
+    "mplp",
+    "growth",
+    "runtime",
+    "psg",
+    "vsl",
+    "ael"
+  ],
+  "license": "Apache-2.0"
+}

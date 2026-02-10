@@ -310,6 +310,10 @@ Runbook: [iOS connect](https://docs.openclaw.ai/platforms/ios).
 - Injected prompt files: `AGENTS.md`, `SOUL.md`, `TOOLS.md`.
 - Skills: `~/.openclaw/workspace/skills/<skill>/SKILL.md`.
 
+### Available Skills
+
+- **[MPLP Growth Copilot (MVP 0.1.0)](packages/mplp-growth-runtime/README_MVP.md)** — Multi-agent content lifecycle with `/brief`, `/create`, `/publish`.
+
 ## Configuration
 
 Minimal `~/.openclaw/openclaw.json` (model + defaults):

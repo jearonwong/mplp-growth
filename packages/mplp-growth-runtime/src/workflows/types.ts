@@ -61,6 +61,7 @@ export interface InboxHandlerInput extends WorkflowInput {
 /** WF-05 Weekly Review Input */
 export interface WeeklyReviewInput extends WorkflowInput {
   week_start?: string; // ISO date, defaults to current week Monday
+  since_last?: boolean; // v0.3.0: diff vs previous MetricSnapshot
 }
 
 /** WF-06 Outreach Input */
@@ -69,6 +70,7 @@ export interface OutreachInput extends WorkflowInput {
   channel: "email" | "linkedin" | "x";
   goal?: string;
   tone?: string;
+  dry_run?: boolean; // v0.3.0: draft + policy check only, no Confirm/Interaction writes
 }
 
 /** Create workflow step with auto-generated step_id */

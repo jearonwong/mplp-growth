@@ -25,6 +25,8 @@ export interface ContentAssetNode {
   created_at: string;
   published_at?: string;
   plan_id?: string; // Optional: link to originating plan
+  is_template?: boolean; // v0.3.0: marks reusable template
+  template_id?: string; // v0.3.0: link to source template if cloned
 }
 
 export interface CreateContentAssetInput {

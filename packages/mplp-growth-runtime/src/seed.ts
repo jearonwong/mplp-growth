@@ -386,6 +386,67 @@ Not a framework. Not a product. A specification.
   await psg.putNode(exampleAsset);
   console.log(`  ✅ ContentAsset: ${exampleAsset.id}`);
 
+  // Write Template Assets (v0.3.0)
+  console.log("\n📝 Writing Template Assets (v0.3.0)...");
+  const threadTemplate = createContentAsset({
+    context_id: context.context_id,
+    asset_type: "thread",
+    title: "Thread Template",
+    content: `Thread: {{topic}}
+
+1/ {{topic}} is reshaping how {{audience}} build and deploy AI systems.
+
+Here's what you need to know 🧵
+
+2/ The challenge: {{audience}} face fragmented tooling, inconsistent interfaces, and vendor lock-in.
+
+3/ The solution: a protocol-first approach that separates concerns and enables interoperability.
+
+4/ Key benefits for {{audience}}:
+- Standardized interfaces across frameworks
+- Deterministic evaluation and verification
+- Vendor-neutral governance
+
+5/ Join the conversation: mplp.io
+
+[Template — customize with /create thread --template <id> --topic "..." --audience "..."]`,
+  });
+  (threadTemplate as any).is_template = true;
+  threadTemplate.platform_variants = {
+    x: "Thread optimized for X — short punchy hooks",
+    linkedin: "LinkedIn article format — professional tone",
+  };
+  await psg.putNode(threadTemplate);
+  console.log(`  ✅ Thread Template: ${threadTemplate.id}`);
+
+  const outreachTemplate = createContentAsset({
+    context_id: context.context_id,
+    asset_type: "outreach_email",
+    title: "Outreach Email Template",
+    content: `Subject: Exploring Collaboration — MPLP × {{target_name}}
+
+Dear {{target_name}} Team,
+
+I'm reaching out from the MPLP project — the POSIX for multi-agent systems.
+
+{{goal}}.
+
+We believe {{target_name}} shares our commitment to open, interoperable AI infrastructure for {{audience}}.
+
+I'd welcome the opportunity to discuss how MPLP could complement {{target_name}}'s work.
+
+Best regards,
+MPLP Project — mplp.io
+
+[Template — customize with /create outreach_email --template <id> --topic "..."]`,
+  });
+  (outreachTemplate as any).is_template = true;
+  outreachTemplate.platform_variants = {
+    email: "Standard email format",
+  };
+  await psg.putNode(outreachTemplate);
+  console.log(`  ✅ Outreach Email Template: ${outreachTemplate.id}`);
+
   // Summary
   console.log("\n" + "=".repeat(60));
   console.log("📊 Seed Summary");
@@ -396,9 +457,9 @@ Not a framework. Not a product. A specification.
   console.log(`ChannelProfiles: ${channelProfiles.length}`);
   console.log(`OutreachTargets: ${outreachTargets.length}`);
   console.log(`Extensions: ${extensions.length}`);
-  console.log(`ContentAssets: 1`);
+  console.log(`ContentAssets: 3 (1 example + 2 templates)`);
   console.log("");
-  console.log("✅ Seed data complete! (v0.2.0)");
+  console.log("✅ Seed data complete! (v0.3.0)");
   console.log(`📁 Data location: ${basePath}/vsl/objects/`);
 
   return {

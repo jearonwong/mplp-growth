@@ -1,7 +1,7 @@
 # MPLP Growth Copilot — MVP README
 
-> **Version**: 0.2.0  
-> **Status**: 77/77 Tests Passing  
+> **Version**: 0.3.0  
+> **Status**: 93/93 Tests Passing  
 > **Runtime**: OpenClaw + MPLP v1.0 Kernel
 
 ---
@@ -60,10 +60,57 @@ A governed content lifecycle for multi-agent marketing. Create, format, and publ
 ```bash
 npm run cli brief
 npm run cli create thread
+npm run cli create thread --template <id> --topic "observability"
 npm run cli publish <asset_id> x
+npm run cli publish --latest x
 npm run cli outreach <target_id> email
+npm run cli outreach --segment foundation --channel email --limit 5
 npm run cli approve <confirm_id>
+npm run cli approve --list
+npm run cli approve --all
+npm run cli review --since-last
 ```
+
+### v0.3.0 Command Modes
+
+| Flag                                  | Behavior                               |
+| ------------------------------------- | -------------------------------------- |
+| `--segment <org_type> --channel <ch>` | Batch outreach with skip rules         |
+| `--dry-run`                           | Zero state writes, preview only        |
+| `--latest <channel>`                  | Auto-select most recent reviewed asset |
+| `--list` / `--all`                    | Queue view + batch approve             |
+| `--template <id> --topic "..."`       | Clone from template                    |
+| `--since-last`                        | Delta metrics vs previous snapshot     |
+
+---
+
+## Daily Ops Quickstart (3 minutes)
+
+Run these 4 commands to experience the full "ops cockpit" loop:
+
+```bash
+# 1. Batch outreach — generate outreach packs for all foundation-type targets
+npm run cli outreach --segment foundation --channel email
+
+# 2. Review the approval queue, then approve all pending
+npm run cli approve --list
+npm run cli approve --all
+
+# 3. Publish the most recent reviewed asset to X
+npm run cli publish --latest x
+
+# 4. Run a weekly review with delta comparison
+npm run cli review --since-last
+```
+
+**What happens**:
+
+- Step 1: Creates draft outreach emails, each gated by a Confirm (pending approval)
+- Step 2: Shows pending grouped by category (outreach/publish/inbox/review), then approves all
+- Step 3: Finds the newest reviewed, non-template asset with an X variant and publishes it
+- Step 4: Creates a metric snapshot, computes delta vs last week, and suggests next actions
+
+> **Second run**: Step 1 will **skip** all targets (already have outreach within 7d). This is idempotent by design.
 
 ---
 

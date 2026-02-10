@@ -10,7 +10,10 @@ export type {
   WorkflowInput,
   PublishPackInput,
   ContentFactoryInput,
-  WeeklyBriefInput
+  WeeklyBriefInput,
+  InboxHandlerInput,
+  InboxInteractionInput,
+  WeeklyReviewInput,
 } from './types';
 export { createStep, generateRunId } from './types';
 
@@ -22,3 +25,9 @@ export { runContentFactory } from './wf02-content-factory';
 
 // WF-03: Publish Pack
 export { runPublishPack } from './wf03-publish-pack';
+
+// WF-04: Inbox Handler
+export { runInboxHandler, transitionInteraction } from './wf04-inbox-handler';
+
+// WF-05: Weekly Review
+export { runWeeklyReview } from './wf05-weekly-review';

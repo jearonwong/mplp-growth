@@ -65,5 +65,7 @@ The MPLP Growth Copilot is a developer tool built on the MPLP specification.
 
 ```
 Tag: mplp-growth-v0.1.0
-Sealed: 2026-02-10T01:10:00+08:00
+Commit: 565429d
+Repo: https://github.com/jearonwong/mplp-growth
+Sealed: 2026-02-10T10:14:00+08:00
 ```

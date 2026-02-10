@@ -17,12 +17,16 @@ import { EventEmitter } from '../glue/event-emitter';
 import { runWeeklyBrief } from '../workflows/wf01-weekly-brief';
 import { runContentFactory, type ContentFactoryInput } from '../workflows/wf02-content-factory';
 import { runPublishPack, type PublishPackInput } from '../workflows/wf03-publish-pack';
+import { runInboxHandler, type InboxHandlerInput } from '../workflows/wf04-inbox-handler';
+import { runWeeklyReview } from '../workflows/wf05-weekly-review';
 import type { Context } from '../modules/mplp-modules';
 import type { ChannelProfileNode, ContentAssetNode } from '../psg/growth-nodes';
 import {
   formatBriefCard,
   formatCreateCard,
   formatPublishCard,
+  formatInboxCard,
+  formatReviewCard,
   formatErrorCard,
   renderCardToMarkdown,
   type CommandCard,
@@ -79,6 +83,13 @@ async function init(): Promise<OrchestratorState> {
   // Load content assets
   const assetKeys = await vsl.listKeys('domain:ContentAsset');
   for (const key of assetKeys) {
+    const node = await vsl.get(key);
+    if (node) await psg.putNode(node as any);
+  }
+  
+  // Load interactions
+  const interactionKeys = await vsl.listKeys('domain:Interaction');
+  for (const key of interactionKeys) {
     const node = await vsl.get(key);
     if (node) await psg.putNode(node as any);
   }
@@ -195,4 +206,84 @@ export async function cmdPublish(args: string[]): Promise<string> {
  */
 export function resetState(): void {
   state = null;
+}
+
+/**
+ * /inbox command handler
+ * @param args - Command arguments: JSON array or --platform <p> --content <c> [--author <a>]
+ */
+export async function cmdInbox(args: string[]): Promise<string> {
+  try {
+    const { psg, vsl, eventEmitter, contextId } = await init();
+    
+    // Parse arguments — support JSON or flag-based input
+    let interactions: InboxHandlerInput['interactions'] = [];
+    
+    if (args[0]?.startsWith('[')) {
+      // JSON array input
+      try {
+        interactions = JSON.parse(args.join(' '));
+      } catch {
+        return renderCardToMarkdown(formatErrorCard('Inbox', 'Invalid JSON. Usage: /inbox [{"platform":"x","content":"..."}]'));
+      }
+    } else {
+      // Flag-based input: --platform <p> --content <c> [--author <a>]
+      let platform = '';
+      let content = '';
+      let author: string | undefined;
+      
+      for (let i = 0; i < args.length; i++) {
+        if (args[i] === '--platform' && args[i + 1]) platform = args[++i];
+        else if (args[i] === '--content' && args[i + 1]) content = args[++i];
+        else if (args[i] === '--author' && args[i + 1]) author = args[++i];
+      }
+      
+      if (!platform || !content) {
+        return renderCardToMarkdown(formatErrorCard('Inbox', 'Missing args. Usage: /inbox --platform <p> --content <c> [--author <a>]'));
+      }
+      
+      interactions = [{ platform, content, author }];
+    }
+    
+    const result = await runInboxHandler(
+      { context_id: contextId, interactions },
+      { psg, vsl, eventEmitter }
+    );
+    
+    if (!result.success) {
+      return renderCardToMarkdown(formatErrorCard('Inbox', result.error || 'Unknown error'));
+    }
+    
+    return renderCardToMarkdown(formatInboxCard(result));
+  } catch (error) {
+    return renderCardToMarkdown(formatErrorCard('Inbox', error instanceof Error ? error.message : String(error)));
+  }
+}
+
+/**
+ * /review command handler
+ * @param args - Optional: --week <ISO date>
+ */
+export async function cmdReview(args: string[]): Promise<string> {
+  try {
+    const { psg, vsl, eventEmitter, contextId } = await init();
+    
+    let weekStart: string | undefined;
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === '--week' && args[i + 1]) weekStart = args[++i];
+    }
+    
+    const result = await runWeeklyReview(
+      { context_id: contextId, week_start: weekStart },
+      { psg, vsl, eventEmitter }
+    );
+    
+    if (!result.success) {
+      return renderCardToMarkdown(formatErrorCard('Review', result.error || 'Unknown error'));
+    }
+    
+    return renderCardToMarkdown(formatReviewCard(result));
+  } catch (error) {
+    return renderCardToMarkdown(formatErrorCard('Review', error instanceof Error ? error.message : String(error)));
+  }
 }

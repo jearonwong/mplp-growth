@@ -47,6 +47,22 @@ export interface WeeklyBriefInput extends WorkflowInput {
   week_start?: string;  // ISO date, defaults to current week
 }
 
+/** WF-04 Inbox Handler Input */
+export interface InboxInteractionInput {
+  platform: string;
+  content: string;
+  author?: string;
+}
+
+export interface InboxHandlerInput extends WorkflowInput {
+  interactions: InboxInteractionInput[];
+}
+
+/** WF-05 Weekly Review Input */
+export interface WeeklyReviewInput extends WorkflowInput {
+  week_start?: string;  // ISO date, defaults to current week Monday
+}
+
 /** Create workflow step with auto-generated step_id */
 export function createStep(
   description: string,

@@ -100,6 +100,64 @@ export function formatPublishCard(result: WorkflowRunResult): CommandCard {
 }
 
 /**
+ * Format WF-04 Inbox Handler output
+ */
+export function formatInboxCard(result: WorkflowRunResult): CommandCard {
+  const outputs = result.outputs as Record<string, unknown>;
+  const interactionIds = (outputs.interaction_ids as string[]) || [];
+
+  return {
+    emoji: '📥',
+    title: `Inbox: ${outputs.draft_count} interactions processed`,
+    summary: `Interactions: ${interactionIds.length}\nDraft replies: ${outputs.draft_count}\nStatus: awaiting confirmation`,
+    planId: result.plan?.plan_id,
+    traceId: result.trace?.trace_id,
+    confirmId: result.confirm?.confirm_id,
+    nextActions: [
+      'Review draft replies and approve Confirm',
+      '`/review` — Generate weekly retrospective',
+    ],
+    metadata: {
+      interaction_ids: interactionIds,
+      draft_count: outputs.draft_count,
+      run_id: result.run_id,
+    },
+  };
+}
+
+/**
+ * Format WF-05 Weekly Review output
+ */
+export function formatReviewCard(result: WorkflowRunResult): CommandCard {
+  const outputs = result.outputs as Record<string, unknown>;
+  const metrics = outputs.metrics as Record<string, number> | undefined;
+  const suggestions = (outputs.suggestions as string[]) || [];
+
+  const metricsSummary = metrics
+    ? `Published: ${metrics.assets_published} | Interactions: ${metrics.interactions_responded}/${metrics.interactions_total} | Plans: ${metrics.plans_created}`
+    : 'No metrics available';
+
+  return {
+    emoji: '📊',
+    title: `Weekly Review — ${outputs.week_start}`,
+    summary: `${metricsSummary}\nSnapshot: ${outputs.snapshot_id}\nSuggestions: ${suggestions.length}`,
+    planId: result.plan?.plan_id,
+    traceId: result.trace?.trace_id,
+    assetId: outputs.review_asset_id as string,
+    nextActions: [
+      ...suggestions.map(s => `💡 ${s}`),
+      '`/brief` — Start next week planning',
+    ],
+    metadata: {
+      snapshot_id: outputs.snapshot_id,
+      review_asset_id: outputs.review_asset_id,
+      metrics,
+      run_id: result.run_id,
+    },
+  };
+}
+
+/**
  * Format error output
  */
 export function formatErrorCard(workflow: string, error: string): CommandCard {

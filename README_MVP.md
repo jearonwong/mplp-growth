@@ -1,7 +1,7 @@
 # MPLP Growth Copilot — MVP README
 
 > **Version**: 0.1.0 (MVP)  
-> **Status**: 46/46 Tests Passing  
+> **Status**: 59/59 Tests Passing  
 > **Runtime**: OpenClaw + MPLP v1.0 Kernel
 
 ---
@@ -125,13 +125,14 @@ npm run cli publish <asset_id> x
 
 ## Tests & Gates
 
-### Test Summary (46/46)
+### Test Summary (59/59)
 ```
  ✓ gates.test.ts              (18 tests) - Phase 1
  ✓ phase2-gates.test.ts        (7 tests) - Phase 2
  ✓ phase3-workflows.test.ts   (10 tests) - Phase 3
  ✓ phase4-commands.test.ts     (8 tests) - Phase 4
  ✓ phase5-demo-readme.test.ts  (3 tests) - Phase 5
+ ✓ phase6-feedback-loop.test.ts(13 tests) - Phase 6
 ```
 
 ### Key Gates

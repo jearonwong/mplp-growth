@@ -94,6 +94,11 @@ export class InMemoryPSG implements ProjectSemanticGraph {
     
     const isNew = !this.nodes.has(cacheKey) && !(await this.vsl.exists(storageKey));
     
+    // GATE-METRICS-IMMUTABLE-01: MetricSnapshot is append-only, reject updates
+    if (node.type === 'domain:MetricSnapshot' && !isNew) {
+      throw new Error('MetricSnapshot is immutable: cannot update existing snapshot (GATE-METRICS-IMMUTABLE-01)');
+    }
+    
     // Update cache
     this.nodes.set(cacheKey, node);
     

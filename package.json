@@ -1,6 +1,6 @@
 {
   "name": "@openclaw/mplp-growth-runtime",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MPLP Growth Copilot Runtime - PSG/VSL/AEL kernel for marketing growth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,6 +14,7 @@
     "test:phase3": "vitest run src/phase3-workflows.test.ts",
     "test:phase4": "vitest run src/phase4-commands.test.ts",
     "test:phase5": "vitest run src/phase5-demo-readme.test.ts",
+    "test:phase6": "vitest run src/phase6-feedback-loop.test.ts",
     "test:all": "vitest run"
   },
   "dependencies": {

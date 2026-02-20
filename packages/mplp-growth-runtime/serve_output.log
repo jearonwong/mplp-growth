@@ -1,0 +1,9 @@
+Starting v0.4.0 Growth Ops Cockpit...
+[Runner] Starting daemon...
+[Runner] Daemon started. Schedule active.
+{"level":30,"time":1771606101435,"pid":77147,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://127.0.0.1:3000"}
+[Server] Listening on http://localhost:3000
+{"level":30,"time":1771606101435,"pid":77147,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://192.168.2.219:3000"}
+{"level":30,"time":1771606101435,"pid":77147,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://10.9.56.139:3000"}
+{"level":30,"time":1771606104326,"pid":77147,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"GET","url":"/api/health","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":53960},"msg":"incoming request"}
+{"level":30,"time":1771606104329,"pid":77147,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":2.465874671936035,"msg":"request completed"}

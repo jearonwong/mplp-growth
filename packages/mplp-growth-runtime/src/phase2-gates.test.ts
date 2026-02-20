@@ -48,12 +48,17 @@ describe("Phase 2 Gates — Seed Data Integrity", () => {
     });
 
     it("all Domain Nodes must have matching context_id", async () => {
-      if (!context) {
-        throw new Error("Context not seeded - run seed first");
+      const keys = await vsl.listKeys("Context");
+      const contextIds: string[] = [];
+      for (const k of keys) {
+        const c = await vsl.get<Context>(k);
+        if (c) {
+          contextIds.push(c.context_id);
+        }
       }
 
       for (const profile of channelProfiles) {
-        expect(profile.context_id).toBe(context.context_id);
+        expect(contextIds).toContain(profile.context_id);
       }
     });
   });

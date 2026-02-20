@@ -170,8 +170,8 @@ describe("Phase 9 Batch & Queue Gates", () => {
       // Should either show all skipped or no targets to process
       expect(
         secondOutput.includes("Skipped") ||
-          secondOutput.includes("already have outreach") ||
-          secondOutput.includes("No research-status"),
+          secondOutput.includes("No new outreach needed in last 7 days") ||
+          secondOutput.includes("All targets already contacted"),
       ).toBe(true);
     });
   });

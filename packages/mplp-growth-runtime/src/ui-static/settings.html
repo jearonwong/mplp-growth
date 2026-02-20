@@ -20,22 +20,42 @@
     <div class="main-content">
       <header>
         <h1>Settings</h1>
+        <div class="status-badge" id="global-header-stats"></div>
       </header>
 
       <div class="card">
         <h3>Runner Configuration</h3>
-        <p>Runner toggle and Policy settings coming soon.</p>
-        <p>Current Policy: <span style="color: var(--accent-color)">Safe Mode</span></p>
-        <!-- TODO: Add toggle switch wired to POST /api/runner/toggle -->
+        <p id="policy-display">
+          Current Policy: <span style="color: var(--accent-color)">Safe Mode</span>
+        </p>
+        <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px">
+          <label>
+            <input
+              type="checkbox"
+              id="auto-publish-toggle"
+              onchange="app.handlers.toggleAutoPublish(event)"
+            />
+            Enable Auto-Publish
+          </label>
+          <span style="font-size: 12px; color: var(--text-secondary)">
+            (Requires Aggressive policy)
+          </span>
+        </div>
       </div>
 
       <div class="card" style="margin-top: 20px">
         <h3>System Info</h3>
-        <p>Runtime v0.4.0</p>
+        <p>Runtime v0.4.1</p>
         <p>API Endpoint: /api</p>
       </div>
     </div>
 
     <script src="app.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        await app.initGlobalHeader();
+        await app.initSettings();
+      });
+    </script>
   </body>
 </html>

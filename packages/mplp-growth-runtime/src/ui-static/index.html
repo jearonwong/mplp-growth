@@ -6,6 +6,7 @@
     <title>MPLP Growth Cockpit</title>
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
     <div class="sidebar">
       <div class="brand">🚀 MPLP Growth</div>
@@ -21,10 +22,7 @@
     <div class="main-content">
       <header>
         <h1>Dashboard</h1>
-        <div class="status-badge">
-          <span class="dot" id="runner-status-dot"></span>
-          <span id="runner-status-text">Runner Idle</span>
-        </div>
+        <div class="status-badge" id="global-header-stats"></div>
       </header>
 
       <div class="grid">
@@ -51,7 +49,10 @@
 
     <script src="app.js"></script>
     <script>
-      document.addEventListener("DOMContentLoaded", app.initDashboard);
+      document.addEventListener("DOMContentLoaded", () => {
+        app.initGlobalHeader();
+        app.initDashboard();
+      });
     </script>
   </body>
 </html>

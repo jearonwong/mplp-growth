@@ -1,0 +1,26 @@
+Starting v0.4.0 Growth Ops Cockpit...
+[Runner] Starting daemon...
+[Runner] Daemon started. Schedule active.
+{"level":30,"time":1770722685255,"pid":42530,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://127.0.0.1:3000"}
+[Server] Listening on http://localhost:3000
+{"level":30,"time":1770722685255,"pid":42530,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://192.168.2.176:3000"}
+{"level":30,"time":1770722685255,"pid":42530,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://10.8.56.139:3000"}
+{"level":30,"time":1770722744024,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"GET","url":"/","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56810},"msg":"incoming request"}
+{"level":30,"time":1770722744028,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":3.2773749828338623,"msg":"request completed"}
+{"level":30,"time":1770722744033,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"GET","url":"/style.css","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56810},"msg":"incoming request"}
+{"level":30,"time":1770722744034,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","req":{"method":"GET","url":"/app.js","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56811},"msg":"incoming request"}
+{"level":30,"time":1770722744034,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":200},"responseTime":0.920374870300293,"msg":"request completed"}
+{"level":30,"time":1770722744035,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","res":{"statusCode":200},"responseTime":0.46729111671447754,"msg":"request completed"}
+{"level":30,"time":1770722744061,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-4","req":{"method":"GET","url":"/api/runner/status","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56811},"msg":"incoming request"}
+{"level":30,"time":1770722744062,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-4","res":{"statusCode":200},"responseTime":0.3833749294281006,"msg":"request completed"}
+{"level":30,"time":1770722744063,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-5","req":{"method":"GET","url":"/favicon.ico","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56811},"msg":"incoming request"}
+{"level":30,"time":1770722744063,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-5","msg":"Route GET:/favicon.ico not found"}
+{"level":30,"time":1770722744063,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-5","res":{"statusCode":404},"responseTime":0.4582087993621826,"msg":"request completed"}
+{"level":30,"time":1770722750174,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-6","req":{"method":"GET","url":"/queue.html","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56811},"msg":"incoming request"}
+{"level":30,"time":1770722750175,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-6","res":{"statusCode":200},"responseTime":1.0807499885559082,"msg":"request completed"}
+{"level":30,"time":1770722750182,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-7","req":{"method":"GET","url":"/app.js","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56811},"msg":"incoming request"}
+{"level":30,"time":1770722750183,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-8","req":{"method":"GET","url":"/style.css","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56810},"msg":"incoming request"}
+{"level":30,"time":1770722750184,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-7","res":{"statusCode":304},"responseTime":2.0090408325195312,"msg":"request completed"}
+{"level":30,"time":1770722750185,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-8","res":{"statusCode":304},"responseTime":1.9361250400543213,"msg":"request completed"}
+{"level":30,"time":1770722750187,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-9","req":{"method":"GET","url":"/api/queue","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":56810},"msg":"incoming request"}
+{"level":30,"time":1770722750233,"pid":42530,"hostname":"JasondeMacBook-Pro.local","reqId":"req-9","res":{"statusCode":200},"responseTime":45.9742910861969,"msg":"request completed"}

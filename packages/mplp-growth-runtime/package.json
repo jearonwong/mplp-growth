@@ -11,6 +11,7 @@
     "vsl"
   ],
   "license": "Apache-2.0",
+  "type": "commonjs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -29,10 +30,14 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@fastify/static": "^9.0.0",
+    "fastify": "^5.7.4",
+    "node-schedule": "^2.1.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/node-schedule": "^2.1.8",
     "@types/uuid": "^9.0.8",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"

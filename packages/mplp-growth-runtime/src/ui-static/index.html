@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MPLP Growth Cockpit</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="brand">🚀 MPLP Growth</div>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Dashboard</a></li>
+        <li>
+          <a href="queue.html">Queue <span id="queue-badge" class="badge hidden">0</span></a>
+        </li>
+        <li><a href="settings.html">Settings</a></li>
+      </ul>
+    </div>
+
+    <div class="main-content">
+      <header>
+        <h1>Dashboard</h1>
+        <div class="status-badge">
+          <span class="dot" id="runner-status-dot"></span>
+          <span id="runner-status-text">Runner Idle</span>
+        </div>
+      </header>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Last Tick</h3>
+          <div class="metric" id="last-tick">--</div>
+        </div>
+        <div class="card">
+          <h3>Policy</h3>
+          <div class="metric" id="policy-level">--</div>
+        </div>
+        <div class="card">
+          <h3>Pending Actions</h3>
+          <div class="metric">--</div>
+          <!-- TODO: Fetch queue count for dashboard -->
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Recent Activity</h3>
+        <p style="color: var(--text-secondary)">Runner logs will appear here in future updates.</p>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", app.initDashboard);
+    </script>
+  </body>
+</html>

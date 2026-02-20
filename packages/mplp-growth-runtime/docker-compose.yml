@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  mplp-growth:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - mplp_data:/data
+    restart: unless-stopped
+
+volumes:
+  mplp_data:

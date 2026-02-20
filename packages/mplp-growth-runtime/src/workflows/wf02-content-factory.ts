@@ -92,10 +92,10 @@ export async function runContentFactory(
     await emitStage("load_context", "Load Context", "running", 0);
 
     // Load Context
-    const contexts = await psg.query<Context>({
+    const contexts = (await psg.query<any>({
       type: "Context",
       filter: { context_id: input.context_id },
-    });
+    })) as Context[];
 
     if (contexts.length === 0) {
       throw new Error(`Context not found: ${input.context_id}`);

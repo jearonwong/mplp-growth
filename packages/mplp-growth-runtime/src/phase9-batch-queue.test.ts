@@ -64,11 +64,11 @@ describe("Phase 9 Batch & Queue Gates", () => {
     await psg.putNode(context as any);
 
     // Create channel profiles
-    for (const platform of ["x", "linkedin", "email"] as const) {
+    for (const platform of ["x", "linkedin", "medium"] as const) {
       const profile = createChannelProfile({
         context_id: contextId,
         platform,
-        format_rules: { max_chars: platform === "email" ? 5000 : 280 },
+        format_rules: { max_chars: platform === "medium" ? 5000 : 280 },
       });
       await psg.putNode(profile);
     }

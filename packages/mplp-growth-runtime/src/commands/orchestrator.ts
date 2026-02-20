@@ -60,6 +60,13 @@ let state: OrchestratorState | null = null;
 /**
  * Initialize the orchestrator
  */
+export async function getRuntime(): Promise<OrchestratorState> {
+  return init();
+}
+
+/**
+ * Initialize the orchestrator
+ */
 async function init(): Promise<OrchestratorState> {
   if (state) {
     return state;
@@ -348,7 +355,11 @@ export async function cmdPublish(args: string[]): Promise<string> {
         return renderCardToMarkdown(formatErrorCard("Publish Pack", reason));
       }
       // Sort by created_at descending, pick most recent eligible
-      const sorted = eligible.toSorted((a, b) => b.created_at.localeCompare(a.created_at));
+      const sorted = eligible
+        .slice()
+        .toSorted((a: ContentAssetNode, b: ContentAssetNode) =>
+          b.created_at.localeCompare(a.created_at),
+        );
       assetId = sorted[0].id;
     } else {
       assetId = args[0];
@@ -893,5 +904,31 @@ export async function cmdApprove(args: string[]): Promise<string> {
     return renderCardToMarkdown(
       formatErrorCard("Approve", error instanceof Error ? error.message : String(error)),
     );
+  }
+}
+
+/**
+ * Programmatic entry point for API/Runner
+ */
+export async function executeCommand(command: string, args: string[]): Promise<string> {
+  await init();
+
+  switch (command) {
+    case "brief":
+      return cmdBrief();
+    case "create":
+      return cmdCreate(args);
+    case "publish":
+      return cmdPublish(args);
+    case "inbox":
+      return cmdInbox(args);
+    case "review":
+      return cmdReview(args);
+    case "outreach":
+      return cmdOutreach(args);
+    case "approve":
+      return cmdApprove(args);
+    default:
+      return renderCardToMarkdown(formatErrorCard("System", `Unknown command: ${command}`));
   }
 }

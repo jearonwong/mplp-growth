@@ -15,6 +15,7 @@ export interface TaskRun {
 export interface RunnerState {
   enabled: boolean;
   policy_level: "safe" | "standard" | "aggressive";
+  auto_publish: boolean;
   last_tick_at?: string;
   is_running: boolean;
   active_task?: string;
@@ -27,6 +28,7 @@ export class StateManager {
   private state: RunnerState = {
     enabled: false,
     policy_level: "safe", // Default safe
+    auto_publish: false,
     is_running: false,
     last_task_runs: [],
   };
@@ -41,12 +43,19 @@ export class StateManager {
   /**
    * Update configuration
    */
-  setConfig(config: { enabled?: boolean; policy_level?: "safe" | "standard" | "aggressive" }) {
+  setConfig(config: {
+    enabled?: boolean;
+    policy_level?: "safe" | "standard" | "aggressive";
+    auto_publish?: boolean;
+  }) {
     if (config.enabled !== undefined) {
       this.state.enabled = config.enabled;
     }
     if (config.policy_level !== undefined) {
       this.state.policy_level = config.policy_level;
+    }
+    if (config.auto_publish !== undefined) {
+      this.state.auto_publish = config.auto_publish;
     }
   }
 

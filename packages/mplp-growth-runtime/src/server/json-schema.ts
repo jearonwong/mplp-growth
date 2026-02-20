@@ -15,14 +15,32 @@ export interface ExecuteResponse {
   };
 }
 
+export interface QueueItem {
+  id: string;
+  confirm_id: string;
+  created_at?: string;
+  category: string;
+  plan_id?: string;
+  asset_id?: string;
+  channel?: string;
+  target_id?: string;
+  title: string;
+  preview: string;
+  export_path?: string;
+  policy_check: {
+    status: "pass" | "fail" | "unknown";
+    reasons?: string[];
+  };
+}
+
 export interface QueueResponse {
   pending_count: number;
   categories: {
-    outreach: any[];
-    publish: any[];
-    inbox: any[];
-    review: any[];
-    other: any[];
+    outreach: QueueItem[];
+    publish: QueueItem[];
+    inbox: QueueItem[];
+    review: QueueItem[];
+    other: QueueItem[];
   };
 }
 

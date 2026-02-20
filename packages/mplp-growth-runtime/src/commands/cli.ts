@@ -16,6 +16,7 @@
  *   npx tsx src/commands/cli.ts approve --all
  */
 
+import { version } from "../../package.json";
 import { runnerDaemon } from "../runner/daemon.js";
 import { startServer } from "../server/index.js";
 import {
@@ -33,7 +34,7 @@ async function main() {
 
   if (!command) {
     console.log(`
-MPLP Growth Copilot CLI (v0.3.0)
+MPLP Growth Copilot CLI (v${version})
 
 Usage:
   cli brief                                                - Generate weekly brief

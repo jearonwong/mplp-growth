@@ -581,25 +581,45 @@ export async function cmdOutreach(args: string[]): Promise<string> {
 
       if (allTargets.length === 0) {
         return renderCardToMarkdown(
-          formatErrorCard("Outreach", `No research-status targets found for segment: ${segment}`),
+          formatErrorCard(
+            "Outreach",
+            "All targets already contacted. Reset targets to research to rerun.",
+          ),
         );
       }
 
-      // Skip rule: exclude targets that already have a drafted/reviewed outreach asset
+      // Skip rule: exclude targets that already have a drafted/reviewed outreach asset within 7 days
       const existingAssets = await psg.query<ContentAssetNode>({
         type: "domain:ContentAsset",
         context_id: contextId,
         filter: { asset_type: "outreach_email" },
       });
-      const alreadyDraftedTargetNames = new Set(
-        existingAssets
-          .filter((a) => ["draft", "reviewed", "published"].includes(a.status))
-          .map((a) => a.title), // title contains target name
-      );
 
-      const eligible = allTargets.filter(
-        (t) => !alreadyDraftedTargetNames.has(`Outreach: ${t.name} via ${channel}`),
-      );
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      const eligible = allTargets.filter((t) => {
+        const hasRecentAsset = existingAssets.some((a) => {
+          if (!["draft", "reviewed", "published"].includes(a.status)) {
+            return false;
+          }
+          if (a.created_at < sevenDaysAgo) {
+            return false;
+          }
+
+          // 1. Primary: metadata fingerprint (P2)
+          if (a.metadata?.target_id) {
+            return a.metadata.target_id === t.id && a.metadata.channel === channel;
+          }
+          // 2. Fallback: title pattern (backwards compat)
+          return (
+            a.title === `Outreach to ${t.name} via ${channel}` ||
+            a.title === `Outreach Draft: ${t.name} via ${channel}` ||
+            a.title === `Outreach: ${t.name} via ${channel}`
+          );
+        });
+        return !hasRecentAsset;
+      });
+
       const targets = eligible.slice(0, limit);
       const skippedCount = allTargets.length - eligible.length;
 
@@ -607,7 +627,7 @@ export async function cmdOutreach(args: string[]): Promise<string> {
         return renderCardToMarkdown(
           formatErrorCard(
             "Outreach",
-            `All ${allTargets.length} targets already have outreach packs (${skippedCount} skipped). No new targets to process.`,
+            `No new outreach needed in last 7 days. All ${allTargets.length} targets skipped.`,
           ),
         );
       }

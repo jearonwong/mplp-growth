@@ -1,7 +1,7 @@
 # MPLP Growth Copilot — MVP README
 
-> **Version**: 0.3.0  
-> **Status**: 93/93 Tests Passing  
+> **Version**: 0.4.1  
+> **Status**: 108/108 Tests Passing  
 > **Runtime**: OpenClaw + MPLP v1.0 Kernel
 
 ---
@@ -86,7 +86,7 @@ npm run cli review --since-last
 
 ## Daily Ops Quickstart (3 minutes)
 
-Run these 4 commands to experience the full "ops cockpit" loop:
+Run these 4 commands to experience the full "ops cockpit" loop via CLI (or use the Web UI at http://localhost:8080):
 
 ```bash
 # 1. Batch outreach — generate outreach packs for all foundation-type targets

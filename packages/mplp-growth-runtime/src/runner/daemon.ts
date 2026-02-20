@@ -4,6 +4,7 @@
  */
 
 import schedule from "node-schedule";
+import { version } from "../../package.json";
 import { Scheduler, SystemClock } from "./scheduler.js";
 import { runnerState } from "./state.js";
 import {
@@ -22,7 +23,7 @@ export class RunnerDaemon {
   }
 
   start() {
-    console.log("[Runner] Starting daemon...");
+    console.log(`[Runner] v${version} Starting daemon...`);
     runnerState.setConfig({ enabled: true });
 
     // Monday 09:00 - Weekly Brief

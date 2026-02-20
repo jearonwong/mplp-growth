@@ -20,11 +20,7 @@
     <div class="main-content">
       <header>
         <h1>Approval Queue</h1>
-        <div class="status-badge">
-          <span class="dot" id="runner-status-dot"></span>
-          <!-- Status dot shared logic might need update if we want it on every page -->
-          <span id="runner-status-text">Runner Status</span>
-        </div>
+        <div class="status-badge" id="global-header-stats"></div>
       </header>
 
       <div id="queue-list" class="queue-list">
@@ -35,7 +31,7 @@
     <script src="app.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        // Re-fetch status for the dot?
+        app.initGlobalHeader();
         app.initQueue();
       });
     </script>

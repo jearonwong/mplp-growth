@@ -39,8 +39,10 @@ export async function runWeeklyReview() {
 
 export async function runAutoPublish() {
   const state = runnerState.getSnapshot();
-  if (state.policy_level !== "aggressive") {
-    console.log("[Task] Auto-Publish skipped (Policy not aggressive).");
+  if (state.policy_level !== "aggressive" || !state.auto_publish) {
+    console.log(
+      `[Task] Auto-Publish skipped (Policy: ${state.policy_level}, AutoPublish: ${state.auto_publish}).`,
+    );
     return;
   }
 

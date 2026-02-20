@@ -27,6 +27,7 @@ export interface ContentAssetNode {
   plan_id?: string; // Optional: link to originating plan
   is_template?: boolean; // v0.3.0: marks reusable template
   template_id?: string; // v0.3.0: link to source template if cloned
+  metadata?: Record<string, any>; // v0.4.1: Extensible metadata for dedup
 }
 
 export interface CreateContentAssetInput {
@@ -35,6 +36,7 @@ export interface CreateContentAssetInput {
   title: string;
   content: string;
   plan_id?: string;
+  metadata?: Record<string, any>;
 }
 
 export function createContentAsset(input: CreateContentAssetInput): ContentAssetNode {
@@ -49,6 +51,7 @@ export function createContentAsset(input: CreateContentAssetInput): ContentAsset
     platform_variants: {},
     created_at: new Date().toISOString(),
     plan_id: input.plan_id,
+    metadata: input.metadata || {},
   };
 }
 

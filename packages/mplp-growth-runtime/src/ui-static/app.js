@@ -29,31 +29,69 @@ async function rejectItem(id) {
 
 // --- UI Rendering ---
 
-function updateStatusDot(isActive) {
-  const dot = document.getElementById("runner-status-dot");
-  const text = document.getElementById("runner-status-text");
-  if (dot && text) {
-    if (isActive) {
-      dot.classList.add("active");
-      text.innerText = "Runner Active";
-    } else {
-      dot.classList.remove("active");
-      text.innerText = "Runner Idle";
+async function initGlobalHeader() {
+  try {
+    const res = await fetch(`${API_BASE}/health`);
+    const health = await res.json();
+    const badge = document.getElementById("global-header-stats");
+    if (!badge) {
+      return;
     }
+
+    const h = Math.floor(health.uptime / 3600);
+    const m = Math.floor((health.uptime % 3600) / 60);
+    const s = Math.floor(health.uptime % 60);
+    const uptimeStr = `${h}h ${m}m ${s}s`;
+
+    const runnerText = health.runner_enabled ? "Runner ON" : "Runner OFF";
+    const dotClass = health.runner_enabled ? "dot active" : "dot";
+
+    badge.innerHTML = `
+      <span style="color: var(--text-secondary)">v${health.version}</span> &nbsp;|&nbsp;
+      <span style="color: var(--accent-color)">Policy: ${health.policy_level}</span> &nbsp;|&nbsp;
+      <span class="${dotClass}"></span> <span>${runnerText}</span> &nbsp;|&nbsp;
+      <span style="color: var(--text-secondary)">Uptime: ${uptimeStr}</span>
+    `;
+  } catch (err) {
+    console.error("Failed to load health for header", err);
   }
 }
 
 function renderQueueItem(item) {
   const div = document.createElement("div");
   div.className = "queue-item";
+
+  const createdStr = item.created_at ? new Date(item.created_at).toLocaleString() : "";
+  const channelBadge = item.channel
+    ? `<span class="badge" style="background:var(--accent-color)">${item.channel}</span>`
+    : "";
+
+  const statusColors = { pass: "var(--success-color)", fail: "var(--danger-color)" };
+  const policyColor = statusColors[item.policy_check.status] || "var(--text-secondary)";
+  const policyReasons = item.policy_check.reasons
+    ? ` (${item.policy_check.reasons.join(", ")})`
+    : "";
+
   div.innerHTML = `
     <div class="queue-content">
-      <div class="queue-meta">
-        <span class="badge">${item.category.toUpperCase()}</span>
-        <span>ID: ${item.confirm_id.substring(0, 8)}...</span>
+      <div class="queue-meta" style="display:flex; justify-content:space-between; width:100%;">
+        <div>
+          <span class="badge">${item.category.toUpperCase()}</span>
+          ${channelBadge}
+          <span style="margin-left:8px;font-weight:bold">${escapeHtml(item.title)}</span>
+        </div>
+        <span style="font-size:12px;color:var(--text-secondary)">${createdStr}</span>
       </div>
-      <div class="queue-desc">Action Required</div>
-      <div class="queue-data">${escapeHtml(JSON.stringify(item.data, null, 2))}</div>
+      
+      <div class="queue-desc" style="margin-top:10px">
+        <strong>Policy Check:</strong> <span style="color:${policyColor}">${item.policy_check.status.toUpperCase()}</span>
+        <span style="font-size:12px">${escapeHtml(policyReasons)}</span>
+      </div>
+      
+      <details style="margin-top:10px; cursor:pointer;">
+        <summary style="font-weight:bold; color:var(--accent-color);">Preview Content</summary>
+        <div class="queue-data" style="margin-top:8px">${escapeHtml(item.preview)}</div>
+      </details>
     </div>
     <div class="actions">
       <button class="btn btn-success" onclick="app.handlers.approve('${item.confirm_id}')">Approve</button>
@@ -81,7 +119,7 @@ async function initDashboard() {
   console.log("Initializing Dashboard...");
   try {
     const status = await fetchStatus();
-    updateStatusDot(status.enabled);
+    // Dot updated by initGlobalHeader instead
 
     // In v0.4.0 MVP, we don't have separate metrics endpoint yet.
     // dashboard.html just shows status for now.
@@ -130,6 +168,26 @@ async function initQueue() {
   }
 }
 
+async function initSettings() {
+  try {
+    const res = await fetch(`${API_BASE}/runner/status`);
+    const status = await res.json();
+
+    const policyEl = document.getElementById("policy-display");
+    if (policyEl) {
+      policyEl.innerHTML = `Current Policy: <span style="color: var(--accent-color)">${status.policy_level.toUpperCase()}</span>`;
+    }
+
+    const toggle = document.getElementById("auto-publish-toggle");
+    if (toggle) {
+      toggle.checked = !!status.auto_publish;
+      toggle.disabled = status.policy_level !== "aggressive";
+    }
+  } catch (err) {
+    console.error("Failed to load runner status for settings", err);
+  }
+}
+
 // Global Handlers (for onclick attributes)
 window.app = {
   handlers: {
@@ -156,16 +214,40 @@ window.app = {
       try {
         const res = await rejectItem(id);
         if (res.ok) {
-          alert("Rejected.");
-          location.reload();
+          await initQueue(); // Changed from location.reload()
         } else {
-          alert("Error: " + JSON.stringify(res.error));
+          alert("Reject failed");
         }
-      } catch (e) {
-        alert(e.message);
+      } catch (err) {
+        console.error(err);
+        alert("API Error");
+      }
+    },
+    toggleAutoPublish: async (event) => {
+      const checked = event.target.checked;
+      try {
+        const res = await fetch(`${API_BASE}/runner/config`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ auto_publish: checked }),
+        });
+        if (res.ok) {
+          if (typeof initSettings === "function") {
+            await initSettings();
+          }
+        } else {
+          alert("Failed to update Runner Config");
+          event.target.checked = !checked;
+        }
+      } catch (err) {
+        console.error("Error toggling auto_publish", err);
+        alert("API Error");
+        event.target.checked = !checked;
       }
     },
   },
   initDashboard,
   initQueue,
+  initGlobalHeader,
+  initSettings,
 };

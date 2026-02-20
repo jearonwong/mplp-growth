@@ -144,6 +144,12 @@ export async function runOutreach(
       asset_type: "outreach_email",
       title: `Outreach to ${target.name} via ${input.channel}`,
       content: draftContent,
+      metadata: {
+        target_id: input.target_id,
+        channel: input.channel,
+        workflow: "wf06-outreach",
+        generated_at: new Date().toISOString(),
+      },
     });
     asset.status = "reviewed"; // Draft complete, awaiting confirm
     await psg.putNode(asset);

@@ -286,7 +286,8 @@ async function seed() {
   console.log("🌱 MPLP Growth Copilot — Seed Data (v0.2.0)\n");
 
   // Initialize VSL at standard location
-  const basePath = path.join(os.homedir(), ".openclaw", "mplp-growth");
+  const basePath =
+    process.env.MPLP_GROWTH_STATE_DIR || path.join(os.homedir(), ".openclaw", "mplp-growth");
   const vsl = new FileVSL({ basePath });
   await vsl.init();
   console.log(`📁 VSL initialized at: ${basePath}`);

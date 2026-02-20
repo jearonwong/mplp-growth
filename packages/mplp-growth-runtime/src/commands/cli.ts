@@ -16,6 +16,8 @@
  *   npx tsx src/commands/cli.ts approve --all
  */
 
+import { runnerDaemon } from "../runner/daemon.js";
+import { startServer } from "../server/index.js";
 import {
   cmdBrief,
   cmdCreate,
@@ -47,6 +49,7 @@ Usage:
   cli approve <confirm_id>                                 - Approve pending confirm
   cli approve --list                                       - List pending confirms
   cli approve --all                                        - Batch approve all pending
+  cli serve                                                - Start Cockpit (API + Runner + UI)
 
 Examples:
   cli brief
@@ -83,6 +86,11 @@ Examples:
     case "approve":
       output = await cmdApprove(args);
       break;
+    case "serve":
+      console.log("Starting v0.4.0 Growth Ops Cockpit...");
+      runnerDaemon.start();
+      await startServer(3000);
+      return;
     default:
       console.error(`Unknown command: ${command}`);
       process.exit(1);

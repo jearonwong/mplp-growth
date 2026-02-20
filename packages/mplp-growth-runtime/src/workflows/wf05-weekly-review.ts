@@ -142,7 +142,10 @@ export async function runWeeklyReview(
       // Sort by snapshot_at descending, skip current (just created)
       const sorted = allSnapshots
         .filter((s) => s.id !== snapshot.id)
-        .toSorted((a, b) => b.snapshot_at.localeCompare(a.snapshot_at));
+        .slice()
+        .toSorted((a: MetricSnapshotNode, b: MetricSnapshotNode) =>
+          b.snapshot_at.localeCompare(a.snapshot_at),
+        );
       if (sorted.length > 0) {
         const prev = sorted[0].metrics;
         delta = {};

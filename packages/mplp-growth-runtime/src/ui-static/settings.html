@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - MPLP Growth Cockpit</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="sidebar">
+      <div class="brand">🚀 MPLP Growth</div>
+      <ul class="nav-links">
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="queue.html">Queue</a></li>
+        <li><a href="settings.html" class="active">Settings</a></li>
+      </ul>
+    </div>
+
+    <div class="main-content">
+      <header>
+        <h1>Settings</h1>
+      </header>
+
+      <div class="card">
+        <h3>Runner Configuration</h3>
+        <p>Runner toggle and Policy settings coming soon.</p>
+        <p>Current Policy: <span style="color: var(--accent-color)">Safe Mode</span></p>
+        <!-- TODO: Add toggle switch wired to POST /api/runner/toggle -->
+      </div>
+
+      <div class="card" style="margin-top: 20px">
+        <h3>System Info</h3>
+        <p>Runtime v0.4.0</p>
+        <p>API Endpoint: /api</p>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

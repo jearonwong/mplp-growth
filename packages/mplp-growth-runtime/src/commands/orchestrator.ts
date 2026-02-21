@@ -26,7 +26,7 @@ import { InMemoryPSG } from "../psg/in-memory-psg";
 import { FileVSL } from "../vsl/file-vsl";
 import { runWeeklyBrief } from "../workflows/wf01-weekly-brief";
 import { runContentFactory, type ContentFactoryInput } from "../workflows/wf02-content-factory";
-import { runPublishPack, type PublishPackInput } from "../workflows/wf03-publish-pack";
+import { runPublishPack } from "../workflows/wf03-publish-pack";
 import { runInboxHandler, type InboxHandlerInput } from "../workflows/wf04-inbox-handler";
 import { transitionInteraction } from "../workflows/wf04-inbox-handler";
 import { runWeeklyReview } from "../workflows/wf05-weekly-review";
@@ -44,7 +44,6 @@ import {
   formatBatchOutreachCard,
   formatErrorCard,
   renderCardToMarkdown,
-  type CommandCard,
 } from "./cards";
 
 /** Command orchestrator state */

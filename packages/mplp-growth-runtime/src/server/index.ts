@@ -6,7 +6,6 @@
 import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import type { Confirm, Plan, PlanStep } from "../modules/mplp-modules.js";
 import type { ContentAssetNode, InteractionNode } from "../psg/growth-nodes.js";
 import type { PSGNode } from "../psg/types.js";
@@ -20,7 +19,7 @@ import {
   runWeeklyReview,
   runAutoPublish,
 } from "../runner/tasks.js";
-import { ExecuteResponse, QueueItem, QueueResponse, RunnerStatusResponse } from "./json-schema.js";
+import { ExecuteResponse, QueueItem, QueueResponse } from "./json-schema.js";
 
 // __dirname is natively available in CJS.
 // Or better: const uiRoot = path.join(process.cwd(), "packages/mplp-growth-runtime/src/ui-static");
@@ -66,11 +65,11 @@ server.post<{
   };
 }>("/api/runner/config", async (request, reply) => {
   try {
-    runnerState.setConfig(request.body as any);
+    runnerState.setConfig(request.body as unknown as Parameters<typeof runnerState.setConfig>[0]);
     return { ok: true };
-  } catch (err: any) {
+  } catch (err: unknown) {
     reply.status(400);
-    return { ok: false, error: err.message };
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
 });
 
@@ -115,11 +114,11 @@ server.post<{ Body: { task_id: string } }>("/api/runner/execute", async (request
         duration_ms: Date.now() - startTime,
       });
     })
-    .catch((err: any) => {
+    .catch((err: unknown) => {
       console.error(`[Manual Trigger] ${task_id} failed:`, err);
       runnerState.releaseLock(task_id, {
         status: "failed",
-        error: err.message,
+        error: err instanceof Error ? err.message : String(err),
         duration_ms: Date.now() - startTime,
       });
     });
@@ -130,7 +129,7 @@ server.post<{ Body: { task_id: string } }>("/api/runner/execute", async (request
 // Execute Command (Placeholder for Orchestrator integration in Phase 2)
 server.post<{ Body: { command: string; args: string[] }; Reply: ExecuteResponse }>(
   "/api/cmd/execute",
-  async (request, reply) => {
+  async (request, _reply) => {
     const { command, args } = request.body;
     try {
       const output = await executeCommand(command, args);
@@ -140,15 +139,15 @@ server.post<{ Body: { command: string; args: string[] }; Reply: ExecuteResponse 
         run_id: "run-" + Date.now(),
         outputs: output,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         ok: false,
         command: `${command} ${args.join(" ")}`,
         run_id: "run-" + Date.now(),
         outputs: "",
         error: {
-          code: "internal",
-          message: err.message,
+          code: "internal" as const,
+          message: err instanceof Error ? err.message : String(err),
         },
       };
     }
@@ -336,7 +335,7 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
 // Approve Confirm
 server.post<{ Params: { id: string }; Reply: ExecuteResponse }>(
   "/api/queue/:id/approve",
-  async (request, reply) => {
+  async (request, _reply) => {
     const { id } = request.params;
     try {
       const output = await executeCommand("approve", [id]);
@@ -346,15 +345,15 @@ server.post<{ Params: { id: string }; Reply: ExecuteResponse }>(
         run_id: "run-" + Date.now(),
         outputs: output,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         ok: false,
         command: `approve ${id}`,
         run_id: "run-" + Date.now(),
         outputs: "",
         error: {
-          code: "internal",
-          message: err.message,
+          code: "internal" as const,
+          message: err instanceof Error ? err.message : String(err),
         },
       };
     }
@@ -364,11 +363,11 @@ server.post<{ Params: { id: string }; Reply: ExecuteResponse }>(
 // Reject Confirm (Direct PSG Update)
 server.post<{ Params: { id: string }; Reply: ExecuteResponse }>(
   "/api/queue/:id/reject",
-  async (request, reply) => {
+  async (request, _reply) => {
     const { id } = request.params;
     try {
       const { psg } = await getRuntime();
-      const confirm = await psg.getNode<any>("domain:Confirm", id);
+      const confirm = await psg.getNode<Confirm & PSGNode>("Confirm", id);
 
       if (!confirm) {
         return {
@@ -389,15 +388,15 @@ server.post<{ Params: { id: string }; Reply: ExecuteResponse }>(
         run_id: "run-" + Date.now(),
         outputs: `Confirm ${id} rejected.`,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         ok: false,
         command: `reject ${id}`,
         run_id: "run-" + Date.now(),
         outputs: "",
         error: {
-          code: "internal",
-          message: err.message,
+          code: "internal" as const,
+          message: err instanceof Error ? err.message : String(err),
         },
       };
     }

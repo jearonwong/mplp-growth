@@ -1,0 +1,19 @@
+{
+  "type": "Trace",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T11:48:23.161Z",
+    "updated_at": "2026-02-21T11:48:23.161Z"
+  },
+  "trace_id": "57e43da3-b2e2-40be-b9b9-4e962ecaa0fc",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "root_span": {
+    "span_id": "a92189ff-96d7-4e43-a8c9-21c2909a52d6",
+    "name": "WF-05 Weekly Review",
+    "started_at": "2026-02-21T11:48:23.161Z",
+    "finished_at": "2026-02-21T11:48:23.161Z"
+  },
+  "status": "completed",
+  "plan_id": "5463a2db-f986-48e5-925a-4f4561edf2ce",
+  "started_at": "2026-02-21T11:48:23.161Z"
+}

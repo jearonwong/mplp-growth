@@ -1,0 +1,12 @@
+{
+  "type": "domain:ContentAsset",
+  "id": "c0b8eb5d-b1be-43d6-84e2-867cef0df508",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "asset_type": "article",
+  "status": "reviewed",
+  "title": "Weekly Review — 2026-02-16",
+  "content": "# Weekly Review — 2026-02-16\n\n## Metrics\n- Plans: 2\n- Traces: 2\n- Assets published: 0 / 4\n- Interactions: 1 responded / 8 total\n- Confirms: 1 approved / 2 total\n\n## Suggestions\n- No content published this week — consider running /create and /publish\n- 7 interactions pending — run /inbox to process\n- 3 drafts queued — review and publish or archive\n\n## Action Items\n- [P1] `/create thread` — No content published this week\n- [P2] `/inbox` — 7 interactions pending\n- [P3] `/publish --latest x` — 3 drafts queued",
+  "platform_variants": {},
+  "created_at": "2026-02-21T11:48:23.160Z",
+  "metadata": {}
+}

@@ -1,0 +1,18 @@
+{
+  "type": "Trace",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T11:46:25.758Z",
+    "updated_at": "2026-02-21T11:46:25.758Z"
+  },
+  "trace_id": "3218ae86-f130-4e36-bae7-733589405cfd",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "root_span": {
+    "span_id": "7afb10e4-8ceb-43cd-82f3-3e2d0aee46dc",
+    "name": "WF-04 Inbox Handler",
+    "started_at": "2026-02-21T11:46:25.758Z"
+  },
+  "status": "running",
+  "plan_id": "081d3b24-e5b3-4f01-9472-f79d37d3abdb",
+  "started_at": "2026-02-21T11:46:25.758Z"
+}

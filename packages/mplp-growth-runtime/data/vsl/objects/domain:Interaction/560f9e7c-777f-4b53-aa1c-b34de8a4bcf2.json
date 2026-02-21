@@ -1,0 +1,12 @@
+{
+  "type": "domain:Interaction",
+  "id": "560f9e7c-777f-4b53-aa1c-b34de8a4bcf2",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "platform": "hn",
+  "status": "pending",
+  "content": "&gt;IMO the security pitchforking on OpenClaw is just so overdone.<p>Isn&#x27;t the whole selling point of OpenClaw that you give it valuable (personal) data to work on, which would typically also be processed by 3rd party LLMs?<p>The security and privacy implications are massive. The only way to use it &quot;safely&quot; is by not giving it much of value. Maybe for some open source project where everything is public anyway, but then why does it need to take over the whole device?",
+  "author": "whyoh",
+  "source_ref": "https://news.ycombinator.com/item?id=47099160",
+  "received_at": "2026-02-21T11:46:25.747Z",
+  "response": "Thank you for your message about \"&gt;IMO the security pitchforking on OpenClaw is j\". We appreciate your engagement with MPLP."
+}

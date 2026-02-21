@@ -1,0 +1,28 @@
+{
+  "type": "domain:ChannelProfile",
+  "id": "8e779569-2cdb-41f3-813e-df83b43b1c9a",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "platform": "youtube",
+  "status": "active",
+  "format_rules": {
+    "video_length": "8-15 minutes",
+    "structure": "Hook (15s) → Agenda → Content → Recap → CTA",
+    "thumbnail_style": "Clean, minimal, protocol branding",
+    "chapters_required": true,
+    "description_links": ["docs", "lab", "repo"],
+    "forbidden": [
+      "certification",
+      "certified",
+      "compliance certified",
+      "MPLP certified",
+      "endorsed by",
+      "approved by",
+      "framework",
+      "product",
+      "platform",
+      "guaranteed",
+      "ensures safety",
+      "100% compliant"
+    ]
+  }
+}

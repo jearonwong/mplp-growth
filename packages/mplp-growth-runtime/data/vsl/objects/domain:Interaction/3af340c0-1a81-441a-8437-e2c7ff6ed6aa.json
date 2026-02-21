@@ -1,0 +1,12 @@
+{
+  "type": "domain:Interaction",
+  "id": "3af340c0-1a81-441a-8437-e2c7ff6ed6aa",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "platform": "manual",
+  "status": "pending",
+  "content": "Saw MPLP mentioned; can you share a 1-pager?",
+  "author": "@demo_user",
+  "source_ref": "manual://rc2/1",
+  "received_at": "2026-02-21T11:46:25.745Z",
+  "response": "Thank you for your message about \"Saw MPLP mentioned; can you share a 1-pager?\". We appreciate your engagement with MPLP."
+}

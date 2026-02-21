@@ -1,0 +1,29 @@
+{
+  "type": "domain:ChannelProfile",
+  "id": "3567cee5-3d61-4359-b5d7-358316787139",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "platform": "medium",
+  "status": "active",
+  "format_rules": {
+    "min_words": 800,
+    "max_words": 2500,
+    "structure": "Intro → Problem → MPLP approach → Code/Diagram → Conclusion",
+    "use_code_blocks": true,
+    "use_mermaid": true,
+    "cross_post_to": ["dev.to", "hashnode"],
+    "forbidden": [
+      "certification",
+      "certified",
+      "compliance certified",
+      "MPLP certified",
+      "endorsed by",
+      "approved by",
+      "framework",
+      "product",
+      "platform",
+      "guaranteed",
+      "ensures safety",
+      "100% compliant"
+    ]
+  }
+}

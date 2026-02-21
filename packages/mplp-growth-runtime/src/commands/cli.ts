@@ -18,6 +18,7 @@
 
 import { version } from "../../package.json";
 import { runnerDaemon } from "../runner/daemon.js";
+import { seed } from "../seed.js";
 import { startServer } from "../server/index.js";
 import {
   cmdBrief,
@@ -87,8 +88,11 @@ Examples:
     case "approve":
       output = await cmdApprove(args);
       break;
+    case "seed":
+      await seed();
+      return;
     case "serve":
-      console.log("Starting v0.4.0 Growth Ops Cockpit...");
+      console.log(`Starting v${version} Growth Ops Cockpit...`);
       runnerDaemon.start();
       await startServer(3000);
       return;

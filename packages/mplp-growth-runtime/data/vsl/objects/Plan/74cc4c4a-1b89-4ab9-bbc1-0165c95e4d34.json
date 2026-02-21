@@ -1,0 +1,36 @@
+{
+  "type": "Plan",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T12:00:02.268Z",
+    "updated_at": "2026-02-21T12:00:02.268Z"
+  },
+  "plan_id": "74cc4c4a-1b89-4ab9-bbc1-0165c95e4d34",
+  "context_id": "4195b7c3-91b7-4bd8-84dc-b109c9ffb63e",
+  "title": "Inbox Handler — 1 interactions",
+  "objective": "Process 1 incoming interactions, generate draft replies, and await confirmation",
+  "status": "draft",
+  "steps": [
+    {
+      "description": "Ingest interactions into PSG",
+      "status": "completed",
+      "action": "create",
+      "step_id": "25a1a369-9353-4209-a6c1-b15f5aae52bf",
+      "order_index": 0
+    },
+    {
+      "description": "Generate draft replies",
+      "status": "completed",
+      "action": "update",
+      "step_id": "2509178a-e91a-45a0-99d1-0dd3a62d1aae",
+      "order_index": 1
+    },
+    {
+      "description": "Confirm batch response",
+      "status": "pending",
+      "action": "update",
+      "step_id": "0ea7cabb-600a-4aa6-9400-a5687f664c34",
+      "order_index": 2
+    }
+  ]
+}

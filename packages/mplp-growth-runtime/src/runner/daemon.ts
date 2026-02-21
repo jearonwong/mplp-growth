@@ -24,7 +24,8 @@ export class RunnerDaemon {
 
   start() {
     console.log(`[Runner] v${version} Starting daemon...`);
-    runnerState.setConfig({ runner_enabled: true });
+    // Runner enabled state is controlled by ENV (RUNNER_ENABLED) or API
+    // Do NOT force-enable here — respect the configured default
 
     // Monday 09:00 - Weekly Brief
     this.scheduler.register("0 9 * * 1", "weekly-brief", runWeeklyBrief);

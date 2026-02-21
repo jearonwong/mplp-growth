@@ -101,6 +101,7 @@ h1 {
   border-radius: 50%;
   background-color: var(--danger-color);
 }
+
 .dot.active {
   background-color: var(--success-color);
 }
@@ -191,6 +192,7 @@ h1 {
   font-weight: 600;
   transition: opacity 0.2s;
 }
+
 .btn:hover {
   opacity: 0.9;
 }
@@ -199,14 +201,17 @@ h1 {
   background-color: var(--accent-color);
   color: white;
 }
+
 .btn-success {
   background-color: var(--success-color);
   color: white;
 }
+
 .btn-danger {
   background-color: var(--danger-color);
   color: white;
 }
+
 .btn-secondary {
   background-color: var(--border-color);
   color: var(--text-secondary);
@@ -215,4 +220,47 @@ h1 {
 /* Utilities */
 .hidden {
   display: none;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 30px;
+  width: 500px;
+  max-width: 90vw;
+}
+
+.impact-section {
+  margin-top: 20px;
+}
+
+.impact-section ul {
+  padding-left: 20px;
+  margin-top: 8px;
+}
+
+.impact-section li {
+  margin-bottom: 5px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
 }

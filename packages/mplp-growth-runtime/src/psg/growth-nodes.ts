@@ -126,6 +126,7 @@ export interface InteractionNode {
   status: "pending" | "responded" | "archived";
   content: string;
   author?: string;
+  source_ref?: string;
   response?: string;
   received_at: string;
   responded_at?: string;
@@ -136,6 +137,7 @@ export interface CreateInteractionInput {
   platform: string;
   content: string;
   author?: string;
+  source_ref?: string;
 }
 
 export function createInteraction(input: CreateInteractionInput): InteractionNode {
@@ -147,6 +149,7 @@ export function createInteraction(input: CreateInteractionInput): InteractionNod
     status: "pending",
     content: input.content,
     author: input.author,
+    source_ref: input.source_ref,
     received_at: new Date().toISOString(),
   };
 }

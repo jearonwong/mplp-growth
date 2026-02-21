@@ -18,6 +18,7 @@
     "build": "tsc",
     "cli": "npx tsx src/commands/cli.ts",
     "seed": "npx tsx src/seed.ts",
+    "start": "npx tsx src/server/index.ts",
     "test": "vitest run",
     "test:all": "vitest run",
     "test:phase2": "vitest run src/phase2-gates.test.ts",

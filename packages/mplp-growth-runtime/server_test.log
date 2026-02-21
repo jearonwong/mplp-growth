@@ -1,0 +1,6 @@
+{"level":30,"time":1771641061753,"pid":11905,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://127.0.0.1:3000"}
+[Server] Listening on http://localhost:3000
+{"level":30,"time":1771641061754,"pid":11905,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://192.168.2.219:3000"}
+{"level":30,"time":1771641061754,"pid":11905,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://10.9.56.139:3000"}
+{"level":30,"time":1771641066232,"pid":11905,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"GET","url":"/api/runner/status","host":"localhost:3000","remoteAddress":"127.0.0.1","remotePort":55917},"msg":"incoming request"}
+{"level":30,"time":1771641066234,"pid":11905,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":1.5876669883728027,"msg":"request completed"}

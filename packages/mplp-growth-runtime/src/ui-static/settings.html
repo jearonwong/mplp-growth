@@ -44,6 +44,39 @@
       </div>
 
       <div class="card" style="margin-top: 20px">
+        <h3>Background Jobs</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px">
+          Manage the automated lifecycle tasks and scheduled triggers.
+        </p>
+        <div style="overflow-x: auto">
+          <table
+            class="data-table"
+            style="width: 100%; text-align: left; border-collapse: collapse"
+          >
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color)">
+                <th style="padding: 10px">Job ID</th>
+                <th style="padding: 10px">Schedule</th>
+                <th style="padding: 10px">Status</th>
+                <th style="padding: 10px">Next Run</th>
+                <th style="padding: 10px">Action</th>
+              </tr>
+            </thead>
+            <tbody id="jobs-table-body">
+              <tr>
+                <td
+                  colspan="5"
+                  style="padding: 15px; text-align: center; color: var(--text-secondary)"
+                >
+                  Loading jobs...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 20px">
         <h3>System Info</h3>
         <p>Runtime v0.4.1</p>
         <p>API Endpoint: /api</p>

@@ -26,6 +26,32 @@
       <div id="queue-list" class="queue-list">
         <div class="card" style="text-align: center">Loading queue...</div>
       </div>
+      <div id="impact-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+          <h2 style="margin-top: 0">Approval Impact</h2>
+          <div style="margin-top: 10px; margin-bottom: 10px">
+            <span id="impact-badge" class="badge"></span>
+          </div>
+          <p id="impact-summary" style="color: var(--text-secondary)"></p>
+
+          <div class="impact-section">
+            <h4 style="color: var(--success-color); margin-bottom: 0">✓ Will Execute</h4>
+            <ul id="impact-will-change"></ul>
+          </div>
+
+          <div class="impact-section">
+            <h4 style="color: var(--danger-color); margin-bottom: 0">✗ Will NOT Do</h4>
+            <ul id="impact-will-not"></ul>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="app.handlers.closeImpactModal()">
+              Cancel
+            </button>
+            <button class="btn btn-success" id="impact-confirm-btn">Confirm Approval</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="app.js"></script>

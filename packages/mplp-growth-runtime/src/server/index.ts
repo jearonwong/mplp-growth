@@ -258,10 +258,9 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
           category = "inbox";
           policy_check = { status: "pass", reasons: ["Responses generated safely"] };
           impact_level = "medium";
-          impact_summary =
-            "Draft responses will be staged for manual dispatch or automatic mailing.";
+          impact_summary = "Draft responses will be prepared for manual approval/export.";
           will_change = ["Interaction pending→responded"];
-          will_not_do = ["Will NOT send messages without further external tool review"];
+          will_not_do = ["Will NOT send messages automatically"];
         } else if (stepDescs.includes("review") || stepDescs.includes("Weekly")) {
           category = "review";
           asset_id = plan.steps[0]?.reference_id;

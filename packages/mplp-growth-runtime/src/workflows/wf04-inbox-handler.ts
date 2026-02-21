@@ -14,7 +14,7 @@
 
 import { v4 as uuidv4 } from "uuid";
 import type { EventEmitter } from "../glue/event-emitter";
-import type { ProjectSemanticGraph } from "../psg/types";
+import type { ProjectSemanticGraph, PSGNode } from "../psg/types";
 import type { ValueStateLayer } from "../vsl/types";
 import {
   createPlan,
@@ -83,6 +83,17 @@ export async function runInboxHandler(
     const interactionNodes: InteractionNode[] = [];
 
     for (const interactionInput of input.interactions) {
+      // FIX-A-2: Primary dedup — skip if source_ref already exists in PSG
+      if (interactionInput.source_ref) {
+        const existing = await ctx.psg.query<InteractionNode>({
+          type: "domain:Interaction",
+          filter: { source_ref: interactionInput.source_ref },
+        });
+        if (existing.length > 0) {
+          continue; // Already ingested, skip
+        }
+      }
+
       const node = createInteraction({
         context_id: input.context_id,
         platform: interactionInput.platform,
@@ -140,7 +151,7 @@ export async function runInboxHandler(
     plan.steps[1].status = "completed";
     plan.steps[2].status = "pending"; // Awaiting confirmation
 
-    await ctx.psg.putNode(plan as any);
+    await ctx.psg.putNode(plan as unknown as PSGNode);
     graphUpdateCount++;
 
     // Create Trace
@@ -150,7 +161,7 @@ export async function runInboxHandler(
       root_span_name: "WF-04 Inbox Handler",
     });
     trace.status = "running";
-    await ctx.psg.putNode(trace as any);
+    await ctx.psg.putNode(trace as unknown as PSGNode);
     graphUpdateCount++;
 
     // Create Confirm — target_type='plan' per SSOT (FIX-1)
@@ -159,7 +170,7 @@ export async function runInboxHandler(
       target_id: plan.plan_id,
       requested_by_role: "growth-copilot",
     });
-    await ctx.psg.putNode(confirm as any);
+    await ctx.psg.putNode(confirm as unknown as PSGNode);
     graphUpdateCount++;
 
     await emitStage(stage3Id, "confirm_responses", "completed", 2);

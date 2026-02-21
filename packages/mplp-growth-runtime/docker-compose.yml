@@ -1,13 +1,35 @@
-version: "3.8"
+# ============================================================================
+# MPLP Growth Runtime — Docker Compose (One-Click Deploy)
+#
+# Usage:
+#   docker compose up -d          # Start in background
+#   docker compose logs -f        # Follow logs
+#   docker compose down           # Stop
+#
+# Data persists via bind mount ./data → /data inside container.
+# Runner starts DISABLED by default — enable via ENV override:
+#   RUNNER_ENABLED=true docker compose up -d
+# ============================================================================
 
 services:
   mplp-growth:
     build: .
+    container_name: mplp-growth-runtime
     ports:
       - "3000:3000"
     volumes:
-      - mplp_data:/data
+      - ./data:/data
+    environment:
+      - MPLP_GROWTH_STATE_DIR=/data
+      # Runner disabled by default — founder enables explicitly
+      - RUNNER_ENABLED=${RUNNER_ENABLED:-false}
+      - POLICY_LEVEL=${POLICY_LEVEL:-safe}
+      - AUTO_PUBLISH=${AUTO_PUBLISH:-false}
+      - NODE_ENV=production
     restart: unless-stopped
-
-volumes:
-  mplp_data:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3

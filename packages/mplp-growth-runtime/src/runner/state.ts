@@ -38,9 +38,9 @@ export interface UnifiedRunnerState
 
 export class StateManager {
   private config: RunnerConfig = {
-    runner_enabled: false,
-    policy_level: "safe", // Default safe
-    auto_publish: false,
+    runner_enabled: process.env.RUNNER_ENABLED === "true",
+    policy_level: (process.env.POLICY_LEVEL as RunnerConfig["policy_level"]) || "safe",
+    auto_publish: process.env.AUTO_PUBLISH === "true",
     jobs: {
       brief: { enabled: true, schedule_cron: "0 9 * * 1" }, // Monday 9am
       "outreach-draft": { enabled: true, schedule_cron: "0 10 * * *" }, // Daily 10am

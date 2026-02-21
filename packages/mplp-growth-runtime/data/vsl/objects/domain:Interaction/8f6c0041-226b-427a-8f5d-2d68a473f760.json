@@ -1,0 +1,12 @@
+{
+  "type": "domain:Interaction",
+  "id": "8f6c0041-226b-427a-8f5d-2d68a473f760",
+  "context_id": "4195b7c3-91b7-4bd8-84dc-b109c9ffb63e",
+  "platform": "hn",
+  "status": "pending",
+  "content": "I&#x27;m currently building a full MAC application to install HomeBrew, Node, LM Studio, an adapted LLM, and OpenClaw locally.<p>WIP V1 is done, but I want a one-click solution",
+  "author": "CDieumegard",
+  "source_ref": "https://news.ycombinator.com/item?id=46999891",
+  "received_at": "2026-02-21T12:28:45.964Z",
+  "response": "Thank you for your message about \"I&#x27;m currently building a full MAC application\". We appreciate your engagement with MPLP."
+}

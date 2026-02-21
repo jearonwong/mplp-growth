@@ -1,0 +1,34 @@
+{
+  "type": "Extension",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T12:28:06.567Z",
+    "updated_at": "2026-02-21T12:28:06.567Z"
+  },
+  "extension_id": "26f55379-53fb-45c4-9d4d-7df9bd548f9b",
+  "context_id": "28222c5b-c4c0-43b4-ac0b-a05acf8f8658",
+  "name": "outreach-policy-default",
+  "extension_type": "policy",
+  "version": "1.0.0",
+  "status": "active",
+  "config": {
+    "require_confirm": true,
+    "forbidden_patterns": [
+      "certification",
+      "certified",
+      "compliance certified",
+      "MPLP certified",
+      "endorsed by",
+      "approved by",
+      "framework",
+      "product",
+      "platform",
+      "guaranteed",
+      "ensures safety",
+      "100% compliant"
+    ],
+    "required_links": ["https://mplp.io"],
+    "tone_default": "professional",
+    "max_follow_ups": 3
+  }
+}

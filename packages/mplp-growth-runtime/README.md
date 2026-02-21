@@ -31,8 +31,8 @@ open http://localhost:3000
 # 3. Verify it's running
 curl -s http://localhost:3000/api/health
 
-# 4. Seed ground truth data (first run only)
-docker exec mplp-growth-runtime node dist/commands/cli.js seed
+# 4. Initialize Data (first run only)
+# Open http://localhost:3000 -> Settings -> click "🌱 Seed Now"
 ```
 
 ## Founder Daily Flow (4 Steps)
@@ -98,11 +98,14 @@ Override defaults in `docker-compose.yml` or at deploy time:
 RUNNER_ENABLED=true POLICY_LEVEL=standard docker compose up -d
 ```
 
-| Variable         | Default | Options                            |
-| ---------------- | ------- | ---------------------------------- |
-| `RUNNER_ENABLED` | `false` | `true` / `false`                   |
-| `POLICY_LEVEL`   | `safe`  | `safe` / `standard` / `aggressive` |
-| `AUTO_PUBLISH`   | `false` | `true` / `false`                   |
+| Variable         | Default                    | Options                            |
+| ---------------- | -------------------------- | ---------------------------------- |
+| `RUNNER_ENABLED` | `false`                    | `true` / `false`                   |
+| `POLICY_LEVEL`   | `safe`                     | `safe` / `standard` / `aggressive` |
+| `AUTO_PUBLISH`   | `false`                    | `true` / `false`                   |
+| `HN_KEYWORDS`    | `opensource,mplp,openclaw` | Comma-separated strings            |
+
+_Note: You can also configure HackerNews keywords persistently by creating `./data/config.json` with `{"hn_keywords": ["..."]}`._
 
 ## License
 

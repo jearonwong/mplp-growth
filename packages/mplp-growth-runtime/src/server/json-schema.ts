@@ -41,6 +41,13 @@ export interface QueueItem {
     content: string;
     response?: string;
   }[];
+  interactions_count?: number;
+  interaction_summaries?: {
+    platform: string;
+    author: string;
+    excerpt: string;
+    source_ref?: string;
+  }[];
 }
 
 export interface QueueResponse {

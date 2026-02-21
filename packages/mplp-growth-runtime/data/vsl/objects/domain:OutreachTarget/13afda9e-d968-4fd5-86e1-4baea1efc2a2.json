@@ -1,0 +1,9 @@
+{
+  "type": "domain:OutreachTarget",
+  "id": "13afda9e-d968-4fd5-86e1-4baea1efc2a2",
+  "context_id": "aee3caec-546c-47af-b137-a752ad520f0a",
+  "name": "CNCF (Cloud Native Computing Foundation)",
+  "org_type": "foundation",
+  "status": "research",
+  "notes": "Cloud-native multi-agent orchestration.\nFocus areas:\n- Kubernetes native multi-agent patterns\n- OpenTelemetry alignment (W3C Trace Context)\n- Observability-first design\n- Vendor-neutral governance model"
+}

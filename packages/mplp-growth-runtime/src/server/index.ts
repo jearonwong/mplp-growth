@@ -7,9 +7,11 @@ import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Confirm, Plan, PlanStep } from "../modules/mplp-modules.js";
+import type { ContentAssetNode, InteractionNode } from "../psg/growth-nodes.js";
+import type { PSGNode } from "../psg/types.js";
 import { version } from "../../package.json";
 import { executeCommand, getRuntime } from "../commands/orchestrator.js";
-import { Plan } from "../modules/mplp-modules.js";
 import { runnerState } from "../runner/state.js";
 import {
   runWeeklyBrief,
@@ -179,8 +181,8 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
   const { psg } = await getRuntime();
 
   // 1. Query pending confirms
-  const confirms = await psg.query<any>({ type: "Confirm" });
-  const pending = confirms.filter((c: any) => c.status === "pending");
+  const confirms = await psg.query<Confirm & PSGNode>({ type: "Confirm" });
+  const pending = confirms.filter((c) => c.status === "pending");
 
   const categories: QueueResponse["categories"] = {
     outreach: [],
@@ -204,14 +206,16 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
     let impact_summary = "";
     let will_change: string[] = [];
     let will_not_do: string[] = [];
-    let interactions_data: any[] | undefined = undefined;
+    let interactions_data:
+      | Array<{ platform: string; author: string; content: string; response?: string }>
+      | undefined = undefined;
 
     if (c.target_id) {
-      plan = await psg.getNode<any>("Plan", c.target_id);
+      plan = await psg.getNode<Plan & PSGNode>("Plan", c.target_id);
 
       if (plan) {
         title = plan.title || title;
-        const stepDescs = (plan.steps || []).map((s: any) => s.description || "").join(" ");
+        const stepDescs = (plan.steps || []).map((s: PlanStep) => s.description || "").join(" ");
         if (
           stepDescs.includes("outreach") ||
           (stepDescs.includes("Draft") && stepDescs.includes("Policy compliance"))
@@ -267,20 +271,20 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
     }
 
     if (asset_id) {
-      const asset = await psg.getNode<any>("domain:ContentAsset", asset_id);
+      const asset = await psg.getNode<ContentAssetNode>("domain:ContentAsset", asset_id);
       if (asset && asset.content) {
         const lines = asset.content.split("\n");
         const previewLines = lines.slice(0, 20).join("\n");
         preview = previewLines.length > 800 ? previewLines.substring(0, 800) + "..." : previewLines;
       }
     } else if (category === "inbox") {
-      const pendingInteractions = await psg.query<any>({
+      const pendingInteractions = await psg.query<InteractionNode>({
         type: "domain:Interaction",
         filter: { status: "pending" },
       });
       if (pendingInteractions.length > 0) {
         preview = "Inbox interactions ready for review.";
-        interactions_data = pendingInteractions.map((i: any) => ({
+        interactions_data = pendingInteractions.map((i) => ({
           platform: i.platform || "unknown",
           author: i.author || "anonymous",
           content: i.content,

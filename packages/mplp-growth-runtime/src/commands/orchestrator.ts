@@ -12,13 +12,14 @@
 import os from "node:os";
 import path from "node:path";
 import { v4 as uuidv4 } from "uuid";
-import type { Context, Confirm } from "../modules/mplp-modules";
+import type { Context, Confirm, Plan, PlanStep, Trace } from "../modules/mplp-modules";
 import type {
   ChannelProfileNode,
   ContentAssetNode,
   OutreachTargetNode,
   InteractionNode,
 } from "../psg/growth-nodes";
+import type { PSGNode } from "../psg/types";
 import type { OutreachInput } from "../workflows/types";
 import { EventEmitter } from "../glue/event-emitter";
 import { InMemoryPSG } from "../psg/in-memory-psg";
@@ -94,14 +95,14 @@ async function init(): Promise<OrchestratorState> {
   const psg = new InMemoryPSG({ contextId }, vsl, eventEmitter);
 
   // Load context into PSG
-  await psg.putNode(context as any);
+  await psg.putNode(context as unknown as PSGNode);
 
   // Load channel profiles
   const channelKeys = await vsl.listKeys("domain:ChannelProfile");
   for (const key of channelKeys) {
     const node = await vsl.get(key);
     if (node) {
-      await psg.putNode(node as any);
+      await psg.putNode(node as unknown as PSGNode);
     }
   }
 
@@ -110,7 +111,7 @@ async function init(): Promise<OrchestratorState> {
   for (const key of assetKeys) {
     const node = await vsl.get(key);
     if (node) {
-      await psg.putNode(node as any);
+      await psg.putNode(node as unknown as PSGNode);
     }
   }
 
@@ -119,7 +120,7 @@ async function init(): Promise<OrchestratorState> {
   for (const key of interactionKeys) {
     const node = await vsl.get(key);
     if (node) {
-      await psg.putNode(node as any);
+      await psg.putNode(node as unknown as PSGNode);
     }
   }
 
@@ -128,7 +129,7 @@ async function init(): Promise<OrchestratorState> {
   for (const key of targetKeys) {
     const node = await vsl.get(key);
     if (node) {
-      await psg.putNode(node as any);
+      await psg.putNode(node as unknown as PSGNode);
     }
   }
 
@@ -137,7 +138,7 @@ async function init(): Promise<OrchestratorState> {
   for (const key of extensionKeys) {
     const node = await vsl.get(key);
     if (node) {
-      await psg.putNode(node as any);
+      await psg.putNode(node as unknown as PSGNode);
     }
   }
 
@@ -146,7 +147,7 @@ async function init(): Promise<OrchestratorState> {
   for (const key of confirmKeys) {
     const node = await vsl.get(key);
     if (node) {
-      await psg.putNode(node as any);
+      await psg.putNode(node as unknown as PSGNode);
     }
   }
 
@@ -238,8 +239,8 @@ export async function cmdCreate(args: string[]): Promise<string> {
         title: clonedTitle,
         content: clonedContent,
       });
-      (newAsset as any).template_id = templateId;
-      (newAsset as any).is_template = false;
+      (newAsset as unknown as Record<string, unknown>).template_id = templateId;
+      (newAsset as unknown as Record<string, unknown>).is_template = false;
       newAsset.platform_variants = { ...templateAsset.platform_variants };
       await psg.putNode(newAsset);
 
@@ -248,8 +249,8 @@ export async function cmdCreate(args: string[]): Promise<string> {
           run_id: `template-clone-${newAsset.id.slice(0, 8)}`,
           workflow_id: "WF-02",
           success: true,
-          plan: {} as any,
-          trace: {} as any,
+          plan: {} as unknown as Plan,
+          trace: {} as unknown as Trace,
           outputs: {
             asset_id: newAsset.id,
             asset_type: newAsset.asset_type,
@@ -621,7 +622,7 @@ export async function cmdOutreach(args: string[]): Promise<string> {
       });
 
       const targets = eligible.slice(0, limit);
-      const skippedCount = allTargets.length - eligible.length;
+      const _skippedCount = allTargets.length - eligible.length;
 
       if (targets.length === 0) {
         return renderCardToMarkdown(
@@ -707,26 +708,28 @@ export async function cmdOutreach(args: string[]): Promise<string> {
  */
 export async function cmdApprove(args: string[]): Promise<string> {
   try {
-    const { psg, vsl, eventEmitter } = await init();
+    const { psg } = await init();
 
     // v0.3.0: --list mode — group by plan category
     if (args[0] === "--list") {
-      const allConfirms = await psg.query<any>({
+      const allConfirms = await psg.query<Confirm & PSGNode>({
         type: "Confirm",
       });
-      const pending = allConfirms.filter((c: any) => c.status === "pending");
+      const pending = allConfirms.filter((c) => c.status === "pending");
 
       // Classify each confirm by loading its linked Plan
       const classified: Array<{ confirm_id: string; category: string; status: string }> = [];
       for (const c of pending) {
         let category = "other";
         if (c.target_id) {
-          const plans = await psg.query<any>({
+          const plans = await psg.query<Plan & PSGNode>({
             type: "Plan",
             filter: { plan_id: c.target_id },
           });
           if (plans.length > 0) {
-            const stepDescs = (plans[0].steps || []).map((s: any) => s.description || "").join(" ");
+            const stepDescs = (plans[0].steps || [])
+              .map((s: PlanStep) => s.description || "")
+              .join(" ");
             if (
               stepDescs.includes("outreach") ||
               (stepDescs.includes("Draft") && stepDescs.includes("Policy compliance"))
@@ -758,10 +761,10 @@ export async function cmdApprove(args: string[]): Promise<string> {
 
     // v0.3.0: --all mode (batch approve with failure isolation)
     if (args[0] === "--all") {
-      const allConfirms = await psg.query<any>({
+      const allConfirms = await psg.query<Confirm & PSGNode>({
         type: "Confirm",
       });
-      const pending = allConfirms.filter((c: any) => c.status === "pending");
+      const pending = allConfirms.filter((c) => c.status === "pending");
 
       if (pending.length === 0) {
         return renderCardToMarkdown(formatErrorCard("Approve", "No pending confirms to approve"));
@@ -791,7 +794,7 @@ export async function cmdApprove(args: string[]): Promise<string> {
               },
             ],
           };
-          await psg.putNode(approved as any);
+          await psg.putNode(approved as unknown as PSGNode);
 
           // Side-effects: transition drafted OTs to contacted
           const targets = await psg.query<OutreachTargetNode>({
@@ -847,7 +850,7 @@ export async function cmdApprove(args: string[]): Promise<string> {
     }
 
     // Find the Confirm
-    const confirms = await psg.query<any>({
+    const confirms = await psg.query<Confirm & PSGNode>({
       type: "Confirm",
       filter: { confirm_id: confirmId },
     });
@@ -876,7 +879,7 @@ export async function cmdApprove(args: string[]): Promise<string> {
         },
       ],
     };
-    await psg.putNode(approved as any);
+    await psg.putNode(approved as unknown as PSGNode);
 
     // Execute deferred side-effects for the linked plan
     let targetName: string | undefined;

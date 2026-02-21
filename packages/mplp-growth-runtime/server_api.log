@@ -1,1 +1,4 @@
-{"level":50,"time":1771608496035,"pid":99053,"hostname":"JasondeMacBook-Pro.local","err":{"type":"Error","message":"listen EADDRINUSE: address already in use 0.0.0.0:3000","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3000\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)","code":"EADDRINUSE","errno":-48,"syscall":"listen","address":"0.0.0.0","port":3000},"msg":"listen EADDRINUSE: address already in use 0.0.0.0:3000"}
+{"level":30,"time":1771643114934,"pid":20175,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://127.0.0.1:3000"}
+[Server] Listening on http://localhost:3000
+{"level":30,"time":1771643114934,"pid":20175,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://192.168.2.219:3000"}
+{"level":30,"time":1771643114934,"pid":20175,"hostname":"JasondeMacBook-Pro.local","msg":"Server listening at http://10.9.56.139:3000"}

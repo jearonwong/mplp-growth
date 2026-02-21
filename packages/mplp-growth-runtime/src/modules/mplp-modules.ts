@@ -198,6 +198,8 @@ export interface PlanStep {
   // Contract-PLAN-02: Steps are operations, not entities
   action?: "create" | "update" | "format" | "publish" | "outreach";
   target_node_id?: string;
+  /** Reference to a domain node ID produced by this step */
+  reference_id?: string;
 }
 
 export interface Plan {
@@ -331,6 +333,10 @@ export interface Confirm {
   requested_by_role: string;
   requested_at: string;
   decisions?: ConfirmDecision[];
+  /** Human-readable label for queue display */
+  message?: string;
+  /** ISO timestamp when the confirm was created */
+  created_at?: string;
 }
 
 export interface CreateConfirmInput {

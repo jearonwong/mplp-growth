@@ -294,8 +294,8 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
     }
 
     const item: QueueItem = {
-      id: c.id,
-      confirm_id: c.id,
+      id: c.confirm_id,
+      confirm_id: c.confirm_id,
       title,
       preview,
       category,

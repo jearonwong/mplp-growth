@@ -1,0 +1,12 @@
+{
+  "type": "domain:Interaction",
+  "id": "eefa1dd8-5bbc-4182-98b2-5f24e55672b2",
+  "context_id": "4195b7c3-91b7-4bd8-84dc-b109c9ffb63e",
+  "platform": "manual",
+  "status": "pending",
+  "content": "P0.1 test",
+  "author": "@test",
+  "source_ref": "manual://p01/1",
+  "received_at": "2026-02-21T11:55:50.078Z",
+  "response": "Thank you for your message about \"P0.1 test\". We appreciate your engagement with MPLP."
+}

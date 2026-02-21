@@ -1,0 +1,94 @@
+{
+  "type": "Context",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T11:55:47.386Z",
+    "updated_at": "2026-02-21T11:55:47.386Z"
+  },
+  "context_id": "4195b7c3-91b7-4bd8-84dc-b109c9ffb63e",
+  "root": {
+    "domain": "growth",
+    "environment": "production",
+    "brand": {
+      "name": "MPLP (Multi-Agent Lifecycle Protocol)",
+      "tagline": "MPLP — The Agent OS Protocol",
+      "positioning": "Vendor-neutral, observable, governed protocol for multi-agent project orchestration. A specification — not a framework, not a product.",
+      "forbidden_terms": [
+        "certification",
+        "certified",
+        "compliance certified",
+        "MPLP certified",
+        "endorsed by",
+        "approved by",
+        "framework",
+        "product",
+        "platform",
+        "guaranteed",
+        "ensures safety",
+        "100% compliant"
+      ],
+      "links": {
+        "website": "https://mplp.io",
+        "docs": "https://docs.mplp.io",
+        "validation_lab": "https://lab.mplp.io",
+        "repo": "https://github.com/mplp-protocol",
+        "spec": "https://docs.mplp.io/specification"
+      }
+    },
+    "audiences": [
+      {
+        "segment": "developers",
+        "pain_points": [
+          "No standard interface for multi-agent collaboration",
+          "Vendor lock-in with every LLM/agent framework",
+          "Can't trace or debug multi-agent workflows",
+          "No replayable audit trail for agent decisions"
+        ],
+        "value_proposition": "Universal protocol = write once, run on any compliant runtime. W3C-style tracing. Git-like state snapshots.",
+        "cta": "Start with the Quickstart guide"
+      },
+      {
+        "segment": "enterprise",
+        "pain_points": [
+          "AI governance requirements unclear",
+          "Can't prove agent behavior to auditors",
+          "No standard for multi-agent procurement",
+          "Risk of vendor lock-in"
+        ],
+        "value_proposition": "Observable, governed, vendor-neutral. Evidence-first architecture for compliance. Enterprise procurement clarity.",
+        "cta": "Review the Validation Lab evidence"
+      },
+      {
+        "segment": "standards",
+        "pain_points": [
+          "No reference point for multi-agent interop",
+          "Each vendor has proprietary agent interface",
+          "Emerging EU AI Act requirements need standard",
+          "Industry fragmentation"
+        ],
+        "value_proposition": "POSIX-comparable abstraction layer. Constitutional governance model. W3C Trace Context alignment.",
+        "cta": "Read the Protocol Specification"
+      }
+    ],
+    "cadence": {
+      "weekly_rhythm": {
+        "monday": "Review last week metrics, plan content themes",
+        "tuesday_wednesday": "Content creation (thread drafts, articles)",
+        "thursday": "Review and format for platforms",
+        "friday": "Publish pack preparation, outreach follow-ups",
+        "weekend": "Light monitoring, engagement responses"
+      },
+      "content_types": ["thread", "post", "article", "video_script", "outreach_email"],
+      "publish_cadence": {
+        "x_twitter": "2-3 threads/week",
+        "linkedin": "1-2 posts/week",
+        "medium": "1 article/2 weeks",
+        "hn": "Launch posts only (high-risk, confirm required)",
+        "youtube": "Monthly deep-dive"
+      }
+    }
+  },
+  "title": "MPLP Growth Copilot",
+  "status": "active",
+  "owner_role": "growth-agent"
+}

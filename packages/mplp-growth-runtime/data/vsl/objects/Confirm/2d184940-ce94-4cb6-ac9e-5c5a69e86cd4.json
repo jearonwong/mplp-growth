@@ -1,0 +1,23 @@
+{
+  "type": "Confirm",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T11:55:50.085Z",
+    "updated_at": "2026-02-21T11:55:50.085Z"
+  },
+  "confirm_id": "2d184940-ce94-4cb6-ac9e-5c5a69e86cd4",
+  "target_type": "plan",
+  "target_id": "172a06dd-558b-4ef6-8727-20a80c8ee913",
+  "status": "approved",
+  "requested_by_role": "growth-copilot",
+  "requested_at": "2026-02-21T11:55:50.085Z",
+  "decisions": [
+    {
+      "decision_id": "1f8f3de8-96c9-4c7e-b306-7cdb45693314",
+      "status": "approved",
+      "decided_by_role": "user",
+      "decided_at": "2026-02-21T11:56:21.196Z",
+      "reason": "Manually approved via /approve command"
+    }
+  ]
+}

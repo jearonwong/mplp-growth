@@ -1,6 +1,6 @@
 {
   "name": "@openclaw/mplp-growth-runtime",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "MPLP Growth Copilot Runtime - PSG/VSL/AEL kernel for marketing growth",
   "keywords": [
     "ael",

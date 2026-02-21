@@ -1,3 +1,4 @@
+import { loadConfig } from "../config.js";
 import { Connector, InteractionCandidate } from "./index.js";
 
 interface AlgoliaHit {
@@ -35,13 +36,14 @@ export class HNConnector implements Connector {
   // NOT the primary dedup mechanism — PSG source_ref check is (see FIX-A-2).
   private lastFetchTime = 0;
 
-  constructor(private keywords: string[] = ["opensource", "mplp", "openclaw"]) {}
-
   public async pull(): Promise<InteractionCandidate[]> {
+    const config = loadConfig();
+    const keywords = config.hn_keywords;
+
     const candidates: InteractionCandidate[] = [];
     const seenRefs = new Set<string>(); // Prevent intra-pull duplicates across keywords
 
-    for (const keyword of this.keywords) {
+    for (const keyword of keywords) {
       try {
         const url = `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent(keyword)}&tags=comment&hitsPerPage=3`;
         const res = await fetch(url);

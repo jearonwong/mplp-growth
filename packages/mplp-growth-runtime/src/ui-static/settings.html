@@ -77,8 +77,43 @@
       </div>
 
       <div class="card" style="margin-top: 20px">
+        <h3>System Config (P1)</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 5px">
+          HackerNews Keywords (via ENV or config.json)
+        </p>
+        <div
+          id="hn-keywords-display"
+          style="
+            padding: 10px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+          "
+        >
+          Loading...
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 20px">
+        <h3>Initialize Data (P2)</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px">
+          Seed the Graph with ground truth context, channels, and templates. Safe to run multiple
+          times.
+        </p>
+        <button class="btn btn-outline" onclick="app.handlers.seedData(event)" id="seed-btn">
+          🌱 Seed Now
+        </button>
+        <span
+          id="seed-status"
+          style="margin-left: 10px; font-size: 13px; color: var(--text-secondary)"
+        ></span>
+      </div>
+
+      <div class="card" style="margin-top: 20px">
         <h3>System Info</h3>
-        <p>Runtime v0.4.1</p>
+        <p>Runtime v0.5.1</p>
         <p>API Endpoint: /api</p>
       </div>
     </div>

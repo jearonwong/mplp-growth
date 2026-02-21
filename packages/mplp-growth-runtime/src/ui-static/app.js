@@ -88,6 +88,23 @@ function renderQueueItem(item) {
         <span style="font-size:12px">${escapeHtml(policyReasons)}</span>
       </div>
       
+      ${item.category === 'inbox' && item.interactions_count ? `
+      <div style="margin-top:12px; padding:10px; background:var(--bg-color); border:1px solid var(--border-color); border-radius:4px;">
+        <div style="font-size:13px; font-weight:bold; margin-bottom:8px; color:var(--text-secondary)">
+          Inbox: ${item.interactions_count} interactions pending
+        </div>
+        ${(item.interaction_summaries || []).map(s => {
+          let badgeColor = "var(--text-secondary)";
+          if (s.platform === "hn") badgeColor = "#ff6600";
+          if (s.platform === "manual") badgeColor = "var(--accent-color)";
+          return \`<div style="font-size:13px; margin-bottom:6px;">
+            <span class="badge" style="background:\${badgeColor}; margin-right:5px; padding:2px 6px; font-size:10px;">\${s.platform.toUpperCase()}</span>
+            <strong>@\${escapeHtml(s.author)}:</strong> \${escapeHtml(s.excerpt)}
+          </div>\`;
+        }).join('')}
+      </div>
+      ` : ''}
+
       <details style="margin-top:10px; cursor:pointer;">
         <summary style="font-weight:bold; color:var(--accent-color);">Preview Content</summary>
         <div class="queue-data" style="margin-top:8px">
@@ -95,12 +112,12 @@ function renderQueueItem(item) {
              let badgeColor = "var(--text-secondary)";
              if (i.platform === "hn") badgeColor = "#ff6600";
              if (i.platform === "manual") badgeColor = "var(--accent-color)";
-             return \`<div style="margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
-               <span class="badge" style="background:\${badgeColor}; margin-right:5px;">\${(i.platform || "unknown").toUpperCase()}</span>
-               <strong>@\${escapeHtml(i.author || "anonymous")}</strong><br/>
-               <div style="margin-top:4px">\${escapeHtml(i.content)}</div>
-               <div style="margin-top:4px; color:var(--text-secondary); font-style:italic">Draft: "\${escapeHtml(i.response)}"</div>
-             </div>\`;
+             return `<div style="margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+               <span class="badge" style="background:${badgeColor}; margin-right:5px;">${(i.platform || "unknown").toUpperCase()}</span>
+               <strong>@${escapeHtml(i.author || "anonymous")}</strong><br/>
+               <div style="margin-top:4px">${escapeHtml(i.content)}</div>
+               <div style="margin-top:4px; color:var(--text-secondary); font-style:italic">Draft: "${escapeHtml(i.response)}"</div>
+             </div>`;
           }).join("") : escapeHtml(item.preview)}
         </div>
       </details>
@@ -184,6 +201,17 @@ async function initSettings() {
   try {
     const res = await fetch(`${API_BASE}/runner/status`);
     const status = await res.json();
+
+    try {
+      const cRes = await fetch(`${API_BASE}/config`);
+      const configObj = await cRes.json();
+      const hwEl = document.getElementById("hn-keywords-display");
+      if (hwEl) {
+        hwEl.innerText = (configObj.hn_keywords || []).join(", ");
+      }
+    } catch (e) {
+      console.error("Failed to load config", e);
+    }
 
     const policyEl = document.getElementById("policy-display");
     if (policyEl) {
@@ -415,6 +443,36 @@ window.app = {
         }
       } catch(err) {
         alert("API Error executing job");
+      }
+    },
+    seedData: async (event) => {
+      const btn = event.target;
+      const statusSpan = document.getElementById("seed-status");
+      btn.disabled = true;
+      statusSpan.innerText = "Seeding...";
+      statusSpan.style.color = "var(--text-secondary)";
+      
+      try {
+        const res = await fetch(`${API_BASE}/admin/seed`, { method: "POST" });
+        const json = await res.json();
+        
+        if (json.ok) {
+          if (json.already_seeded) {
+            statusSpan.innerText = "✅ " + json.message;
+            statusSpan.style.color = "var(--success-color)";
+          } else {
+            statusSpan.innerText = `✅ Success! Context, ${json.created.channel_profiles} channels, ${json.created.outreach_targets} targets, ${json.created.templates} templates.`;
+            statusSpan.style.color = "var(--success-color)";
+          }
+        } else {
+          statusSpan.innerText = "❌ Error: " + (json.error?.message || "Unknown error");
+          statusSpan.style.color = "var(--danger-color)";
+        }
+      } catch (err) {
+        statusSpan.innerText = "❌ API Error executing seed";
+        statusSpan.style.color = "var(--danger-color)";
+      } finally {
+        btn.disabled = false;
       }
     }
   },

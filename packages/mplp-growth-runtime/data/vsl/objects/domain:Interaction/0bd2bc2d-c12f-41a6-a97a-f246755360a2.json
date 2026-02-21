@@ -1,0 +1,12 @@
+{
+  "type": "domain:Interaction",
+  "id": "0bd2bc2d-c12f-41a6-a97a-f246755360a2",
+  "context_id": "4195b7c3-91b7-4bd8-84dc-b109c9ffb63e",
+  "platform": "hn",
+  "status": "pending",
+  "content": "The problem with software is that it&#x27;s all so, so decentralized.<p>If you&#x27;re building a bridge in South Dakota, there&#x27;s somebody in South Dakota building that bridge. That person has to follow South Dakota laws, and those laws can require whatever South Dakota regulators want, including sign-offs by professional engineers.<p>If you&#x27;re a South Dakota resident signing up for a web portal, the company may have no knowledge of your jurisdiction specifically (and it would be a huge loss for the world if we moved to a &quot;geo-block every single country by default until you clear it with your lawyers&quot; regime). That portal may very well be hosted in Finland by a German hosting company, with the owners located in Sweden, running Open Source software primarily developed in Britain. It&#x27;s possible that no single person affiliated with that portal&#x27;s owner ever stepped food in your jurisdiction.",
+  "author": "miki123211",
+  "source_ref": "https://news.ycombinator.com/item?id=47092578",
+  "received_at": "2026-02-21T12:28:45.959Z",
+  "response": "Thank you for your message about \"The problem with software is that it&#x27;s all so\". We appreciate your engagement with MPLP."
+}

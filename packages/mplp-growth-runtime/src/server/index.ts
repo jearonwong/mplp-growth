@@ -11,6 +11,8 @@ import type { ContentAssetNode, InteractionNode } from "../psg/growth-nodes.js";
 import type { PSGNode } from "../psg/types.js";
 import { version } from "../../package.json";
 import { executeCommand, getRuntime } from "../commands/orchestrator.js";
+import { loadConfig } from "../config.js";
+import { runnerDaemon } from "../runner/daemon.js";
 import { runnerState } from "../runner/state.js";
 import {
   runWeeklyBrief,
@@ -19,6 +21,7 @@ import {
   runWeeklyReview,
   runAutoPublish,
 } from "../runner/tasks.js";
+import { seed } from "../seed.js";
 import { ExecuteResponse, QueueItem, QueueResponse } from "./json-schema.js";
 
 // __dirname is natively available in CJS.
@@ -45,6 +48,43 @@ server.get("/api/health", async () => {
     policy_level: state.policy_level,
     runner_enabled: state.runner_enabled,
   };
+});
+
+// Get Config (P1)
+server.get("/api/config", async () => {
+  return loadConfig();
+});
+
+// Seed Data (P2)
+server.post("/api/admin/seed", async () => {
+  try {
+    const { psg } = await getRuntime();
+    // Check idempotency: does a Context already exist?
+    const existingContexts = await psg.query({ type: "domain:Context", limit: 1 });
+    if (existingContexts.length > 0) {
+      return { ok: true, already_seeded: true, message: "Context already exists." };
+    }
+
+    // Run seed
+    const result = await seed();
+    return {
+      ok: true,
+      created: {
+        context: result.context.context_id,
+        channel_profiles: result.channelProfiles.length,
+        outreach_targets: result.outreachTargets.length,
+        extensions: result.extensions.length,
+        templates: 2,
+      },
+    };
+  } catch (err: unknown) {
+    return {
+      ok: false,
+      error: {
+        message: err instanceof Error ? err.message : String(err),
+      },
+    };
+  }
 });
 
 // Runner Status
@@ -199,15 +239,19 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
     let asset_id: string | undefined;
     let target_id: string | undefined;
     let channel: string | undefined;
+    let interactions_data:
+      | Array<{ platform: string; author: string; content: string; response?: string }>
+      | undefined = undefined;
+    let interactions_count = 0;
+    let interaction_summaries:
+      | Array<{ platform: string; author: string; excerpt: string; source_ref?: string }>
+      | undefined = undefined;
     let policy_check: QueueItem["policy_check"] = { status: "unknown" };
-    let plan = null;
+    let plan: (Plan & PSGNode) | null = null;
     let impact_level: "low" | "medium" | "high" = "low";
     let impact_summary = "";
     let will_change: string[] = [];
     let will_not_do: string[] = [];
-    let interactions_data:
-      | Array<{ platform: string; author: string; content: string; response?: string }>
-      | undefined = undefined;
 
     if (c.target_id) {
       plan = await psg.getNode<Plan & PSGNode>("Plan", c.target_id);
@@ -282,12 +326,26 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
       });
       if (pendingInteractions.length > 0) {
         preview = "Inbox interactions ready for review.";
+        interactions_count = pendingInteractions.length;
         interactions_data = pendingInteractions.map((i) => ({
           platform: i.platform || "unknown",
           author: i.author || "anonymous",
           content: i.content,
           response: i.response,
         }));
+
+        interaction_summaries = pendingInteractions.slice(0, 2).map((i) => {
+          let excerpt = (i.content || "").replace(/\\n/g, " ").replace(/\s+/g, " ").trim();
+          if (excerpt.length > 120) {
+            excerpt = excerpt.substring(0, 120) + "...";
+          }
+          return {
+            platform: i.platform || "unknown",
+            author: i.author || "anonymous",
+            excerpt,
+            source_ref: i.source_ref,
+          };
+        });
       } else {
         preview = "No pending interactions found.";
       }
@@ -309,6 +367,8 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
       impact_summary,
       will_change,
       will_not_do,
+      interactions_count,
+      interaction_summaries,
       interactions: interactions_data,
     };
 

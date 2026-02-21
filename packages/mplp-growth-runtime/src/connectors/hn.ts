@@ -6,19 +6,40 @@ interface AlgoliaHit {
   comment_text?: string;
   title?: string;
   created_at: string;
+  /** The HN story this comment belongs to (reliable item id) */
+  story_id?: number;
+  /** Parent comment id */
+  parent_id?: number;
+}
+
+/**
+ * GATE-HN-SOURCEREF-VALID-01:
+ * Build a valid, clickable HN URL from the most specific ID available.
+ * Priority: story_id > parent_id > algolia://objectID fallback.
+ */
+function buildSourceRef(hit: AlgoliaHit): string {
+  if (hit.story_id) {
+    return `https://news.ycombinator.com/item?id=${hit.story_id}`;
+  }
+  if (hit.parent_id) {
+    return `https://news.ycombinator.com/item?id=${hit.parent_id}`;
+  }
+  // Fallback: Algolia-specific ref (not an HN page, clearly labeled)
+  return `algolia://comment/${hit.objectID}`;
 }
 
 export class HNConnector implements Connector {
   public id = "hn-algolia";
 
-  // A simple timestamp to avoid pulling the same items repeatedly in a real runtime.
-  // For the MVP demo, we can just pull the latest 5.
+  // Timestamp to skip already-fetched items within a single process lifecycle.
+  // NOT the primary dedup mechanism — PSG source_ref check is (see FIX-A-2).
   private lastFetchTime = 0;
 
   constructor(private keywords: string[] = ["opensource", "mplp", "openclaw"]) {}
 
   public async pull(): Promise<InteractionCandidate[]> {
     const candidates: InteractionCandidate[] = [];
+    const seenRefs = new Set<string>(); // Prevent intra-pull duplicates across keywords
 
     for (const keyword of this.keywords) {
       try {
@@ -32,10 +53,17 @@ export class HNConnector implements Connector {
 
         for (const hit of data.hits) {
           const hitTime = new Date(hit.created_at).getTime();
+          const sourceRef = buildSourceRef(hit);
+
+          // Skip if already seen in this pull cycle or before lastFetchTime
+          if (seenRefs.has(sourceRef)) {
+            continue;
+          }
           if (hitTime > this.lastFetchTime) {
+            seenRefs.add(sourceRef);
             candidates.push({
               source_kind: "hn",
-              source_ref: `https://news.ycombinator.com/item?id=${hit.objectID}`,
+              source_ref: sourceRef,
               author_handle: hit.author,
               content: hit.comment_text || hit.title || "",
               timestamp: hit.created_at,

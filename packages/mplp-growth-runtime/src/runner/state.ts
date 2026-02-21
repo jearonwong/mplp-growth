@@ -3,91 +3,218 @@
  * Tracks execution history, locks, and status.
  */
 
-export interface TaskRun {
-  task_id: string;
-  started_at: string; // ISO
-  finished_at?: string; // ISO
-  status: "running" | "success" | "failed" | "skipped";
-  message?: string;
-  error?: string;
+export interface JobConfig {
+  enabled: boolean;
+  schedule_cron: string;
 }
 
-export interface RunnerState {
-  enabled: boolean;
+export interface JobRuntime {
+  last_tick_at?: string; // ISO
+  next_run_at?: string | null; // ISO
+  last_status?: "success" | "failed" | "skipped";
+  last_error?: string;
+  last_duration_ms?: number;
+}
+
+export interface RunnerConfig {
+  runner_enabled: boolean;
   policy_level: "safe" | "standard" | "aggressive";
   auto_publish: boolean;
-  last_tick_at?: string;
-  is_running: boolean;
-  active_task?: string;
-  last_task_runs: TaskRun[]; // Circular buffer of recent runs
+  jobs: Record<string, JobConfig>;
 }
 
-const MAX_LOG_SIZE = 50;
+export interface RunnerRuntime {
+  is_running: boolean;
+  active_task?: string;
+  jobs: Record<string, JobRuntime>;
+}
+
+export interface UnifiedJobModel extends JobConfig, JobRuntime {}
+
+export interface UnifiedRunnerState
+  extends Omit<RunnerConfig, "jobs">, Omit<RunnerRuntime, "jobs"> {
+  jobs: Record<string, UnifiedJobModel>;
+}
 
 export class StateManager {
-  private state: RunnerState = {
-    enabled: false,
+  private config: RunnerConfig = {
+    runner_enabled: false,
     policy_level: "safe", // Default safe
     auto_publish: false,
-    is_running: false,
-    last_task_runs: [],
+    jobs: {
+      brief: { enabled: true, schedule_cron: "0 9 * * 1" }, // Monday 9am
+      "outreach-draft": { enabled: true, schedule_cron: "0 10 * * *" }, // Daily 10am
+      inbox: { enabled: true, schedule_cron: "0 * * * *" }, // Hourly
+      review: { enabled: true, schedule_cron: "0 17 * * 5" }, // Friday 5pm
+      publish: { enabled: false, schedule_cron: "*/15 * * * *" }, // Every 15m
+    },
   };
 
-  /**
-   * Get full state snapshot
-   */
-  getSnapshot(): RunnerState {
-    return { ...this.state };
+  private runtime: RunnerRuntime = {
+    is_running: false,
+    jobs: {
+      brief: {},
+      "outreach-draft": {},
+      inbox: {},
+      review: {},
+      publish: {},
+    },
+  };
+
+  constructor() {
+    this.recalculateNextRuns();
   }
 
   /**
-   * Update configuration
+   * Recalculates `next_run_at` for all jobs based on server timezone.
    */
-  setConfig(config: {
-    enabled?: boolean;
-    policy_level?: "safe" | "standard" | "aggressive";
-    auto_publish?: boolean;
-  }) {
-    if (config.enabled !== undefined) {
-      this.state.enabled = config.enabled;
+  private recalculateNextRuns() {
+    const now = new Date();
+    for (const [jobId, jobConfig] of Object.entries(this.config.jobs)) {
+      const jobRuntime = this.runtime.jobs[jobId] || {};
+      if (!jobConfig.enabled) {
+        jobRuntime.next_run_at = null;
+      } else {
+        try {
+          const schedule = jobConfig.schedule_cron;
+          let next = new Date(now.getTime());
+
+          if (schedule === "0 9 * * 1") {
+            // Monday 9am
+            next.setDate(now.getDate() + ((1 + 7 - now.getDay()) % 7 || 7));
+            next.setHours(9, 0, 0, 0);
+            if (next.getTime() <= now.getTime()) {
+              next.setDate(next.getDate() + 7);
+            }
+          } else if (schedule === "0 10 * * *") {
+            // Daily 10am
+            next.setHours(10, 0, 0, 0);
+            if (next.getTime() <= now.getTime()) {
+              next.setDate(next.getDate() + 1);
+            }
+          } else if (schedule === "0 * * * *") {
+            // Hourly
+            next.setHours(now.getHours() + 1, 0, 0, 0);
+          } else if (schedule === "0 17 * * 5") {
+            // Friday 5pm
+            next.setDate(now.getDate() + ((5 + 7 - now.getDay()) % 7 || 7));
+            next.setHours(17, 0, 0, 0);
+            if (next.getTime() <= now.getTime()) {
+              next.setDate(next.getDate() + 7);
+            }
+          } else if (schedule === "*/15 * * * *") {
+            // 15m
+            next.setMinutes(next.getMinutes() + 15 - (next.getMinutes() % 15), 0, 0);
+          } else {
+            throw new Error(`Unsupported CRON: ${schedule}`);
+          }
+          jobRuntime.next_run_at = next.toISOString();
+        } catch (err) {
+          jobRuntime.next_run_at = null;
+          jobRuntime.last_error = `Invalid CRON: ${jobConfig.schedule_cron}`;
+        }
+      }
+      this.runtime.jobs[jobId] = jobRuntime;
     }
-    if (config.policy_level !== undefined) {
-      this.state.policy_level = config.policy_level;
+  }
+
+  /**
+   * Get full state snapshot merging config and runtime
+   */
+  getSnapshot(): UnifiedRunnerState {
+    const unifiedJobs: Record<string, UnifiedJobModel> = {};
+    for (const jobId of Object.keys(this.config.jobs)) {
+      unifiedJobs[jobId] = {
+        ...this.config.jobs[jobId],
+        ...this.runtime.jobs[jobId],
+      };
     }
-    if (config.auto_publish !== undefined) {
-      this.state.auto_publish = config.auto_publish;
-    }
+    return {
+      runner_enabled: this.config.runner_enabled,
+      policy_level: this.config.policy_level,
+      auto_publish: this.config.auto_publish,
+      is_running: this.runtime.is_running,
+      active_task: this.runtime.active_task,
+      jobs: unifiedJobs,
+    };
   }
 
   /**
    * Attempt to acquire lock for a task
    */
   acquireLock(taskId: string): boolean {
-    if (this.state.is_running) {
+    if (this.runtime.is_running) {
       return false;
     }
-    this.state.is_running = true;
-    this.state.active_task = taskId;
+    this.runtime.is_running = true;
+    this.runtime.active_task = taskId;
     return true;
   }
 
   /**
-   * Release lock
+   * Release lock and optionally record run outcome
    */
-  releaseLock() {
-    this.state.is_running = false;
-    this.state.active_task = undefined;
+  releaseLock(
+    taskId: string,
+    runData?: { status: "success" | "failed" | "skipped"; error?: string; duration_ms?: number },
+  ) {
+    this.runtime.is_running = false;
+    this.runtime.active_task = undefined;
+
+    if (runData && this.runtime.jobs[taskId]) {
+      this.runtime.jobs[taskId].last_tick_at = new Date().toISOString();
+      this.runtime.jobs[taskId].last_status = runData.status;
+      this.runtime.jobs[taskId].last_error = runData.error;
+      if (runData.duration_ms !== undefined) {
+        this.runtime.jobs[taskId].last_duration_ms = runData.duration_ms;
+      }
+      this.recalculateNextRuns();
+    }
   }
 
   /**
-   * Record a task run completion
+   * Get mutable config (Internal only, for API updates)
    */
-  recordRun(run: TaskRun) {
-    this.state.last_tick_at = new Date().toISOString();
-    this.state.last_task_runs.unshift(run);
-    if (this.state.last_task_runs.length > MAX_LOG_SIZE) {
-      this.state.last_task_runs.pop();
+  getConfig(): RunnerConfig {
+    return this.config;
+  }
+
+  /**
+   * Update configuration and recalculate crons
+   */
+  setConfig(
+    newConfig: Partial<RunnerConfig> & { jobs?: Partial<Record<string, Partial<JobConfig>>> },
+  ) {
+    if (newConfig.runner_enabled !== undefined) {
+      this.config.runner_enabled = newConfig.runner_enabled;
     }
+    if (newConfig.policy_level !== undefined) {
+      this.config.policy_level = newConfig.policy_level;
+    }
+    if (newConfig.auto_publish !== undefined) {
+      this.config.auto_publish = newConfig.auto_publish;
+    }
+
+    if (newConfig.jobs) {
+      for (const [jobId, jobUpdates] of Object.entries(newConfig.jobs)) {
+        if (!this.config.jobs[jobId]) {
+          continue;
+        }
+        if (jobUpdates.enabled !== undefined) {
+          this.config.jobs[jobId].enabled = jobUpdates.enabled;
+        }
+        if (jobUpdates.schedule_cron !== undefined) {
+          // pre-validate lightweight regex maps
+          const valid = ["0 9 * * 1", "0 10 * * *", "0 * * * *", "0 17 * * 5", "*/15 * * * *"];
+          if (!valid.includes(jobUpdates.schedule_cron)) {
+            throw new Error(`Invalid or unsupported CRON for MVP: ${jobUpdates.schedule_cron}`);
+          }
+          this.config.jobs[jobId].schedule_cron = jobUpdates.schedule_cron;
+        }
+      }
+    }
+
+    this.recalculateNextRuns();
   }
 }
 

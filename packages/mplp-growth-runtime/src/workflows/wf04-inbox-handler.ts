@@ -88,6 +88,7 @@ export async function runInboxHandler(
         platform: interactionInput.platform,
         content: interactionInput.content,
         author: interactionInput.author,
+        source_ref: interactionInput.source_ref,
       });
       await ctx.psg.putNode(node);
       interactionNodes.push(node);

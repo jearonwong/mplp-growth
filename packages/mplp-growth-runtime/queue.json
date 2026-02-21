@@ -1,0 +1,23 @@
+{
+  "pending_count": 2,
+  "categories": {
+    "outreach": [],
+    "publish": [],
+    "inbox": [],
+    "review": [],
+    "other": [
+      {
+        "title": "Action Required",
+        "preview": "No asset linked. Open Plan for details.",
+        "category": "other",
+        "policy_check": { "status": "unknown" }
+      },
+      {
+        "title": "Action Required",
+        "preview": "No asset linked. Open Plan for details.",
+        "category": "other",
+        "policy_check": { "status": "unknown" }
+      }
+    ]
+  }
+}

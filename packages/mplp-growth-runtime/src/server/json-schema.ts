@@ -31,6 +31,16 @@ export interface QueueItem {
     status: "pass" | "fail" | "unknown";
     reasons?: string[];
   };
+  impact_level?: "low" | "medium" | "high";
+  impact_summary?: string;
+  will_change?: string[];
+  will_not_do?: string[];
+  interactions?: {
+    platform: string;
+    author?: string;
+    content: string;
+    response?: string;
+  }[];
 }
 
 export interface QueueResponse {

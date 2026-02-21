@@ -11,6 +11,13 @@ import { version } from "../../package.json";
 import { executeCommand, getRuntime } from "../commands/orchestrator.js";
 import { Plan } from "../modules/mplp-modules.js";
 import { runnerState } from "../runner/state.js";
+import {
+  runWeeklyBrief,
+  runDailyOutreachDraft,
+  runHourlyInbox,
+  runWeeklyReview,
+  runAutoPublish,
+} from "../runner/tasks.js";
 import { ExecuteResponse, QueueItem, QueueResponse, RunnerStatusResponse } from "./json-schema.js";
 
 // __dirname is natively available in CJS.
@@ -35,34 +42,87 @@ server.get("/api/health", async () => {
     version,
     uptime: process.uptime(),
     policy_level: state.policy_level,
-    runner_enabled: state.enabled,
+    runner_enabled: state.runner_enabled,
   };
 });
 
 // Runner Status
-server.get<{ Reply: RunnerStatusResponse & { auto_publish: boolean } }>(
-  "/api/runner/status",
-  async () => {
-    const state = runnerState.getSnapshot();
-    return {
-      enabled: state.enabled,
-      policy_level: state.policy_level,
-      auto_publish: state.auto_publish,
-      last_tick_at: state.last_tick_at,
-      is_running: state.is_running,
-      active_task: state.active_task,
-      last_runs: state.last_task_runs,
-    };
-  },
-);
+server.get("/api/runner/status", async () => {
+  return {
+    ...runnerState.getSnapshot(),
+    timezone: "UTC",
+  };
+});
 
 // Update Runner Config
 server.post<{
-  Body: { policy_level?: "safe" | "standard" | "aggressive"; auto_publish?: boolean };
+  Body: {
+    runner_enabled?: boolean;
+    policy_level?: "safe" | "standard" | "aggressive";
+    auto_publish?: boolean;
+    jobs?: Record<string, { enabled?: boolean; schedule_cron?: string }>;
+  };
 }>("/api/runner/config", async (request, reply) => {
-  const { policy_level, auto_publish } = request.body;
-  runnerState.setConfig({ policy_level, auto_publish });
-  return { ok: true };
+  try {
+    runnerState.setConfig(request.body as any);
+    return { ok: true };
+  } catch (err: any) {
+    reply.status(400);
+    return { ok: false, error: err.message };
+  }
+});
+
+// Epic B Step 3: Execute API
+server.post<{ Body: { task_id: string } }>("/api/runner/execute", async (request, reply) => {
+  const { task_id } = request.body;
+  const config = runnerState.getConfig();
+
+  if (!config.jobs[task_id]) {
+    reply.status(400);
+    return { ok: false, error: `Unknown task_id: ${task_id}` };
+  }
+
+  // Idempotent lock check (Contract 3)
+  if (!runnerState.acquireLock(task_id)) {
+    reply.status(409);
+    return { ok: false, error: `Task ${task_id} is already running.` };
+  }
+
+  const run_id = `run-${Date.now()}`;
+  const startTime = Date.now();
+
+  // Map task string to function
+  const taskMap: Record<string, () => Promise<void>> = {
+    brief: runWeeklyBrief,
+    "outreach-draft": runDailyOutreachDraft,
+    inbox: runHourlyInbox,
+    "inbox-poll": runHourlyInbox,
+    review: runWeeklyReview,
+    publish: runAutoPublish,
+  };
+
+  const taskFn = taskMap[task_id];
+
+  // Async execution (don't await so HTTP returns immediately with run_id)
+  Promise.resolve()
+    .then(async () => {
+      console.log(`[Manual Trigger] Executing ${task_id}`);
+      await taskFn();
+      runnerState.releaseLock(task_id, {
+        status: "success",
+        duration_ms: Date.now() - startTime,
+      });
+    })
+    .catch((err: any) => {
+      console.error(`[Manual Trigger] ${task_id} failed:`, err);
+      runnerState.releaseLock(task_id, {
+        status: "failed",
+        error: err.message,
+        duration_ms: Date.now() - startTime,
+      });
+    });
+
+  return { ok: true, run_id };
 });
 
 // Execute Command (Placeholder for Orchestrator integration in Phase 2)
@@ -93,6 +153,27 @@ server.post<{ Body: { command: string; args: string[] }; Reply: ExecuteResponse 
   },
 );
 
+// Manual Import API
+import { manualConnector } from "../connectors/manual.js";
+
+server.post<{ Body: { content: string; author_handle: string; source_ref?: string } }>(
+  "/api/inbox/manual",
+  async (request, reply) => {
+    const { content, author_handle, source_ref } = request.body;
+    if (!content || !author_handle) {
+      return reply.code(400).send({ error: "Missing content or author_handle" });
+    }
+
+    manualConnector.push({
+      content,
+      author_handle,
+      source_ref: source_ref || `manual-${Date.now()}`,
+    });
+
+    return { ok: true, queued: true };
+  },
+);
+
 // Queue
 server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
   const { psg } = await getRuntime();
@@ -119,9 +200,14 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
     let channel: string | undefined;
     let policy_check: QueueItem["policy_check"] = { status: "unknown" };
     let plan = null;
+    let impact_level: "low" | "medium" | "high" = "low";
+    let impact_summary = "";
+    let will_change: string[] = [];
+    let will_not_do: string[] = [];
+    let interactions_data: any[] | undefined = undefined;
 
     if (c.target_id) {
-      plan = await psg.getNode<any>("domain:Plan", c.target_id);
+      plan = await psg.getNode<any>("Plan", c.target_id);
 
       if (plan) {
         title = plan.title || title;
@@ -138,6 +224,14 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
             channel = match[1];
           }
           policy_check = { status: "pass", reasons: ["No forbidden terms found"] };
+          impact_level = "high";
+          impact_summary = "Outreach execution will advance state and generate tracking packages.";
+          will_change = [
+            "Target drafted→contacted",
+            "Interaction pending→responded",
+            "Export pack available",
+          ];
+          will_not_do = ["Will NOT send email automatically", "Will NOT post to social media"];
         } else if (
           stepDescs.includes("Format content for channel") ||
           stepDescs.includes("Record published")
@@ -149,8 +243,22 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
             channel = match[1];
           }
           policy_check = { status: "pass", reasons: ["Policy check passed internally"] };
-        } else if (stepDescs.includes("inbox") || stepDescs.includes("Process interactions")) {
+          impact_level = "medium";
+          impact_summary = "Asset will be approved for publishing workflow.";
+          will_change = ["ContentAsset reviewed→published", "Export pack generated"];
+          will_not_do = ["Will NOT call platform API"];
+        } else if (
+          stepDescs.includes("inbox") ||
+          stepDescs.includes("Process interactions") ||
+          (plan.title && plan.title.includes("Inbox Handler"))
+        ) {
           category = "inbox";
+          policy_check = { status: "pass", reasons: ["Responses generated safely"] };
+          impact_level = "medium";
+          impact_summary =
+            "Draft responses will be staged for manual dispatch or automatic mailing.";
+          will_change = ["Interaction pending→responded"];
+          will_not_do = ["Will NOT send messages without further external tool review"];
         } else if (stepDescs.includes("review") || stepDescs.includes("Weekly")) {
           category = "review";
           asset_id = plan.steps[0]?.reference_id;
@@ -164,6 +272,22 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
         const lines = asset.content.split("\n");
         const previewLines = lines.slice(0, 20).join("\n");
         preview = previewLines.length > 800 ? previewLines.substring(0, 800) + "..." : previewLines;
+      }
+    } else if (category === "inbox") {
+      const pendingInteractions = await psg.query<any>({
+        type: "domain:Interaction",
+        filter: { status: "pending" },
+      });
+      if (pendingInteractions.length > 0) {
+        preview = "Inbox interactions ready for review.";
+        interactions_data = pendingInteractions.map((i: any) => ({
+          platform: i.platform || "unknown",
+          author: i.author || "anonymous",
+          content: i.content,
+          response: i.response,
+        }));
+      } else {
+        preview = "No pending interactions found.";
       }
     }
 
@@ -179,6 +303,11 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
       channel,
       target_id,
       policy_check,
+      impact_level,
+      impact_summary,
+      will_change,
+      will_not_do,
+      interactions: interactions_data,
     };
 
     if (category === "outreach") {
@@ -279,4 +408,11 @@ export async function startServer(port = 3000) {
     server.log.error(err);
     process.exit(1);
   }
+}
+
+// Start server if executed directly
+if (typeof require !== "undefined" && require.main === module) {
+  startServer();
+} else if (process.argv[1] && process.argv[1].endsWith("server/index.ts")) {
+  startServer();
 }

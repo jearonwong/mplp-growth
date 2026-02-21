@@ -24,7 +24,7 @@ export class RunnerDaemon {
 
   start() {
     console.log(`[Runner] v${version} Starting daemon...`);
-    runnerState.setConfig({ enabled: true });
+    runnerState.setConfig({ runner_enabled: true });
 
     // Monday 09:00 - Weekly Brief
     this.scheduler.register("0 9 * * 1", "weekly-brief", runWeeklyBrief);
@@ -46,7 +46,7 @@ export class RunnerDaemon {
 
   stop() {
     console.log("[Runner] Stopping daemon...");
-    runnerState.setConfig({ enabled: false });
+    runnerState.setConfig({ runner_enabled: false });
     schedule.gracefulShutdown();
   }
 }

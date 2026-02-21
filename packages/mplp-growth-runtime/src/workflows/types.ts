@@ -52,6 +52,7 @@ export interface InboxInteractionInput {
   platform: string;
   content: string;
   author?: string;
+  source_ref?: string;
 }
 
 export interface InboxHandlerInput extends WorkflowInput {

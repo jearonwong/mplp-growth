@@ -4,6 +4,8 @@
  */
 
 import { executeCommand, getRuntime } from "../commands/orchestrator.js";
+import { hnConnector } from "../connectors/hn.js";
+import { manualConnector } from "../connectors/manual.js";
 import { runnerState } from "./state.js";
 
 export async function runWeeklyBrief() {
@@ -21,15 +23,28 @@ export async function runDailyOutreachDraft() {
 }
 
 export async function runHourlyInbox() {
-  console.log("[Task] Checking Inbox...");
-  // Inbox check is safe to run frequently
-  await executeCommand("inbox", []); // This might need args depending on implementation, but v0.3.0 inbox supports arg-less run? No, cmdInbox expects args.
-  // Actually cmdInbox in v0.3.0 is for *ingesting* interaction.
-  // Be careful: if inbox command requires args to ingest, we can't automate it without a source.
-  // v0.4.0 Plan says "Poll for inbox signals (mockable)".
-  // For MVP, we'll skip actual inbox polling unless we have a real signal source.
-  // We can just log "No new signals" for now.
-  console.log("[Task] Inbox: No signal source configured.");
+  console.log("[Task] Checking Inbox Connectors...");
+
+  const manualCandidates = await manualConnector.pull();
+  const hnCandidates = await hnConnector.pull();
+  const allCandidates = [...manualCandidates, ...hnCandidates];
+
+  if (allCandidates.length > 0) {
+    console.log(`[Task] Inbox found ${allCandidates.length} new interaction signals.`);
+
+    // Map to the input format cmdInbox expects
+    const mapped = allCandidates.map((c) => ({
+      platform: c.source_kind,
+      content: c.content,
+      author: c.author_handle,
+      source_ref: c.source_ref,
+    }));
+
+    const out = await executeCommand("inbox", [JSON.stringify(mapped)]);
+    console.log(`[Task] Inbox execution result: \n${out}`);
+  } else {
+    console.log("[Task] Inbox: No new signals from connectors.");
+  }
 }
 
 export async function runWeeklyReview() {

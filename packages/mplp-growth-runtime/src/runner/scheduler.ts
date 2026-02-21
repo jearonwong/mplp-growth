@@ -74,26 +74,21 @@ export class Scheduler {
       console.log(`[Runner] Starting task: ${taskId} at ${this.clock.now().toISOString()}`);
       const start = new Date().toISOString();
 
+      const startTime = Date.now();
+
       try {
         await task();
-        runnerState.recordRun({
-          task_id: taskId,
-          started_at: start,
-          finished_at: new Date().toISOString(),
+        runnerState.releaseLock(taskId, {
           status: "success",
+          duration_ms: Date.now() - startTime,
         });
       } catch (err: any) {
         console.error(`[Runner] Task ${taskId} failed:`, err);
-        runnerState.recordRun({
-          task_id: taskId,
-          started_at: start,
-          finished_at: new Date().toISOString(),
+        runnerState.releaseLock(taskId, {
           status: "failed",
           error: err.message,
+          duration_ms: Date.now() - startTime,
         });
-      } finally {
-        // FIX-1: Release Lock
-        runnerState.releaseLock();
       }
     });
   }

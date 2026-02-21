@@ -90,11 +90,23 @@ function renderQueueItem(item) {
       
       <details style="margin-top:10px; cursor:pointer;">
         <summary style="font-weight:bold; color:var(--accent-color);">Preview Content</summary>
-        <div class="queue-data" style="margin-top:8px">${escapeHtml(item.preview)}</div>
+        <div class="queue-data" style="margin-top:8px">
+          ${item.interactions ? item.interactions.map(i => {
+             let badgeColor = "var(--text-secondary)";
+             if (i.platform === "hn") badgeColor = "#ff6600";
+             if (i.platform === "manual") badgeColor = "var(--accent-color)";
+             return \`<div style="margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+               <span class="badge" style="background:\${badgeColor}; margin-right:5px;">\${(i.platform || "unknown").toUpperCase()}</span>
+               <strong>@\${escapeHtml(i.author || "anonymous")}</strong><br/>
+               <div style="margin-top:4px">\${escapeHtml(i.content)}</div>
+               <div style="margin-top:4px; color:var(--text-secondary); font-style:italic">Draft: "\${escapeHtml(i.response)}"</div>
+             </div>\`;
+          }).join("") : escapeHtml(item.preview)}
+        </div>
       </details>
     </div>
     <div class="actions">
-      <button class="btn btn-success" onclick="app.handlers.approve('${item.confirm_id}')">Approve</button>
+      <button class="btn btn-success" onclick='app.handlers.openImpactModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Approve</button>
       <button class="btn btn-danger" onclick="app.handlers.reject('${item.confirm_id}')">Reject</button>
     </div>
   `;
@@ -183,6 +195,81 @@ async function initSettings() {
       toggle.checked = !!status.auto_publish;
       toggle.disabled = status.policy_level !== "aggressive";
     }
+    const tbody = document.getElementById("jobs-table-body");
+    if (tbody && status.jobs) {
+      tbody.innerHTML = "";
+      for (const [jobId, jobData] of Object.entries(status.jobs)) {
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid var(--border-color)";
+
+        // Job ID + Toggle
+        const tdId = document.createElement("td");
+        tdId.style.padding = "10px";
+        tdId.innerHTML = `
+          <label style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" ${jobData.enabled ? 'checked' : ''} onchange="app.handlers.toggleJob('${jobId}', event)"/>
+            <strong style="color: var(--text-primary)">${jobId}</strong>
+          </label>
+        `;
+
+        // Schedule
+        const tdCron = document.createElement("td");
+        tdCron.style.padding = "10px";
+        tdCron.style.fontFamily = "monospace";
+        tdCron.innerText = jobData.schedule_cron || "manual";
+
+        // Status
+        const tdStatus = document.createElement("td");
+        tdStatus.style.padding = "10px";
+        const isRunning = status.is_running && status.active_task === jobId;
+        let pStatus = "idle";
+        let sColor = "var(--text-secondary)";
+        if (isRunning) {
+          pStatus = "running";
+          sColor = "var(--warning-color)";
+        } else if (jobData.last_status) {
+          pStatus = jobData.last_status;
+          if (pStatus === 'success') sColor = "var(--success-color)";
+          if (pStatus === 'failed') sColor = "var(--danger-color)";
+        }
+        tdStatus.innerHTML = `<span style="color: ${sColor}">${pStatus}</span>`;
+        if (jobData.last_error) {
+           tdStatus.innerHTML += `<div style="font-size: 11px; color: var(--danger-color); margin-top: 4px;">${jobData.last_error}</div>`;
+        }
+
+        // Next Run
+        const tdNext = document.createElement("td");
+        tdNext.style.padding = "10px";
+        tdNext.style.fontSize = "12px";
+        if (!jobData.enabled) {
+          tdNext.innerText = "disabled";
+          tdNext.style.color = "var(--text-secondary)";
+        } else if (jobData.next_run_at) {
+          const date = new Date(jobData.next_run_at);
+          // Show format "Mon 10:00" or similar
+          const tz = status.timezone ? ` (${status.timezone})` : ' (UTC)';
+          tdNext.innerText = date.toLocaleString('en-US', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) + tz;
+        } else {
+          tdNext.innerText = "unknown";
+        }
+
+        // Action
+        const tdAction = document.createElement("td");
+        tdAction.style.padding = "10px";
+        tdAction.innerHTML = `
+          <button class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;" onclick="app.handlers.runJob('${jobId}')" ${isRunning ? 'disabled' : ''}>
+            Run Now
+          </button>
+        `;
+
+        tr.appendChild(tdId);
+        tr.appendChild(tdCron);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdNext);
+        tr.appendChild(tdAction);
+        tbody.appendChild(tr);
+      }
+    }
   } catch (err) {
     console.error("Failed to load runner status for settings", err);
   }
@@ -191,10 +278,42 @@ async function initSettings() {
 // Global Handlers (for onclick attributes)
 window.app = {
   handlers: {
-    approve: async (id) => {
-      if (!confirm("Approve this action?")) {
-        return;
-      }
+    closeImpactModal: () => {
+      document.getElementById('impact-modal').classList.add('hidden');
+    },
+    openImpactModal: (item) => {
+      document.getElementById('impact-modal').classList.remove('hidden');
+      
+      const badge = document.getElementById('impact-badge');
+      badge.innerText = (item.impact_level || 'low').toUpperCase();
+      if (item.impact_level === 'high') badge.style.backgroundColor = 'var(--danger-color)';
+      else if (item.impact_level === 'medium') badge.style.backgroundColor = 'var(--warning-color)';
+      else badge.style.backgroundColor = 'var(--success-color)';
+      
+      document.getElementById('impact-summary').innerText = item.impact_summary || 'Safely execute task operations.';
+      
+      const ulChange = document.getElementById('impact-will-change');
+      ulChange.innerHTML = '';
+      (item.will_change || []).forEach(val => {
+         const li = document.createElement('li');
+         li.innerText = val;
+         ulChange.appendChild(li);
+      });
+      if (!item.will_change || item.will_change.length === 0) ulChange.innerHTML = '<li style="color:var(--text-secondary)">No significant state changes.</li>';
+
+      const ulNot = document.getElementById('impact-will-not');
+      ulNot.innerHTML = '';
+      (item.will_not_do || []).forEach(val => {
+         const li = document.createElement('li');
+         li.innerText = val;
+         ulNot.appendChild(li);
+      });
+      if (!item.will_not_do || item.will_not_do.length === 0) ulNot.innerHTML = '<li style="color:var(--text-secondary)">N/A</li>';
+
+      document.getElementById('impact-confirm-btn').onclick = () => app.handlers.confirmApprove(item.confirm_id);
+    },
+    confirmApprove: async (id) => {
+      app.handlers.closeImpactModal();
       try {
         const res = await approveItem(id);
         if (res.ok) {
@@ -245,6 +364,59 @@ window.app = {
         event.target.checked = !checked;
       }
     },
+    toggleJob: async (jobId, event) => {
+      const checked = event.target.checked;
+      try {
+        const res = await fetch(`${API_BASE}/runner/config`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jobs: {
+              [jobId]: { enabled: checked }
+            }
+          })
+        });
+        if (res.ok) {
+          await initSettings();
+        } else {
+          alert("Failed to update job status");
+          event.target.checked = !checked;
+        }
+      } catch (err) {
+        alert("API Error");
+        event.target.checked = !checked;
+      }
+    },
+    runJob: async (jobId) => {
+      try {
+        const res = await fetch(`${API_BASE}/runner/execute`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task_id: jobId })
+        });
+        const json = await res.json();
+        
+        if (res.status === 409) {
+          alert(`Task ${jobId} is already running.`);
+          return;
+        }
+        
+        if (res.ok) {
+          // Immediately update status, then poll 3 times over 3 seconds to catch completion
+          await initSettings(); 
+          let pollCount = 0;
+          const pollInterval = setInterval(async () => {
+             await initSettings();
+             pollCount++;
+             if (pollCount >= 3) clearInterval(pollInterval);
+          }, 1000);
+        } else {
+          alert(`Failed to trigger ${jobId}: ${json.error}`);
+        }
+      } catch(err) {
+        alert("API Error executing job");
+      }
+    }
   },
   initDashboard,
   initQueue,

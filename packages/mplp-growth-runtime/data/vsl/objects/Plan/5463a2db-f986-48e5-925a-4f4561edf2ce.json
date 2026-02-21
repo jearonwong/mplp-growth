@@ -1,0 +1,36 @@
+{
+  "type": "Plan",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T11:48:23.161Z",
+    "updated_at": "2026-02-21T11:48:23.161Z"
+  },
+  "plan_id": "5463a2db-f986-48e5-925a-4f4561edf2ce",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "title": "Weekly Review — 2026-02-16",
+  "objective": "Collect metrics, generate snapshot, and produce review memo",
+  "status": "approved",
+  "steps": [
+    {
+      "description": "Collect metrics from PSG",
+      "status": "completed",
+      "action": "create",
+      "step_id": "f000f993-1079-4512-ad2f-808958308780",
+      "order_index": 0
+    },
+    {
+      "description": "Generate immutable MetricSnapshot",
+      "status": "completed",
+      "action": "create",
+      "step_id": "a0b4212d-1bc1-4700-a1fd-29a4b9147db1",
+      "order_index": 1
+    },
+    {
+      "description": "Write review memo",
+      "status": "completed",
+      "action": "create",
+      "step_id": "fedd504b-ca19-4f04-9093-761db39600cd",
+      "order_index": 2
+    }
+  ]
+}

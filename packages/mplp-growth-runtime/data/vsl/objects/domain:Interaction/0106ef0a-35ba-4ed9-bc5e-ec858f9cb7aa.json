@@ -1,0 +1,12 @@
+{
+  "type": "domain:Interaction",
+  "id": "0106ef0a-35ba-4ed9-bc5e-ec858f9cb7aa",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "platform": "hn",
+  "status": "pending",
+  "content": "If someone hooks up an LLM (or some other stochastic black box) to a safety critical system and bad things happen, the problem is not that &quot;AI was unsafe&quot; it&#x27;s that the person who hooked it up did something profoundly stupid. Software malpractice is a real thing, and we need better tools to hold irresponsible engineers to account, but that&#x27;s nothing to do with AI.<p>AI safety in and if itself isn&#x27;t really relevant, and whether or not you could hook AI up to something important is just as relevant as whether you could hook &#x2F;dev&#x2F;urandom up to the same thing.<p>I think your security analogy is a false equivalence, much like the nuclear weapons analogy.<p>At the risk of repeating myself, AI is not dangerous because it can&#x27;t, inherently, do anything dangerous. Show me a successful test of an AI bomb&#x2F;weapon&#x2F;whatever and I&#x27;ll believe you. Until then, the normal ways we evaluate software systems safety (or neglect to do so) will do.",
+  "author": "jcgrillo",
+  "source_ref": "https://news.ycombinator.com/item?id=47083145",
+  "received_at": "2026-02-21T11:46:25.752Z",
+  "response": "Thank you for your message about \"If someone hooks up an LLM (or some other stochast\". We appreciate your engagement with MPLP."
+}

@@ -1,0 +1,55 @@
+{
+  "type": "Plan",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T11:46:58.271Z",
+    "updated_at": "2026-02-21T11:46:58.271Z"
+  },
+  "plan_id": "46fb0074-92b2-4689-bd66-0af8a09bf266",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "title": "Outreach — CNCF (Cloud Native Computing Foundation) via email",
+  "objective": "Introduce MPLP (Multi-Agent Lifecycle Protocol) and explore partnership opportunities",
+  "status": "in_progress",
+  "steps": [
+    {
+      "description": "Load context and outreach target",
+      "status": "completed",
+      "action": "create",
+      "target_node_id": "4a8f59df-289e-4e8b-9592-ff4f5c82905b",
+      "step_id": "b3d6c018-6d74-49c1-ad48-1fc073fcf59f",
+      "order_index": 0
+    },
+    {
+      "description": "Draft email outreach to CNCF (Cloud Native Computing Foundation)",
+      "status": "completed",
+      "action": "create",
+      "target_node_id": "88fb15da-50c4-441f-b25d-9a0e4101371c",
+      "step_id": "0461c80b-702f-4dd7-ae33-4a581c4e50ce",
+      "order_index": 1
+    },
+    {
+      "description": "Policy compliance check",
+      "status": "completed",
+      "action": "update",
+      "target_node_id": "88fb15da-50c4-441f-b25d-9a0e4101371c",
+      "step_id": "a74711f2-b5e0-459d-902a-9ecbe36c7ce2",
+      "order_index": 2
+    },
+    {
+      "description": "Await confirmation",
+      "status": "pending",
+      "action": "update",
+      "target_node_id": "88fb15da-50c4-441f-b25d-9a0e4101371c",
+      "step_id": "d265ece5-ef8d-4be0-9372-67b84c1d5c8a",
+      "order_index": 3
+    },
+    {
+      "description": "Record interaction evidence",
+      "status": "pending",
+      "action": "create",
+      "target_node_id": "4a8f59df-289e-4e8b-9592-ff4f5c82905b",
+      "step_id": "36797d4f-fde3-4378-9856-d0160398874b",
+      "order_index": 4
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "domain:ContentAsset",
+  "id": "88fb15da-50c4-441f-b25d-9a0e4101371c",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "asset_type": "outreach_email",
+  "status": "reviewed",
+  "title": "Outreach to CNCF (Cloud Native Computing Foundation) via email",
+  "content": "Subject: Exploring Collaboration — MPLP (Multi-Agent Lifecycle Protocol) × CNCF (Cloud Native Computing Foundation)\n\nDear CNCF (Cloud Native Computing Foundation) Team,\n\nI'm reaching out from the MPLP (Multi-Agent Lifecycle Protocol) project — MPLP — The Agent OS Protocol.\n\nIntroduce MPLP (Multi-Agent Lifecycle Protocol) and explore partnership opportunities.\n\nWe believe CNCF (Cloud Native Computing Foundation), as a leading foundation organization, shares our commitment to Universal protocol = write once, run on any compliant runtime. W3C-style tracing. Git-like state snapshots..\n\nI'd welcome the opportunity to discuss how MPLP (Multi-Agent Lifecycle Protocol) could complement CNCF (Cloud Native Computing Foundation)'s work in serving developers.\n\nBest regards,\nMPLP (Multi-Agent Lifecycle Protocol) Project\nhttps://mplp.io",
+  "platform_variants": {},
+  "created_at": "2026-02-21T11:46:58.270Z",
+  "metadata": {
+    "target_id": "4a8f59df-289e-4e8b-9592-ff4f5c82905b",
+    "channel": "email",
+    "workflow": "wf06-outreach",
+    "generated_at": "2026-02-21T11:46:58.270Z"
+  }
+}

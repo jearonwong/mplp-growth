@@ -1,0 +1,19 @@
+{
+  "type": "domain:MetricSnapshot",
+  "id": "a425e340-a910-4e99-914a-c3bf776f140d",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "snapshot_at": "2026-02-21T11:48:23.159Z",
+  "period": "weekly",
+  "metrics": {
+    "plans_created": 2,
+    "traces_logged": 2,
+    "confirms_total": 2,
+    "confirms_approved": 1,
+    "assets_total": 4,
+    "assets_published": 0,
+    "assets_draft": 3,
+    "interactions_total": 8,
+    "interactions_responded": 1,
+    "interactions_pending": 7
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "domain:Interaction",
+  "id": "f687353c-e44f-4e96-b8a3-d3edf2de1b36",
+  "context_id": "79421f40-1190-4ecc-b189-08172bb2c080",
+  "platform": "hn",
+  "status": "pending",
+  "content": "I bought the OpenScan Mini kit for €170 a few years ago, mostly just to play with it. I&#x27;ve tried scanning things like<p>- flowers<p>- dead beetles<p>- model soldiers &#x2F; Warhammer<p>- board game components<p>The examples are all better than I&#x27;ve achieved, and I could probably improve, but it&#x27;s a fairly slow process, and difficult to know what to do to get better results.  The Openscan Classic has a static model and the camera moves around, which would reduce vibrations and probably helps. Maybe using a professional camera would help too.<p>If the target isn&#x27;t naturally &#x27;rough&#x27; like a flower or stone, you need to add dots so the photogrammetry has something to align upon.  I bought a professional scanning spray, which makes white dots which sublime after a while, but unfortunately it sublimes far too quickly — before the scan is completed.  It&#x27;s probably intended for use in an unheated workshop (e.g. scan a car for designing one of those wrap-around plastic banners).<p>I got the best results airbrushing white&#x2F;black paint onto the Warhammer figure, but that&#x27;s only acceptable if it&#x27;s not yet been painted.<p>The kit itself is a bit janky, though mine is 3 years old now. I think the photogrammetry service is the most important part, and you should note it&#x27;s <i>not</i> open source.  When you purchase the kit you get a decent amount of credit to use the service, and can buy more credit as required.  I quickly gave up trying to set up open source photogrammetry software, as so far I haven&#x27;t needed to top-up the credit anyway.",
+  "author": "Symbiote",
+  "source_ref": "https://news.ycombinator.com/item?id=47093724",
+  "received_at": "2026-02-21T11:46:25.748Z",
+  "response": "Thank you for your message about \"I bought the OpenScan Mini kit for €170 a few year\". We appreciate your engagement with MPLP."
+}

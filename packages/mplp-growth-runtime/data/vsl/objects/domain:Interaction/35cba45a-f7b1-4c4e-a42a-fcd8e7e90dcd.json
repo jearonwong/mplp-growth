@@ -1,0 +1,20 @@
+{
+  "type": "domain:Interaction",
+  "id": "35cba45a-f7b1-4c4e-a42a-fcd8e7e90dcd",
+  "context_id": "0cbed707-6968-49e7-af09-8187fd7d84a6",
+  "platform": "hn",
+  "status": "pending",
+  "content": "KEY FEATURES:\n Personal &amp; memory-driven — recalls past interactions from MemOS Cloud and adapts to your workflow.\n Secure &amp; local-first — runs on your machine, memories in the Cloud under your control.\n Token-smart — offloads memory to MemOS, reducing LLM calls and saving costs vs plain OpenClaw.\n Plug-and-play — install, enable, restart, and your agent is ready. No complex setup.<p>Turn OpenClaw into a context-aware assistant, not just a reactive bot",
+  "author": "MemTensor",
+  "source_ref": "https://news.ycombinator.com/item?id=47148899",
+  "received_at": "2026-02-25T11:00:02.313Z",
+  "response": "Thank you for your message about \"KEY FEATURES:\n Personal &amp; memory-driven — reca...\". We appreciate your engagement with MPLP.",
+  "metadata": {
+    "drafted_by_role": "Responder",
+    "rationale_bullets": [
+      "Acknowledges the user's point and thanks them",
+      "Keeps tone aligned with brand tagline",
+      "Avoids forbidden terms"
+    ]
+  }
+}

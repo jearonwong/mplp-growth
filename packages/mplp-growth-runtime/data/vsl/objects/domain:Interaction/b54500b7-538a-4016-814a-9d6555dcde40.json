@@ -1,0 +1,20 @@
+{
+  "type": "domain:Interaction",
+  "id": "b54500b7-538a-4016-814a-9d6555dcde40",
+  "context_id": "0cbed707-6968-49e7-af09-8187fd7d84a6",
+  "platform": "hn",
+  "status": "pending",
+  "content": "Say hello to <a href=\"https:&#x2F;&#x2F;pongo.sh&#x2F;\" rel=\"nofollow\">https:&#x2F;&#x2F;pongo.sh&#x2F;</a><p>self-hosted uptime monitoring, configured entirely in TypeScript and built on NextJS and Bun.<p>No UI forms. No vendor lock-in. Just code in your repo.<p>Monitors, dashboards, alerts, incidents, and status pages — all defined as TypeScript files and Markdown, version-controlled alongside your application.<p>You can one-click deploy it to Vercel or anywhere you can run node&#x2F;bun&#x2F;docker.<p>Your monitoring config lives in your repo like everything else.<p>Want to know what&#x27;s monitored and why? Read the code.<p>Need to review a change? It&#x27;s in the PR. Need to roll back a bad alert? Git revert.<p>No more clicking through dashboards wondering who changed what and when.<p>Built with Next.js, Drizzle ORM, and Bun. Runs with SQLite for simplicity or PostgreSQL for production.<p>Fully open source and ready to use today.<p>Would love to hear what you think and what features you&#x27;d want to see next, leave a star on GitHub<p><a href=\"https:&#x2F;&#x2F;github.com&#x2F;TimMikeladze&#x2F;pongo\" rel=\"nofollow\">https:&#x2F;&#x2F;github.com&#x2F;TimMikeladze&#x2F;pongo</a>",
+  "author": "linesofcode",
+  "source_ref": "https://news.ycombinator.com/item?id=47149982",
+  "received_at": "2026-02-25T12:00:02.285Z",
+  "response": "Thank you for your message about \"Say hello to <a href=\"https:&#x2F;&#x2F;pongo.sh&#...\". We appreciate your engagement with MPLP.",
+  "metadata": {
+    "drafted_by_role": "Responder",
+    "rationale_bullets": [
+      "Acknowledges the user's point and thanks them",
+      "Keeps tone aligned with brand tagline",
+      "Avoids forbidden terms"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "domain:Interaction",
+  "id": "c5b3e7f0-7372-4757-821a-805598c8351d",
+  "context_id": "0cbed707-6968-49e7-af09-8187fd7d84a6",
+  "platform": "manual",
+  "status": "pending",
+  "content": "HN mention about liability",
+  "author": "alice",
+  "source_ref": "https://news.ycombinator.com/item?id=123",
+  "received_at": "2026-02-25T11:04:29.868Z",
+  "response": "Thank you for your message about \"HN mention about liability...\". We appreciate your engagement with MPLP.",
+  "metadata": {
+    "drafted_by_role": "Responder",
+    "rationale_bullets": [
+      "Acknowledges the user's point and thanks them",
+      "Keeps tone aligned with brand tagline",
+      "Avoids forbidden terms"
+    ]
+  }
+}

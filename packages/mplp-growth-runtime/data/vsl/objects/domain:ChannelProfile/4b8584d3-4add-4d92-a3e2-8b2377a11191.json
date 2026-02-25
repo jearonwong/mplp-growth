@@ -1,0 +1,33 @@
+{
+  "type": "domain:ChannelProfile",
+  "id": "4b8584d3-4add-4d92-a3e2-8b2377a11191",
+  "context_id": "0e29a364-c650-42a3-b4e6-a9a886ae9412",
+  "platform": "hn",
+  "status": "active",
+  "format_rules": {
+    "title_style": "Show HN: / Launch HN: (ask permission)",
+    "max_title_chars": 80,
+    "submission_type": "link to lab.mplp.io or docs",
+    "engagement_rules": [
+      "Never argue",
+      "Respond with evidence links",
+      "Admit unknowns",
+      "Reference Validation Lab for claims"
+    ],
+    "risk_level": "HIGH - requires CONFIRM approval",
+    "forbidden": [
+      "certification",
+      "certified",
+      "compliance certified",
+      "MPLP certified",
+      "endorsed by",
+      "approved by",
+      "framework",
+      "product",
+      "platform",
+      "guaranteed",
+      "ensures safety",
+      "100% compliant"
+    ]
+  }
+}

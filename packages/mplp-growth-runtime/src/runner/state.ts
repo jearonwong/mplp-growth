@@ -6,6 +6,7 @@
 export interface JobConfig {
   enabled: boolean;
   schedule_cron: string;
+  run_as_role?: "Responder" | "BDWriter" | "Editor" | "Analyst";
 }
 
 export interface JobRuntime {
@@ -183,7 +184,9 @@ export class StateManager {
    * Update configuration and recalculate crons
    */
   setConfig(
-    newConfig: Partial<RunnerConfig> & { jobs?: Partial<Record<string, Partial<JobConfig>>> },
+    newConfig: Omit<Partial<RunnerConfig>, "jobs"> & {
+      jobs?: Partial<Record<string, Partial<JobConfig>>>;
+    },
   ) {
     if (newConfig.runner_enabled !== undefined) {
       this.config.runner_enabled = newConfig.runner_enabled;
@@ -197,7 +200,7 @@ export class StateManager {
 
     if (newConfig.jobs) {
       for (const [jobId, jobUpdates] of Object.entries(newConfig.jobs)) {
-        if (!this.config.jobs[jobId]) {
+        if (!this.config.jobs[jobId] || !jobUpdates) {
           continue;
         }
         if (jobUpdates.enabled !== undefined) {
@@ -210,6 +213,13 @@ export class StateManager {
             throw new Error(`Invalid or unsupported CRON for MVP: ${jobUpdates.schedule_cron}`);
           }
           this.config.jobs[jobId].schedule_cron = jobUpdates.schedule_cron;
+        }
+        if (jobUpdates.run_as_role !== undefined) {
+          const validRoles = ["Responder", "BDWriter", "Editor", "Analyst"];
+          if (!validRoles.includes(jobUpdates.run_as_role)) {
+            throw new Error(`Invalid run_as_role: ${jobUpdates.run_as_role}`);
+          }
+          this.config.jobs[jobId].run_as_role = jobUpdates.run_as_role;
         }
       }
     }

@@ -159,7 +159,7 @@ export async function runOutreach(
         channel: input.channel,
         workflow: "wf06-outreach",
         generated_at: new Date().toISOString(),
-        drafted_by_role: "BDWriter",
+        drafted_by_role: input.role_id || "BDWriter",
         rationale_bullets: draft.rationale_bullets,
       },
     });
@@ -245,7 +245,7 @@ export async function runOutreach(
       context_id: input.context_id,
       title: `Outreach — ${target.name} via ${input.channel}`,
       objective: goal,
-      agent_role: "BDWriter",
+      agent_role: input.role_id || "BDWriter",
       steps: [
         createStep("Load context and outreach target", "create", input.target_id),
         createStep(`Draft ${input.channel} outreach to ${target.name}`, "create", asset.id),

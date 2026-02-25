@@ -22,7 +22,8 @@ describe("Phase 12 Gates — Health Version SSOT (v0.4.1)", () => {
       const data = response.json();
       expect(response.statusCode).toBe(200);
       expect(data.version).toBe(version);
-      expect(data.version).toBe("0.6.0");
+      // SSOT: always matches package.json — no hardcoded version
+      expect(data.version).toMatch(/^\d+\.\d+\.\d+$/);
     });
   });
 

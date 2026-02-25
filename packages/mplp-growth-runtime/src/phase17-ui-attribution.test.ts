@@ -1,3 +1,4 @@
+// @ts-expect-error — jsdom lacks type declarations in this project
 import { JSDOM } from "jsdom";
 import fs from "node:fs/promises";
 import path from "node:path";

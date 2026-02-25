@@ -118,7 +118,7 @@ export async function runInboxHandler(
 
     // Generate draft replies for each interaction
     for (const node of interactionNodes) {
-      const draft = await executor.run("Responder", {
+      const draft = await executor.run(input.role_id || "Responder", {
         kind: "inbox_reply",
         interaction: {
           platform: node.platform,
@@ -130,7 +130,7 @@ export async function runInboxHandler(
       node.response = draft.content;
       // Add agent metadata
       node.metadata = node.metadata || {};
-      node.metadata.drafted_by_role = "Responder";
+      node.metadata.drafted_by_role = input.role_id || "Responder";
       node.metadata.rationale_bullets = draft.rationale_bullets;
 
       // Status stays 'pending' until confirmed
@@ -152,7 +152,7 @@ export async function runInboxHandler(
       context_id: input.context_id,
       title: `Inbox Handler — ${interactionNodes.length} interactions`,
       objective: `Process ${interactionNodes.length} incoming interactions, generate draft replies, and await confirmation`,
-      agent_role: "Responder",
+      agent_role: input.role_id || "Responder",
       steps: [
         createStep("Ingest interactions into PSG", "create", "Responder"),
         createStep("Generate draft replies", "update", "Responder"),

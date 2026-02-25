@@ -1,0 +1,19 @@
+{
+  "type": "Extension",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T14:28:06.852Z",
+    "updated_at": "2026-02-21T14:28:06.852Z"
+  },
+  "extension_id": "0340b3f6-7b80-4fdb-9d82-bdab27a8065e",
+  "context_id": "c88f9f33-b87e-4315-8e5f-e49980e2b21b",
+  "name": "channel-adapter-email",
+  "extension_type": "integration",
+  "version": "1.0.0",
+  "status": "active",
+  "config": {
+    "channel": "email",
+    "template_sections": ["subject", "greeting", "body", "cta", "signature"],
+    "signature_default": "MPLP Project — mplp.io"
+  }
+}

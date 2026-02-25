@@ -128,6 +128,7 @@ export interface InteractionNode {
   author?: string;
   source_ref?: string;
   response?: string;
+  metadata?: Record<string, unknown>;
   received_at: string;
   responded_at?: string;
 }

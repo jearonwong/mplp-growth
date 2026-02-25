@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from "uuid";
 import type { EventEmitter } from "../glue/event-emitter";
 import type { ProjectSemanticGraph, PSGNode } from "../psg/types";
 import type { ValueStateLayer } from "../vsl/types";
+import { executor } from "../agents/executor.js";
 import {
   createPlan,
   createTrace,
@@ -117,9 +118,21 @@ export async function runInboxHandler(
 
     // Generate draft replies for each interaction
     for (const node of interactionNodes) {
-      // Draft reply — deterministic for now (real agent call in v0.2.0+)
-      const draftReply = `Thank you for your message about "${node.content.slice(0, 50)}". We appreciate your engagement with MPLP.`;
-      node.response = draftReply;
+      const draft = await executor.run("Responder", {
+        kind: "inbox_reply",
+        interaction: {
+          platform: node.platform,
+          author: node.author || "Unknown",
+          content: node.content,
+        },
+      });
+
+      node.response = draft.content;
+      // Add agent metadata
+      node.metadata = node.metadata || {};
+      node.metadata.drafted_by_role = "Responder";
+      node.metadata.rationale_bullets = draft.rationale_bullets;
+
       // Status stays 'pending' until confirmed
       await ctx.psg.putNode(node);
       graphUpdateCount++;
@@ -139,10 +152,11 @@ export async function runInboxHandler(
       context_id: input.context_id,
       title: `Inbox Handler — ${interactionNodes.length} interactions`,
       objective: `Process ${interactionNodes.length} incoming interactions, generate draft replies, and await confirmation`,
+      agent_role: "Responder",
       steps: [
-        createStep("Ingest interactions into PSG", "create"),
-        createStep("Generate draft replies", "update"),
-        createStep("Confirm batch response", "update"),
+        createStep("Ingest interactions into PSG", "create", "Responder"),
+        createStep("Generate draft replies", "update", "Responder"),
+        createStep("Confirm batch response", "update", "Responder"),
       ],
     });
 

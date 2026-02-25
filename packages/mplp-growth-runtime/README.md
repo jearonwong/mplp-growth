@@ -6,6 +6,12 @@
 
 Solo founders and one-person teams running community + outreach loops. The system drafts work automatically — you approve what matters.
 
+## Multi-Agent Attribution (v0.6.0)
+
+Every generated asset surfaces a specific `Drafted by <role>` label (e.g., BDWriter, Editor) ensuring precise agent attribution instead of a generic AI identifier.
+
+To foster trust and audibility, each draft also exposes a `Why:` section containing up to 3 rationale bullets explaining exactly why the deterministic executor chose the given text block (e.g. passing compliance gates, including specific CTAs).
+
 ## Key Idea
 
 **Queue-first workflow**: Signals come in (HN mentions, manual tips), the system generates draft responses and outreach, and everything lands in a review queue. Nothing goes out without your explicit approval.

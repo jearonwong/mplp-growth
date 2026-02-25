@@ -14,12 +14,15 @@ import { v4 as uuidv4 } from "uuid";
 import type { EventEmitter } from "../glue/event-emitter";
 import type { ProjectSemanticGraph } from "../psg/types";
 import type { ValueStateLayer } from "../vsl/types";
+import { executor } from "../agents/executor.js";
 import {
   createPlan,
+  createConfirm,
   createTrace,
   type Plan,
   type Trace,
   type Context,
+  type Confirm,
 } from "../modules/mplp-modules";
 import {
   createMetricSnapshot,
@@ -205,9 +208,18 @@ export async function runWeeklyReview(
       suggestions.push("Strong execution this week — maintain current cadence");
     }
 
+    // Call Analyst Agent
+    const draft = await executor.run("Analyst", {
+      kind: "weekly_review",
+      metrics,
+      previous_snapshot: delta ? "exists" : undefined,
+    });
+
     // Create review memo as ContentAsset
     const reviewLines = [
       `# Weekly Review — ${weekStart}`,
+      "",
+      draft.content,
       "",
       "## Metrics",
       `- Plans: ${metrics.plans_created}`,
@@ -241,6 +253,10 @@ export async function runWeeklyReview(
       asset_type: "article",
       title: `Weekly Review — ${weekStart}`,
       content: reviewContent,
+      metadata: {
+        drafted_by_role: "Analyst",
+        rationale_bullets: draft.rationale_bullets,
+      },
     });
     reviewAsset.status = "reviewed"; // Not auto-published
     await ctx.psg.putNode(reviewAsset);
@@ -251,10 +267,11 @@ export async function runWeeklyReview(
       context_id: input.context_id,
       title: `Weekly Review — ${weekStart}`,
       objective: "Collect metrics, generate snapshot, and produce review memo",
+      agent_role: "Analyst",
       steps: [
-        createStep("Collect metrics from PSG", "create"),
-        createStep("Generate immutable MetricSnapshot", "create"),
-        createStep("Write review memo", "create"),
+        createStep("Collect metrics from PSG", "create", "Analyst"),
+        createStep("Generate immutable MetricSnapshot", "create", "Analyst"),
+        createStep("Write review memo", "create", "Analyst"),
       ],
     });
     plan.steps.forEach((s) => (s.status = "completed"));

@@ -617,8 +617,12 @@ export async function cmdOutreach(args: string[]): Promise<string> {
             a.title === `Outreach: ${t.name} via ${channel}`
           );
         });
+        if (hasRecentAsset) {
+          console.log("HAS RECENT ASSET:", t.id);
+        }
         return !hasRecentAsset;
       });
+      console.log("ELIGIBLE COUNT:", eligible.length);
 
       const targets = eligible.slice(0, limit);
       const _skippedCount = allTargets.length - eligible.length;

@@ -211,6 +211,7 @@ export interface Plan {
   objective: string;
   status: PlanStatus;
   steps: PlanStep[];
+  agent_role?: string;
 }
 
 export interface CreatePlanInput {
@@ -218,6 +219,7 @@ export interface CreatePlanInput {
   title: string;
   objective: string;
   steps: Omit<PlanStep, "step_id" | "order_index">[];
+  agent_role?: string;
 }
 
 export function createPlan(input: CreatePlanInput): Plan {
@@ -233,6 +235,7 @@ export function createPlan(input: CreatePlanInput): Plan {
     title: input.title,
     objective: input.objective,
     status: "draft",
+    agent_role: input.agent_role,
     steps: input.steps.map((step, idx) => ({
       ...step,
       step_id: uuidv4(),
@@ -264,6 +267,7 @@ export interface TraceSegment {
 
 export interface Trace {
   type: "Trace";
+  id: string;
   meta: ModuleMeta;
   trace_id: string;
   context_id: string;
@@ -294,10 +298,12 @@ export function createTrace(input: CreateTraceInput): Trace {
     throw new Error("Trace: root_span.span_id is required (GATE-TRACE-ROOTSPAN-01)");
   }
 
+  const traceId = uuidv4();
   return {
     type: "Trace",
+    id: traceId,
     meta: createMeta(),
-    trace_id: uuidv4(),
+    trace_id: traceId,
     context_id: input.context_id,
     root_span: rootSpan,
     status: "pending",
@@ -325,6 +331,7 @@ export interface ConfirmDecision {
 
 export interface Confirm {
   type: "Confirm";
+  id: string;
   meta: ModuleMeta;
   confirm_id: string;
   target_type: ConfirmTargetType; // GATE-CONFIRM-TARGETTYPE-01
@@ -353,10 +360,12 @@ export function createConfirm(input: CreateConfirmInput): Confirm {
     );
   }
 
+  const confirmId = uuidv4();
   return {
     type: "Confirm",
+    id: confirmId,
     meta: createMeta(),
-    confirm_id: uuidv4(),
+    confirm_id: confirmId,
     target_type: input.target_type,
     target_id: input.target_id,
     status: "pending",
@@ -380,6 +389,7 @@ export interface DialogMessage {
 
 export interface Dialog {
   type: "Dialog";
+  id: string;
   meta: ModuleMeta;
   dialog_id: string;
   context_id: string;
@@ -393,10 +403,12 @@ export interface Dialog {
 export function createDialog(context_id: string, initialMessage?: DialogMessage): Dialog {
   const messages = initialMessage ? [initialMessage] : [];
 
+  const dialogId = uuidv4();
   return {
     type: "Dialog",
+    id: dialogId,
     meta: createMeta(),
-    dialog_id: uuidv4(),
+    dialog_id: dialogId,
     context_id,
     status: "open",
     messages,

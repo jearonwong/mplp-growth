@@ -1,6 +1,6 @@
 {
   "name": "@openclaw/mplp-growth-runtime",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "MPLP Growth 7x24 Autonomous Orchestrator",
   "keywords": [
     "ael",
@@ -40,6 +40,7 @@
     "@types/node": "^20.0.0",
     "@types/node-schedule": "^2.1.8",
     "@types/uuid": "^9.0.8",
+    "jsdom": "^28.1.0",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   }

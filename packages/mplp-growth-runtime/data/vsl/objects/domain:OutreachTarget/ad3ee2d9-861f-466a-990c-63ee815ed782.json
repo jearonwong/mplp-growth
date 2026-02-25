@@ -1,0 +1,9 @@
+{
+  "type": "domain:OutreachTarget",
+  "id": "ad3ee2d9-861f-466a-990c-63ee815ed782",
+  "context_id": "fdeedee5-f2ed-47e4-a8e3-7617be364816",
+  "name": "Linux Foundation",
+  "org_type": "foundation",
+  "status": "research",
+  "notes": "Vendor-neutral AI initiative alignment.\nOutreach constraints:\n- Lead with observability/governance, not \"compliance\"\n- Reference Validation Lab as evidence-first approach\n- Emphasize POSIX analogy for understanding\n- No certification claims\n- Potential: LF AI & Data landscape consideration"
+}

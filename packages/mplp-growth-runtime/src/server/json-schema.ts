@@ -11,7 +11,7 @@ export interface ExecuteResponse {
   error?: {
     code: "validation_error" | "not_found" | "conflict" | "internal" | "policy_violation";
     message: string;
-    details?: any;
+    details?: unknown;
   };
 }
 
@@ -48,6 +48,8 @@ export interface QueueItem {
     excerpt: string;
     source_ref?: string;
   }[];
+  drafted_by_role?: string;
+  rationale_bullets?: string[];
 }
 
 export interface QueueResponse {
@@ -67,5 +69,5 @@ export interface RunnerStatusResponse {
   last_tick_at?: string;
   is_running: boolean;
   active_task?: string;
-  last_runs: any[];
+  last_runs: unknown[];
 }

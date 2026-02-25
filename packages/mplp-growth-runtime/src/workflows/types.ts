@@ -3,6 +3,7 @@
  */
 
 import { v4 as uuidv4 } from "uuid";
+import type { AgentRole } from "../agents/roles";
 import type { Plan, Trace, Confirm, Context, PlanStep } from "../modules/mplp-modules";
 import type { ContentAssetNode, ChannelProfileNode } from "../psg/growth-nodes";
 
@@ -26,6 +27,7 @@ export interface WorkflowRunResult {
 /** Workflow input base */
 export interface WorkflowInput {
   context_id: string;
+  role_id?: AgentRole;
 }
 
 /** WF-03 Publish Pack Input */

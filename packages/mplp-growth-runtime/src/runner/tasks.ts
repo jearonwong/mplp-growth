@@ -15,11 +15,12 @@ export async function runWeeklyBrief() {
 
 export async function runDailyOutreachDraft() {
   console.log("[Task] Running Daily Outreach Draft...");
-  // Default to a known segment or rotate?
-  // v0.4.0 MVP: hardcode 'foundations' segment for now, or just don't segment to process all research-status targets?
-  // The command requires --segment. Let's assume 'foundations' for MVP or pick from config.
-  // Using --dry-run to ensure no PSG writes (just drafts).
-  await executeCommand("outreach", ["--segment", "foundations", "--channel", "email", "--dry-run"]);
+  const roleId = runnerState.getConfig().jobs["outreach-draft"]?.run_as_role;
+  const args = ["--segment", "foundations", "--channel", "email", "--dry-run"];
+  if (roleId) {
+    args.push("--role-id", roleId);
+  }
+  await executeCommand("outreach", args);
 }
 
 export async function runHourlyInbox() {
@@ -40,7 +41,13 @@ export async function runHourlyInbox() {
       source_ref: c.source_ref,
     }));
 
-    const out = await executeCommand("inbox", [JSON.stringify(mapped)]);
+    const args = [JSON.stringify(mapped)];
+    const roleId = runnerState.getConfig().jobs.inbox?.run_as_role;
+    if (roleId) {
+      args.push("--role-id", roleId);
+    }
+
+    const out = await executeCommand("inbox", args);
     console.log(`[Task] Inbox execution result: \n${out}`);
   } else {
     console.log("[Task] Inbox: No new signals from connectors.");

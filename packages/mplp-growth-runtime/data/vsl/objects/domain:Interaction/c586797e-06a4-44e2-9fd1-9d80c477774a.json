@@ -1,0 +1,20 @@
+{
+  "type": "domain:Interaction",
+  "id": "c586797e-06a4-44e2-9fd1-9d80c477774a",
+  "context_id": "0cbed707-6968-49e7-af09-8187fd7d84a6",
+  "platform": "hn",
+  "status": "pending",
+  "content": "Fair question. A few differentiators:<p>On open source: tools like Vault, Doppler, or Infisical are excellent but require setup, maintenance, and infra (or their hosted tier). KeyEnv&#x27;s value prop is zero infra — install the CLI, run `keyenv run -- your-command`, done. For small teams that don&#x27;t want to manage secrets infra, it&#x27;s faster.<p>On hyperscalers: AWS Secrets Manager &#x2F; GCP Secret Manager work well at scale but have per-secret pricing that adds up, and the DX friction is non-trivial (IAM, SDK calls, region config). We&#x27;re optimized for developer teams who want CLI-first access without cloud-specific lock-in.<p>On pricing: the per-user model is intentional — it stays predictable as the secret count grows. You&#x27;re right that at very high secret counts hyperscalers win on cost. We&#x27;re not competing there; we&#x27;re competing on simplicity for teams of 2–20 devs.<p>Not a fit for every team — just trying to make the tradeoffs honest.",
+  "author": "ivannovazzi",
+  "source_ref": "https://news.ycombinator.com/item?id=47139051",
+  "received_at": "2026-02-25T11:00:02.304Z",
+  "response": "Thank you for your message about \"Fair question. A few differentiators:<p>On open so...\". We appreciate your engagement with MPLP.",
+  "metadata": {
+    "drafted_by_role": "Responder",
+    "rationale_bullets": [
+      "Acknowledges the user's point and thanks them",
+      "Keeps tone aligned with brand tagline",
+      "Avoids forbidden terms"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "Confirm",
+  "id": "59929370-ded0-4666-9e51-4924a4913389",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-25T11:04:29.885Z",
+    "updated_at": "2026-02-25T11:04:29.885Z"
+  },
+  "confirm_id": "59929370-ded0-4666-9e51-4924a4913389",
+  "target_type": "plan",
+  "target_id": "b540c8cd-fe98-40c0-9a76-c516147b34e1",
+  "status": "pending",
+  "requested_by_role": "growth-copilot",
+  "requested_at": "2026-02-25T11:04:29.885Z"
+}

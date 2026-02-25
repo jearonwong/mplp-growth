@@ -119,6 +119,48 @@
         </div>
       </div>
 
+      <div id="redraft-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 400px">
+          <h2 style="margin-top: 0">Re-draft as Role</h2>
+          <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 15px">
+            Re-run the deterministic executor with a different agent role. The draft text will be
+            regenerated — no state will be advanced.
+          </p>
+          <input type="hidden" id="redraft-confirm-id" />
+          <select
+            id="redraft-role-select"
+            style="
+              width: 100%;
+              padding: 8px;
+              margin-bottom: 20px;
+              border: 1px solid var(--border-color);
+              border-radius: 4px;
+              background: var(--bg-color);
+              color: var(--text-primary);
+              font-size: 14px;
+            "
+          >
+            <option value="">Select a role…</option>
+            <option value="Responder">Responder</option>
+            <option value="BDWriter">BDWriter</option>
+            <option value="Editor">Editor</option>
+            <option value="Analyst">Analyst</option>
+          </select>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="app.handlers.closeRedraftModal()">
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              id="redraft-submit-btn"
+              onclick="app.handlers.confirmRedraft()"
+            >
+              Confirm Redraft
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div id="impact-modal" class="modal-overlay hidden">
         <div class="modal-content">
           <h2 style="margin-top: 0">Approval Impact</h2>

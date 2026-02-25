@@ -1,0 +1,40 @@
+{
+  "type": "Plan",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-25T12:00:02.294Z",
+    "updated_at": "2026-02-25T12:00:02.294Z"
+  },
+  "plan_id": "959304de-b46d-4f64-b3f3-c11d1670ac98",
+  "context_id": "0cbed707-6968-49e7-af09-8187fd7d84a6",
+  "title": "Inbox Handler — 2 interactions",
+  "objective": "Process 2 incoming interactions, generate draft replies, and await confirmation",
+  "status": "draft",
+  "agent_role": "Responder",
+  "steps": [
+    {
+      "description": "Ingest interactions into PSG",
+      "status": "completed",
+      "action": "create",
+      "target_node_id": "Responder",
+      "step_id": "0162f574-9103-42dc-b6d7-4ea0721acd86",
+      "order_index": 0
+    },
+    {
+      "description": "Generate draft replies",
+      "status": "completed",
+      "action": "update",
+      "target_node_id": "Responder",
+      "step_id": "3d0d44e1-9168-4227-85dc-0320785a42ec",
+      "order_index": 1
+    },
+    {
+      "description": "Confirm batch response",
+      "status": "pending",
+      "action": "update",
+      "target_node_id": "Responder",
+      "step_id": "f183b199-97ac-4c6b-be87-96186bff766e",
+      "order_index": 2
+    }
+  ]
+}

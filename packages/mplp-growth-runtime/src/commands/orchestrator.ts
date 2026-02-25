@@ -12,6 +12,7 @@
 import os from "node:os";
 import path from "node:path";
 import { v4 as uuidv4 } from "uuid";
+import type { AgentRole } from "../agents/roles";
 import type { Context, Confirm, Plan, PlanStep, Trace } from "../modules/mplp-modules";
 import type {
   ChannelProfileNode,
@@ -423,6 +424,7 @@ export async function cmdInbox(args: string[]): Promise<string> {
 
     // Parse arguments — support JSON or flag-based input
     let interactions: InboxHandlerInput["interactions"] = [];
+    let roleId: AgentRole | undefined;
 
     if (args[0]?.startsWith("[")) {
       // JSON array input
@@ -449,6 +451,8 @@ export async function cmdInbox(args: string[]): Promise<string> {
           content = args[++i];
         } else if (args[i] === "--author" && args[i + 1]) {
           author = args[++i];
+        } else if (args[i] === "--role-id" && args[i + 1]) {
+          roleId = args[++i] as AgentRole;
         }
       }
 
@@ -465,7 +469,7 @@ export async function cmdInbox(args: string[]): Promise<string> {
     }
 
     const result = await runInboxHandler(
-      { context_id: contextId, interactions },
+      { context_id: contextId, interactions, role_id: roleId },
       { psg, vsl, eventEmitter },
     );
 
@@ -531,6 +535,7 @@ export async function cmdOutreach(args: string[]): Promise<string> {
     let dryRun = false;
     let goal: string | undefined;
     let tone: string | undefined;
+    let roleId: AgentRole | undefined;
     const positional: string[] = [];
 
     for (let i = 0; i < args.length; i++) {
@@ -546,6 +551,8 @@ export async function cmdOutreach(args: string[]): Promise<string> {
         goal = args[++i];
       } else if (args[i] === "--tone" && args[i + 1]) {
         tone = args[++i];
+      } else if (args[i] === "--role-id" && args[i + 1]) {
+        roleId = args[++i] as AgentRole;
       } else {
         positional.push(args[i]);
       }
@@ -646,7 +653,15 @@ export async function cmdOutreach(args: string[]): Promise<string> {
       }> = [];
       for (const target of targets) {
         const result = await runOutreach(
-          { context_id: contextId, target_id: target.id, channel, goal, tone, dry_run: dryRun },
+          {
+            context_id: contextId,
+            target_id: target.id,
+            channel,
+            goal,
+            tone,
+            dry_run: dryRun,
+            role_id: roleId,
+          },
           { psg, vsl, eventEmitter },
         );
         const outputs = result.outputs as Record<string, unknown>;
@@ -689,7 +704,15 @@ export async function cmdOutreach(args: string[]): Promise<string> {
     }
 
     const result = await runOutreach(
-      { context_id: contextId, target_id: targetId, channel, goal, tone, dry_run: dryRun },
+      {
+        context_id: contextId,
+        target_id: targetId,
+        channel,
+        goal,
+        tone,
+        dry_run: dryRun,
+        role_id: roleId,
+      },
       { psg, vsl, eventEmitter },
     );
 

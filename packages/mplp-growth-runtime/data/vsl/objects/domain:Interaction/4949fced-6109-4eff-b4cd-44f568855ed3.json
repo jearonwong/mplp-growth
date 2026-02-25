@@ -1,0 +1,20 @@
+{
+  "type": "domain:Interaction",
+  "id": "4949fced-6109-4eff-b4cd-44f568855ed3",
+  "context_id": "0cbed707-6968-49e7-af09-8187fd7d84a6",
+  "platform": "manual",
+  "status": "pending",
+  "content": "Another unrelated mention for testing expansion",
+  "author": "bob",
+  "source_ref": "manual-1772017465989",
+  "received_at": "2026-02-25T11:04:29.871Z",
+  "response": "Thank you for your message about \"Another unrelated mention for testing expansion...\". We appreciate your engagement with MPLP.",
+  "metadata": {
+    "drafted_by_role": "Responder",
+    "rationale_bullets": [
+      "Acknowledges the user's point and thanks them",
+      "Keeps tone aligned with brand tagline",
+      "Avoids forbidden terms"
+    ]
+  }
+}

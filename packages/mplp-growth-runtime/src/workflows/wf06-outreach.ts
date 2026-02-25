@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import type { EventEmitter } from "../glue/event-emitter";
 import type { ProjectSemanticGraph } from "../psg/types";
 import type { ValueStateLayer } from "../vsl/types";
+import { executor } from "../agents/executor.js";
 import {
   createPlan,
   createTrace,
@@ -135,8 +136,17 @@ export async function runOutreach(
     const tone = input.tone || (policyConfig?.tone_default as string) || "professional";
     const goal = input.goal || `Introduce ${brand.name} and explore partnership opportunities`;
 
-    // Generate outreach content based on channel
-    const draftContent = generateOutreachDraft(brand, audiences, target, input.channel, goal, tone);
+    // Generate outreach content based on channel using BDWriter
+    const draft = await executor.run("BDWriter", {
+      kind: "outreach_draft",
+      target,
+      channel: input.channel,
+      goal,
+      brand,
+      policy: policyConfig,
+    });
+
+    const draftContent = draft.content;
 
     // Create ContentAsset for the outreach
     const asset: ContentAssetNode = createContentAsset({
@@ -149,6 +159,8 @@ export async function runOutreach(
         channel: input.channel,
         workflow: "wf06-outreach",
         generated_at: new Date().toISOString(),
+        drafted_by_role: "BDWriter",
+        rationale_bullets: draft.rationale_bullets,
       },
     });
     asset.status = "reviewed"; // Draft complete, awaiting confirm
@@ -233,6 +245,7 @@ export async function runOutreach(
       context_id: input.context_id,
       title: `Outreach — ${target.name} via ${input.channel}`,
       objective: goal,
+      agent_role: "BDWriter",
       steps: [
         createStep("Load context and outreach target", "create", input.target_id),
         createStep(`Draft ${input.channel} outreach to ${target.name}`, "create", asset.id),

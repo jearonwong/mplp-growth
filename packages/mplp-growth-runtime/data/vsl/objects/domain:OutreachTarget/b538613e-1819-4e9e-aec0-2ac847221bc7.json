@@ -1,0 +1,9 @@
+{
+  "type": "domain:OutreachTarget",
+  "id": "b538613e-1819-4e9e-aec0-2ac847221bc7",
+  "context_id": "fdeedee5-f2ed-47e4-a8e3-7617be364816",
+  "name": "ISO/IEC JTC 1",
+  "org_type": "standards",
+  "status": "research",
+  "notes": "International standard for AI systems.\nFocus areas:\n- SC 42 (Artificial Intelligence) alignment\n- Evidence-based verification methodology\n- International standards track potential\n- Complementary to IEEE P2247 multi-agent work"
+}

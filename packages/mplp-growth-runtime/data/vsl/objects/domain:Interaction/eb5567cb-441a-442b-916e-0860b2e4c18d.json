@@ -1,0 +1,12 @@
+{
+  "type": "domain:Interaction",
+  "id": "eb5567cb-441a-442b-916e-0860b2e4c18d",
+  "context_id": "28222c5b-c4c0-43b4-ac0b-a05acf8f8658",
+  "platform": "hn",
+  "status": "pending",
+  "content": "Yes, the open-source release he did is what introduced me to Miranda.  I rewrote a lot of my previous Haskell solutions to Advent of Code puzzles with it, and liked it so much I decided to try to improve on it ;-)<p>That&#x27;s what led to Admiran.  I originally wrote Admiran in Miranda, then bootstrapped from that to self-hosting when it was stable enough to do so.  The original Miranda combinator compiler &#x2F; interpreter took 20 minutes to compile all of Admiran, while the self-hosted version now takes 20 seconds.<p>One of the grad students of David Turner has taken up maintenance on the original Miranda source; the repository is now at <a href=\"https:&#x2F;&#x2F;codeberg.org&#x2F;DATurner&#x2F;miranda\" rel=\"nofollow\">https:&#x2F;&#x2F;codeberg.org&#x2F;DATurner&#x2F;miranda</a>",
+  "author": "taolson",
+  "source_ref": "https://news.ycombinator.com/item?id=47091071",
+  "received_at": "2026-02-21T13:00:02.582Z",
+  "response": "Thank you for your message about \"Yes, the open-source release he did is what introd\". We appreciate your engagement with MPLP."
+}

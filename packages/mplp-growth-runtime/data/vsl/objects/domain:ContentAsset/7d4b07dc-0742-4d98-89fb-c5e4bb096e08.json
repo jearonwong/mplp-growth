@@ -1,0 +1,16 @@
+{
+  "type": "domain:ContentAsset",
+  "id": "7d4b07dc-0742-4d98-89fb-c5e4bb096e08",
+  "context_id": "7f88834a-e5d6-4590-a902-3eec171d1d20",
+  "asset_type": "thread",
+  "status": "draft",
+  "title": "Thread Template",
+  "content": "Thread: {{topic}}\n\n1/ {{topic}} is reshaping how {{audience}} build and deploy AI systems.\n\nHere's what you need to know 🧵\n\n2/ The challenge: {{audience}} face fragmented tooling, inconsistent interfaces, and vendor lock-in.\n\n3/ The solution: a protocol-first approach that separates concerns and enables interoperability.\n\n4/ Key benefits for {{audience}}:\n- Standardized interfaces across frameworks\n- Deterministic evaluation and verification\n- Vendor-neutral governance\n\n5/ Join the conversation: mplp.io\n\n[Template — customize with /create thread --template <id> --topic \"...\" --audience \"...\"]",
+  "platform_variants": {
+    "x": "Thread optimized for X — short punchy hooks",
+    "linkedin": "LinkedIn article format — professional tone"
+  },
+  "created_at": "2026-02-21T14:04:57.095Z",
+  "metadata": {},
+  "is_template": true
+}

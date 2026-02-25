@@ -1,0 +1,23 @@
+{
+  "type": "domain:ContentAsset",
+  "id": "9ebbc5d1-7e81-4c3a-be46-95e1e8cbd00c",
+  "context_id": "0cbed707-6968-49e7-af09-8187fd7d84a6",
+  "asset_type": "outreach_email",
+  "status": "reviewed",
+  "title": "Outreach to Linux Foundation via email",
+  "content": "Hi Linux Foundation,\n\nI saw your recent work and wanted to introduce MPLP. We help technical founders build automated growth workflows. Let me know if you are open to a quick chat.",
+  "platform_variants": {},
+  "created_at": "2026-02-21T14:33:17.772Z",
+  "metadata": {
+    "target_id": "211976c7-70f7-4c4f-888d-01fa6d849078",
+    "channel": "email",
+    "workflow": "wf06-outreach",
+    "generated_at": "2026-02-21T14:33:17.772Z",
+    "drafted_by_role": "BDWriter",
+    "rationale_bullets": [
+      "States purpose in first sentence",
+      "Includes MPLP canonical link CTA",
+      "Passes forbidden-terms scan"
+    ]
+  }
+}

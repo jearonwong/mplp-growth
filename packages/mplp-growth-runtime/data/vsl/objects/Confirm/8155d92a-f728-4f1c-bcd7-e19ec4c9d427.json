@@ -1,0 +1,14 @@
+{
+  "type": "Confirm",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T13:00:02.592Z",
+    "updated_at": "2026-02-21T13:00:02.592Z"
+  },
+  "confirm_id": "8155d92a-f728-4f1c-bcd7-e19ec4c9d427",
+  "target_type": "plan",
+  "target_id": "22abe086-eec7-4232-a086-63a3fc654813",
+  "status": "pending",
+  "requested_by_role": "growth-copilot",
+  "requested_at": "2026-02-21T13:00:02.592Z"
+}

@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from "uuid";
 import type { EventEmitter } from "../glue/event-emitter";
 import type { ProjectSemanticGraph } from "../psg/types";
 import type { ValueStateLayer } from "../vsl/types";
+import { executor } from "../agents/executor.js";
 import {
   createPlan,
   createTrace,
@@ -145,24 +146,29 @@ export async function runContentFactory(
       context_id: input.context_id,
       title: `Create ${input.asset_type} — ${input.topic || "New Content"}`,
       objective: `Generate ${input.asset_type} for ${selectedAudience?.segment || "general"} audience`,
+      agent_role: "Editor",
       steps: [
-        createStep("Load brand and audience context", "create", assetId),
-        createStep("Generate initial draft", "create", assetId),
-        createStep("Format for target platforms", "format", assetId),
-        createStep("Review gate (requires approval)", "update", assetId),
-        createStep("Persist to PSG", "update", assetId),
+        createStep("Load brand and audience context", "create", "Editor"),
+        createStep("Generate initial draft", "create", "Editor"),
+        createStep("Format for target platforms", "format", "Editor"),
+        createStep("Review gate (requires approval)", "update", "Editor"),
+        createStep("Persist to PSG", "update", "Editor"),
       ],
     });
     plan.status = "in_progress";
     await psg.putNode(plan as any);
 
-    // Simulate LLM content generation
-    const generatedContent = generateContent(
-      input.asset_type,
-      brand,
-      selectedAudience,
-      input.topic,
-    );
+    // Call Editor agent
+    const draft = await executor.run("Editor", {
+      kind: "content_variant",
+      asset_type: input.asset_type,
+      topic: input.topic,
+      audience: selectedAudience?.segment,
+      brand: brand,
+      channels: targetChannels.map((c) => c.platform),
+    });
+
+    const generatedContent = draft.content;
 
     // Create ContentAsset
     const asset = createContentAsset({
@@ -171,6 +177,10 @@ export async function runContentFactory(
       title: input.topic || `${input.asset_type} for ${selectedAudience?.segment || "general"}`,
       content: generatedContent,
       plan_id: plan.plan_id,
+      metadata: {
+        drafted_by_role: "Editor",
+        rationale_bullets: draft.rationale_bullets,
+      },
     });
     // Override the auto-generated ID
     (asset as any).id = assetId;

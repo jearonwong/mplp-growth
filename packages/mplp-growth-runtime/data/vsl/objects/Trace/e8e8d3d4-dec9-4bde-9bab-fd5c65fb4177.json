@@ -1,0 +1,18 @@
+{
+  "type": "Trace",
+  "meta": {
+    "schema_version": "1.0.0",
+    "created_at": "2026-02-21T14:26:41.568Z",
+    "updated_at": "2026-02-21T14:26:41.568Z"
+  },
+  "trace_id": "e8e8d3d4-dec9-4bde-9bab-fd5c65fb4177",
+  "context_id": "28222c5b-c4c0-43b4-ac0b-a05acf8f8658",
+  "root_span": {
+    "span_id": "1e8e0cdd-3161-48f7-997c-c48dceaf0ad1",
+    "name": "WF-06 Outreach — CNCF (Cloud Native Computing Foundation)",
+    "started_at": "2026-02-21T14:26:41.568Z"
+  },
+  "status": "running",
+  "plan_id": "de65c453-8fa9-46cb-b4b2-b370a4066f06",
+  "started_at": "2026-02-21T14:26:41.568Z"
+}

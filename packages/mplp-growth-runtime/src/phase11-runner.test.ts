@@ -6,7 +6,7 @@ import { server } from "./server/index.js";
 describe("Phase 11: Runner & API (v0.4.0)", () => {
   beforeAll(async () => {
     // Initialize runner state
-    runnerState.setConfig({ enabled: false });
+    runnerState.setConfig({ runner_enabled: false, policy_level: "safe" } as any);
     // Mock getRuntime/init logic if needed, but integration test might fail if environment not set.
     // However, fastify.inject doesn't start the server, just mocks the request.
     // The handlers call getRuntime() which initializes VSL/PSG.
@@ -80,7 +80,7 @@ describe("Phase 11: Runner & API (v0.4.0)", () => {
       url: "/api/runner/status",
     });
     const json = response.json();
-    expect(json.enabled).toBe(false);
+    expect(json.runner_enabled).toBe(false);
     expect(json.policy_level).toBe("safe");
   });
 });

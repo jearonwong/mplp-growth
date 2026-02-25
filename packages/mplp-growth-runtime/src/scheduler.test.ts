@@ -9,19 +9,18 @@ describe("GATE-RUNNER-SCHEDULE-01: Scheduler Abstraction", () => {
   beforeEach(() => {
     clock = new VirtualClock();
     scheduler = new Scheduler(clock);
-    runnerState.releaseLock();
-    // Clear logs
-    (runnerState as any).state.last_task_runs = [];
+    runnerState.releaseLock("dummy");
+    // Clear logs (handled by dropping state mutator in new jobs map logic)
   });
 
   it("triggers task when virtual clock matches rule (simulated by explicit trigger)", async () => {
     const taskMock = vi.fn().mockResolvedValue(undefined);
 
     // Register task
-    scheduler.register("0 9 * * *", "brief-task", taskMock);
+    scheduler.register("0 9 * * *", "brief", taskMock);
 
     // Initial state
-    expect(runnerState.getSnapshot().last_task_runs.length).toBe(0);
+    expect(runnerState.getSnapshot().jobs["brief"]?.last_status).toBeUndefined();
 
     // Tick clock (simulated trigger for test)
     await clock.triggerAll();
@@ -29,12 +28,9 @@ describe("GATE-RUNNER-SCHEDULE-01: Scheduler Abstraction", () => {
     expect(taskMock).toHaveBeenCalled();
 
     // Check Observability (FIX-1)
-    const logs = runnerState.getSnapshot().last_task_runs;
-    expect(logs.length).toBe(1);
-    expect(logs[0].task_id).toBe("brief-task");
-    expect(logs[0].status).toBe("success");
-    expect(logs[0].started_at).toBeDefined();
-    expect(logs[0].finished_at).toBeDefined();
+    const job = runnerState.getSnapshot().jobs["brief"];
+    expect(job.last_status).toBe("success");
+    expect(job.last_tick_at).toBeDefined();
   });
 
   it("prevents concurrent execution (Locking)", async () => {
@@ -42,7 +38,7 @@ describe("GATE-RUNNER-SCHEDULE-01: Scheduler Abstraction", () => {
     runnerState.acquireLock("manual-lock");
 
     const taskMock = vi.fn().mockResolvedValue(undefined);
-    scheduler.register("0 10 * * *", "locked-task", taskMock);
+    scheduler.register("0 10 * * *", "outreach-draft", taskMock);
 
     // Trigger
     await clock.triggerAll();
@@ -51,7 +47,7 @@ describe("GATE-RUNNER-SCHEDULE-01: Scheduler Abstraction", () => {
     expect(taskMock).not.toHaveBeenCalled();
 
     // Logs should NOT contain new run (skip log logic resides in scheduler but we don't record skips in state currently to avoid noise, just console warn)
-    const logs = runnerState.getSnapshot().last_task_runs;
-    expect(logs.length).toBe(0);
+    const job = runnerState.getSnapshot().jobs["outreach-draft"];
+    expect(job?.last_status).toBeUndefined();
   });
 });

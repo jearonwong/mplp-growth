@@ -1,0 +1,30 @@
+{
+  "type": "domain:ChannelProfile",
+  "id": "b6a2bb19-7c0f-4a10-84d9-d944d4d2e758",
+  "context_id": "bb958074-d102-4473-a474-235ac2ec24a2",
+  "platform": "x",
+  "status": "active",
+  "handle": "@mplp_protocol",
+  "format_rules": {
+    "max_chars": 280,
+    "thread_max_tweets": 10,
+    "use_hashtags": ["#MPLP", "#MultiAgent", "#AI", "#AIGovernance"],
+    "avoid_hashtags": ["#certified", "#compliance"],
+    "link_strategy": "final tweet only",
+    "tone": "Technical but accessible, avoid hype",
+    "forbidden": [
+      "certification",
+      "certified",
+      "compliance certified",
+      "MPLP certified",
+      "endorsed by",
+      "approved by",
+      "framework",
+      "product",
+      "platform",
+      "guaranteed",
+      "ensures safety",
+      "100% compliant"
+    ]
+  }
+}

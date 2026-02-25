@@ -6,7 +6,7 @@ import { server } from "./server/index";
 describe("Phase 12 Gates — Health Version SSOT (v0.4.1)", () => {
   beforeAll(async () => {
     await server.ready();
-    runnerState.setConfig({ enabled: true, policy_level: "safe" });
+    runnerState.setConfig({ runner_enabled: true, policy_level: "safe" } as any);
   });
 
   afterAll(async () => {
@@ -22,7 +22,7 @@ describe("Phase 12 Gates — Health Version SSOT (v0.4.1)", () => {
       const data = response.json();
       expect(response.statusCode).toBe(200);
       expect(data.version).toBe(version);
-      expect(data.version).toBe("0.4.1");
+      expect(data.version).toBe("0.6.0");
     });
   });
 

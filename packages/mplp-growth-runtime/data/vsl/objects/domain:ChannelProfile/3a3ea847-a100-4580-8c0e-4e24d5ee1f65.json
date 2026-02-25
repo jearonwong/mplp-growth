@@ -1,0 +1,29 @@
+{
+  "type": "domain:ChannelProfile",
+  "id": "3a3ea847-a100-4580-8c0e-4e24d5ee1f65",
+  "context_id": "fdeedee5-f2ed-47e4-a8e3-7617be364816",
+  "platform": "linkedin",
+  "status": "active",
+  "handle": "mplp-protocol",
+  "format_rules": {
+    "max_chars": 3000,
+    "structure": "Hook → Problem → Solution → CTA",
+    "use_emojis": false,
+    "link_strategy": "first comment for algorithm",
+    "tone": "Professional, enterprise-friendly",
+    "forbidden": [
+      "certification",
+      "certified",
+      "compliance certified",
+      "MPLP certified",
+      "endorsed by",
+      "approved by",
+      "framework",
+      "product",
+      "platform",
+      "guaranteed",
+      "ensures safety",
+      "100% compliant"
+    ]
+  }
+}

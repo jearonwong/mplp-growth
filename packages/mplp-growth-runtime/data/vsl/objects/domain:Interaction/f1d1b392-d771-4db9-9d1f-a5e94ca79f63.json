@@ -1,0 +1,11 @@
+{
+  "type": "domain:Interaction",
+  "id": "f1d1b392-d771-4db9-9d1f-a5e94ca79f63",
+  "context_id": "0cbed707-6968-49e7-af09-8187fd7d84a6",
+  "platform": "email",
+  "status": "pending",
+  "content": "Outreach to Linux Foundation: Introduce MPLP (Multi-Agent Lifecycle Protocol) and explore partnership opportunities",
+  "author": "MPLP (Multi-Agent Lifecycle Protocol)",
+  "received_at": "2026-02-21T14:33:17.775Z",
+  "response": "[Draft asset: 9ebbc5d1-7e81-4c3a-be46-95e1e8cbd00c]"
+}

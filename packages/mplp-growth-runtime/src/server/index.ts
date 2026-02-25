@@ -12,7 +12,6 @@ import type { PSGNode } from "../psg/types.js";
 import { version } from "../../package.json";
 import { executeCommand, getRuntime } from "../commands/orchestrator.js";
 import { loadConfig } from "../config.js";
-import { runnerDaemon } from "../runner/daemon.js";
 import { runnerState } from "../runner/state.js";
 import {
   runWeeklyBrief,
@@ -252,6 +251,8 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
     let impact_summary = "";
     let will_change: string[] = [];
     let will_not_do: string[] = [];
+    let drafted_by_role: string | undefined;
+    let rationale_bullets: string[] | undefined;
 
     if (c.target_id) {
       plan = await psg.getNode<Plan & PSGNode>("Plan", c.target_id);
@@ -264,8 +265,8 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
           (stepDescs.includes("Draft") && stepDescs.includes("Policy compliance"))
         ) {
           category = "outreach";
-          target_id = plan.steps[0]?.reference_id;
-          asset_id = plan.steps[1]?.reference_id;
+          target_id = plan.steps[0]?.reference_id || plan.steps[0]?.target_node_id;
+          asset_id = plan.steps[1]?.reference_id || plan.steps[1]?.target_node_id;
           const match = title.match(/via\s+(\w+)$/i);
           if (match) {
             channel = match[1];
@@ -307,7 +308,7 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
           will_not_do = ["Will NOT send messages automatically"];
         } else if (stepDescs.includes("review") || stepDescs.includes("Weekly")) {
           category = "review";
-          asset_id = plan.steps[0]?.reference_id;
+          asset_id = plan.steps[0]?.reference_id || plan.steps[0]?.target_node_id;
         }
       }
     }
@@ -318,6 +319,10 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
         const lines = asset.content.split("\n");
         const previewLines = lines.slice(0, 20).join("\n");
         preview = previewLines.length > 800 ? previewLines.substring(0, 800) + "..." : previewLines;
+      }
+      if (asset?.metadata) {
+        drafted_by_role = asset.metadata.drafted_by_role as string | undefined;
+        rationale_bullets = asset.metadata.rationale_bullets as string[] | undefined;
       }
     } else if (category === "inbox") {
       const pendingInteractions = await psg.query<InteractionNode>({
@@ -346,6 +351,14 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
             source_ref: i.source_ref,
           };
         });
+
+        // Inbox batch shares the same agent logic, take from first interaction
+        if (pendingInteractions[0].metadata) {
+          drafted_by_role = pendingInteractions[0].metadata.drafted_by_role as string | undefined;
+          rationale_bullets = pendingInteractions[0].metadata.rationale_bullets as
+            | string[]
+            | undefined;
+        }
       } else {
         preview = "No pending interactions found.";
       }
@@ -370,6 +383,8 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
       interactions_count,
       interaction_summaries,
       interactions: interactions_data,
+      drafted_by_role,
+      rationale_bullets,
     };
 
     if (category === "outreach") {

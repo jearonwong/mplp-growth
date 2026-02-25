@@ -66,6 +66,10 @@ function renderQueueItem(item) {
     ? `<span class="badge" style="background:var(--accent-color)">${item.channel}</span>`
     : "";
 
+  const roleBadge = item.drafted_by_role
+    ? `<span class="badge" style="background:var(--success-color); border: 1px solid var(--border-color); color: var(--bg-color)">Drafted by ${escapeHtml(item.drafted_by_role)}</span>`
+    : "";
+
   const statusColors = { pass: "var(--success-color)", fail: "var(--danger-color)" };
   const policyColor = statusColors[item.policy_check.status] || "var(--text-secondary)";
   const policyReasons = item.policy_check.reasons
@@ -78,6 +82,7 @@ function renderQueueItem(item) {
         <div>
           <span class="badge">${item.category.toUpperCase()}</span>
           ${channelBadge}
+          ${roleBadge}
           <span style="margin-left:8px;font-weight:bold">${escapeHtml(item.title)}</span>
         </div>
         <span style="font-size:12px;color:var(--text-secondary)">${createdStr}</span>
@@ -88,42 +93,81 @@ function renderQueueItem(item) {
         <span style="font-size:12px">${escapeHtml(policyReasons)}</span>
       </div>
       
-      ${item.category === 'inbox' && item.interactions_count ? `
+      ${
+        item.category === "inbox" && item.interactions_count
+          ? `
       <div style="margin-top:12px; padding:10px; background:var(--bg-color); border:1px solid var(--border-color); border-radius:4px;">
         <div style="font-size:13px; font-weight:bold; margin-bottom:8px; color:var(--text-secondary)">
           Inbox: ${item.interactions_count} interactions pending
         </div>
-        ${(item.interaction_summaries || []).map(s => {
-          let badgeColor = "var(--text-secondary)";
-          if (s.platform === "hn") badgeColor = "#ff6600";
-          if (s.platform === "manual") badgeColor = "var(--accent-color)";
-          return \`<div style="font-size:13px; margin-bottom:6px;">
-            <span class="badge" style="background:\${badgeColor}; margin-right:5px; padding:2px 6px; font-size:10px;">\${s.platform.toUpperCase()}</span>
-            <strong>@\${escapeHtml(s.author)}:</strong> \${escapeHtml(s.excerpt)}
-          </div>\`;
-        }).join('')}
+        ${(item.interaction_summaries || [])
+          .map((s) => {
+            let badgeColor = "var(--text-secondary)";
+            if (s.platform === "hn") {
+              badgeColor = "#ff6600";
+            }
+            if (s.platform === "manual") {
+              badgeColor = "var(--accent-color)";
+            }
+            return `<div style="font-size:13px; margin-bottom:6px;">
+            <span class="badge" style="background:${badgeColor}; margin-right:5px; padding:2px 6px; font-size:10px;">${s.platform.toUpperCase()}</span>
+            <strong>@${escapeHtml(s.author)}:</strong> ${escapeHtml(s.excerpt)}
+          </div>`;
+          })
+          .join("")}
       </div>
-      ` : ''}
+      `
+          : ""
+      }
+
+      ${
+        item.rationale_bullets && item.rationale_bullets.length > 0
+          ? `
+      <div style="margin-top:10px; font-size:13px; color:var(--text-secondary); background: rgba(0,0,0,0.02); padding: 8px; border-radius: 4px;">
+        <strong style="display:block; margin-bottom: 4px;">Why:</strong>
+        <ul style="margin: 0; padding-left: 20px;">
+          ${item.rationale_bullets
+            .slice(0, 3)
+            .map((b) => `<li>${escapeHtml(b)}</li>`)
+            .join("")}
+        </ul>
+      </div>
+      `
+          : ""
+      }
 
       <details style="margin-top:10px; cursor:pointer;">
         <summary style="font-weight:bold; color:var(--accent-color);">Preview Content</summary>
         <div class="queue-data" style="margin-top:8px">
-          ${item.interactions ? item.interactions.map(i => {
-             let badgeColor = "var(--text-secondary)";
-             if (i.platform === "hn") badgeColor = "#ff6600";
-             if (i.platform === "manual") badgeColor = "var(--accent-color)";
-             return `<div style="margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+          ${
+            item.interactions
+              ? item.interactions
+                  .map((i) => {
+                    let badgeColor = "var(--text-secondary)";
+                    if (i.platform === "hn") {
+                      badgeColor = "#ff6600";
+                    }
+                    if (i.platform === "manual") {
+                      badgeColor = "var(--accent-color)";
+                    }
+                    return `<div style="margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
                <span class="badge" style="background:${badgeColor}; margin-right:5px;">${(i.platform || "unknown").toUpperCase()}</span>
                <strong>@${escapeHtml(i.author || "anonymous")}</strong><br/>
                <div style="margin-top:4px">${escapeHtml(i.content)}</div>
                <div style="margin-top:4px; color:var(--text-secondary); font-style:italic">Draft: "${escapeHtml(i.response)}"</div>
              </div>`;
-          }).join("") : escapeHtml(item.preview)}
+                  })
+                  .join("")
+              : escapeHtml(item.preview)
+          }
         </div>
       </details>
     </div>
     <div class="actions">
-      <button class="btn btn-success" onclick='app.handlers.openImpactModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Approve</button>
+      <button class="btn btn-success" onclick='app.handlers.openImpactModal(${JSON.stringify({
+        ...item,
+        rationale_bullets: item.rationale_bullets ? item.rationale_bullets.slice(0, 3) : undefined,
+      }).replace(/'/g, "&#39;")})'>Approve</button>
       <button class="btn btn-danger" onclick="app.handlers.reject('${item.confirm_id}')">Reject</button>
     </div>
   `;
@@ -235,7 +279,7 @@ async function initSettings() {
         tdId.style.padding = "10px";
         tdId.innerHTML = `
           <label style="display: flex; align-items: center; gap: 8px;">
-            <input type="checkbox" ${jobData.enabled ? 'checked' : ''} onchange="app.handlers.toggleJob('${jobId}', event)"/>
+            <input type="checkbox" ${jobData.enabled ? "checked" : ""} onchange="app.handlers.toggleJob('${jobId}', event)"/>
             <strong style="color: var(--text-primary)">${jobId}</strong>
           </label>
         `;
@@ -257,12 +301,16 @@ async function initSettings() {
           sColor = "var(--warning-color)";
         } else if (jobData.last_status) {
           pStatus = jobData.last_status;
-          if (pStatus === 'success') sColor = "var(--success-color)";
-          if (pStatus === 'failed') sColor = "var(--danger-color)";
+          if (pStatus === "success") {
+            sColor = "var(--success-color)";
+          }
+          if (pStatus === "failed") {
+            sColor = "var(--danger-color)";
+          }
         }
         tdStatus.innerHTML = `<span style="color: ${sColor}">${pStatus}</span>`;
         if (jobData.last_error) {
-           tdStatus.innerHTML += `<div style="font-size: 11px; color: var(--danger-color); margin-top: 4px;">${jobData.last_error}</div>`;
+          tdStatus.innerHTML += `<div style="font-size: 11px; color: var(--danger-color); margin-top: 4px;">${jobData.last_error}</div>`;
         }
 
         // Next Run
@@ -275,8 +323,10 @@ async function initSettings() {
         } else if (jobData.next_run_at) {
           const date = new Date(jobData.next_run_at);
           // Show format "Mon 10:00" or similar
-          const tz = status.timezone ? ` (${status.timezone})` : ' (UTC)';
-          tdNext.innerText = date.toLocaleString('en-US', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) + tz;
+          const tz = status.timezone ? ` (${status.timezone})` : " (UTC)";
+          tdNext.innerText =
+            date.toLocaleString("en-US", { weekday: "short", hour: "2-digit", minute: "2-digit" }) +
+            tz;
         } else {
           tdNext.innerText = "unknown";
         }
@@ -285,7 +335,7 @@ async function initSettings() {
         const tdAction = document.createElement("td");
         tdAction.style.padding = "10px";
         tdAction.innerHTML = `
-          <button class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;" onclick="app.handlers.runJob('${jobId}')" ${isRunning ? 'disabled' : ''}>
+          <button class="btn btn-primary" style="padding: 4px 10px; font-size: 12px;" onclick="app.handlers.runJob('${jobId}')" ${isRunning ? "disabled" : ""}>
             Run Now
           </button>
         `;
@@ -307,38 +357,59 @@ async function initSettings() {
 window.app = {
   handlers: {
     closeImpactModal: () => {
-      document.getElementById('impact-modal').classList.add('hidden');
+      document.getElementById("impact-modal").classList.add("hidden");
     },
     openImpactModal: (item) => {
-      document.getElementById('impact-modal').classList.remove('hidden');
-      
-      const badge = document.getElementById('impact-badge');
-      badge.innerText = (item.impact_level || 'low').toUpperCase();
-      if (item.impact_level === 'high') badge.style.backgroundColor = 'var(--danger-color)';
-      else if (item.impact_level === 'medium') badge.style.backgroundColor = 'var(--warning-color)';
-      else badge.style.backgroundColor = 'var(--success-color)';
-      
-      document.getElementById('impact-summary').innerText = item.impact_summary || 'Safely execute task operations.';
-      
-      const ulChange = document.getElementById('impact-will-change');
-      ulChange.innerHTML = '';
-      (item.will_change || []).forEach(val => {
-         const li = document.createElement('li');
-         li.innerText = val;
-         ulChange.appendChild(li);
-      });
-      if (!item.will_change || item.will_change.length === 0) ulChange.innerHTML = '<li style="color:var(--text-secondary)">No significant state changes.</li>';
+      document.getElementById("impact-modal").classList.remove("hidden");
 
-      const ulNot = document.getElementById('impact-will-not');
-      ulNot.innerHTML = '';
-      (item.will_not_do || []).forEach(val => {
-         const li = document.createElement('li');
-         li.innerText = val;
-         ulNot.appendChild(li);
-      });
-      if (!item.will_not_do || item.will_not_do.length === 0) ulNot.innerHTML = '<li style="color:var(--text-secondary)">N/A</li>';
+      const badge = document.getElementById("impact-badge");
+      badge.innerText = (item.impact_level || "low").toUpperCase();
+      if (item.impact_level === "high") {
+        badge.style.backgroundColor = "var(--danger-color)";
+      } else if (item.impact_level === "medium") {
+        badge.style.backgroundColor = "var(--warning-color)";
+      } else {
+        badge.style.backgroundColor = "var(--success-color)";
+      }
 
-      document.getElementById('impact-confirm-btn').onclick = () => app.handlers.confirmApprove(item.confirm_id);
+      document.getElementById("impact-summary").innerText =
+        item.impact_summary || "Safely execute task operations.";
+
+      const ulChange = document.getElementById("impact-will-change");
+      ulChange.innerHTML = "";
+
+      const roleBadgeEl = document.getElementById("impact-role-badge");
+      if (roleBadgeEl) {
+        if (item.drafted_by_role) {
+          roleBadgeEl.innerHTML = `<span class="badge" style="background:var(--success-color); border: 1px solid var(--border-color); color: var(--bg-color); margin-bottom: 15px; display: inline-block;">Drafted by ${escapeHtml(item.drafted_by_role)}</span>`;
+        } else {
+          roleBadgeEl.innerHTML = "";
+        }
+      }
+
+      (item.will_change || []).forEach((val) => {
+        const li = document.createElement("li");
+        li.innerText = val;
+        ulChange.appendChild(li);
+      });
+      if (!item.will_change || item.will_change.length === 0) {
+        ulChange.innerHTML =
+          '<li style="color:var(--text-secondary)">No significant state changes.</li>';
+      }
+
+      const ulNot = document.getElementById("impact-will-not");
+      ulNot.innerHTML = "";
+      (item.will_not_do || []).forEach((val) => {
+        const li = document.createElement("li");
+        li.innerText = val;
+        ulNot.appendChild(li);
+      });
+      if (!item.will_not_do || item.will_not_do.length === 0) {
+        ulNot.innerHTML = '<li style="color:var(--text-secondary)">N/A</li>';
+      }
+
+      document.getElementById("impact-confirm-btn").onclick = () =>
+        app.handlers.confirmApprove(item.confirm_id);
     },
     confirmApprove: async (id) => {
       app.handlers.closeImpactModal();
@@ -400,9 +471,9 @@ window.app = {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             jobs: {
-              [jobId]: { enabled: checked }
-            }
-          })
+              [jobId]: { enabled: checked },
+            },
+          }),
         });
         if (res.ok) {
           await initSettings();
@@ -420,28 +491,30 @@ window.app = {
         const res = await fetch(`${API_BASE}/runner/execute`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ task_id: jobId })
+          body: JSON.stringify({ task_id: jobId }),
         });
         const json = await res.json();
-        
+
         if (res.status === 409) {
           alert(`Task ${jobId} is already running.`);
           return;
         }
-        
+
         if (res.ok) {
           // Immediately update status, then poll 3 times over 3 seconds to catch completion
-          await initSettings(); 
+          await initSettings();
           let pollCount = 0;
           const pollInterval = setInterval(async () => {
-             await initSettings();
-             pollCount++;
-             if (pollCount >= 3) clearInterval(pollInterval);
+            await initSettings();
+            pollCount++;
+            if (pollCount >= 3) {
+              clearInterval(pollInterval);
+            }
           }, 1000);
         } else {
           alert(`Failed to trigger ${jobId}: ${json.error}`);
         }
-      } catch(err) {
+      } catch (err) {
         alert("API Error executing job");
       }
     },
@@ -451,11 +524,11 @@ window.app = {
       btn.disabled = true;
       statusSpan.innerText = "Seeding...";
       statusSpan.style.color = "var(--text-secondary)";
-      
+
       try {
         const res = await fetch(`${API_BASE}/admin/seed`, { method: "POST" });
         const json = await res.json();
-        
+
         if (json.ok) {
           if (json.already_seeded) {
             statusSpan.innerText = "✅ " + json.message;
@@ -474,7 +547,7 @@ window.app = {
       } finally {
         btn.disabled = false;
       }
-    }
+    },
   },
   initDashboard,
   initQueue,

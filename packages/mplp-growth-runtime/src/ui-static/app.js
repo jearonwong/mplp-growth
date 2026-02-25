@@ -100,7 +100,9 @@ function renderQueueItem(item) {
         <div style="font-size:13px; font-weight:bold; margin-bottom:8px; color:var(--text-secondary)">
           Inbox: ${item.interactions_count} interactions pending
         </div>
+        <div id="inbox-summaries-${item.id}">
         ${(item.interaction_summaries || [])
+          .slice(0, 2)
           .map((s) => {
             let badgeColor = "var(--text-secondary)";
             if (s.platform === "hn") {
@@ -109,12 +111,47 @@ function renderQueueItem(item) {
             if (s.platform === "manual") {
               badgeColor = "var(--accent-color)";
             }
+
+            let excerptHtml = escapeHtml(s.excerpt);
+            if (s.source_ref && s.source_ref.startsWith("http")) {
+              excerptHtml = `<a href="${escapeHtml(s.source_ref)}" target="_blank" style="color:var(--accent-color); text-decoration:none;">${excerptHtml}</a>`;
+            }
             return `<div style="font-size:13px; margin-bottom:6px;">
             <span class="badge" style="background:${badgeColor}; margin-right:5px; padding:2px 6px; font-size:10px;">${s.platform.toUpperCase()}</span>
-            <strong>@${escapeHtml(s.author)}:</strong> ${escapeHtml(s.excerpt)}
+            <strong>@${escapeHtml(s.author)}:</strong> ${excerptHtml}
           </div>`;
           })
           .join("")}
+        </div>
+
+        ${
+          item.interaction_summaries && item.interaction_summaries.length > 2
+            ? `<div id="inbox-summaries-hidden-${item.id}" class="hidden">
+           ${item.interaction_summaries
+             .slice(2)
+             .map((s) => {
+               let badgeColor = "var(--text-secondary)";
+               if (s.platform === "hn") {
+                 badgeColor = "#ff6600";
+               }
+               if (s.platform === "manual") {
+                 badgeColor = "var(--accent-color)";
+               }
+               let excerptHtml = escapeHtml(s.excerpt);
+               if (s.source_ref && s.source_ref.startsWith("http")) {
+                 excerptHtml = `<a href="${escapeHtml(s.source_ref)}" target="_blank" style="color:var(--accent-color); text-decoration:none;">${excerptHtml}</a>`;
+               }
+               return `<div style="font-size:13px; margin-bottom:6px;">
+               <span class="badge" style="background:${badgeColor}; margin-right:5px; padding:2px 6px; font-size:10px;">${s.platform.toUpperCase()}</span>
+               <strong>@${escapeHtml(s.author)}:</strong> ${excerptHtml}
+             </div>`;
+             })
+             .join("")}
+        </div>
+        <div style="margin-top: 5px;"><a href="#" onclick="event.preventDefault(); app.handlers.toggleInboxSummaries('${item.id}')" id="inbox-toggle-${item.id}" style="font-size: 12px; color: var(--accent-color); text-decoration: none;">Show all (${item.interaction_summaries.length})</a></div>
+        `
+            : ""
+        }
       </div>
       `
           : ""
@@ -167,9 +204,12 @@ function renderQueueItem(item) {
       <button class="btn btn-success" onclick='app.handlers.openImpactModal(${JSON.stringify({
         ...item,
         rationale_bullets: item.rationale_bullets ? item.rationale_bullets.slice(0, 3) : undefined,
-      }).replace(/'/g, "&#39;")})'>Approve</button>
+      })
+        .replace(/'/g, "&#39;")
+        .replace(/</g, "\\u003c")
+        .replace(/>/g, "\\u003e")})'>Approve</button>
       <button class="btn btn-danger" onclick="app.handlers.reject('${item.confirm_id}')">Reject</button>
-      ${item.asset_id ? `<button class="btn btn-primary" style="margin-left:auto; background:var(--bg-color); color:var(--text-primary); border:1px solid var(--border-color);" onclick='app.handlers.openEditModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Edit Draft</button>` : ""}
+      ${item.asset_id ? `<button class="btn btn-primary" style="margin-left:auto; background:var(--bg-color); color:var(--text-primary); border:1px solid var(--border-color);" onclick='app.handlers.openEditModal(${JSON.stringify(item).replace(/'/g, "&#39;").replace(/</g, "\\u003c").replace(/>/g, "\\u003e")})'>Edit Draft</button>` : ""}
     </div>
   `;
   return div;
@@ -210,35 +250,106 @@ async function initQueue() {
   console.log("Initializing Queue...");
   try {
     const queue = await fetchQueue();
-    const list = document.getElementById("queue-list");
-    list.innerHTML = "";
+    let flatItems = [];
 
     // Flatten categories
-    // Response: { pending_count: N, categories: { outreach: [], publish: [], ... } }
-    let hasItems = false;
     for (const [cat, items] of Object.entries(queue.categories)) {
-      if (items.length > 0) {
-        hasItems = true;
-        // Add header?
-        items.forEach((item) => {
-          // Standardize item structure if needed, or pass category
-          item.category = cat;
-          list.appendChild(renderQueueItem(item));
-        });
+      items.forEach((item) => {
+        item.category = cat;
+        // Build search index
+        let searchText = [item.title, item.preview, item.category].join(" ");
+        if (item.drafted_by_role) {
+          searchText += " " + item.drafted_by_role;
+        }
+        if (item.rationale_bullets) {
+          searchText += " " + item.rationale_bullets.join(" ");
+        }
+        if (item.channel) {
+          searchText += " " + item.channel;
+        }
+        if (item.target_id) {
+          searchText += " " + item.target_id;
+        }
+        if (item.asset_id) {
+          searchText += " " + item.asset_id;
+        }
+
+        if (item.interaction_summaries) {
+          searchText +=
+            " " +
+            item.interaction_summaries
+              .map((s) => `${s.platform} ${s.author} ${s.excerpt} ${s.source_ref || ""}`)
+              .join(" ");
+        }
+        if (item.interactions) {
+          searchText +=
+            " " +
+            item.interactions
+              .map((i) => `${i.platform} ${i.author} ${i.content} ${i.response}`)
+              .join(" ");
+        }
+        item.__search_text = searchText.toLowerCase();
+        flatItems.push(item);
+      });
+    }
+
+    // Sort stable descending by created_at
+    flatItems.sort((a, b) => {
+      if (a.created_at && b.created_at) {
+        return new Date(b.created_at) - new Date(a.created_at);
       }
-    }
+      return 0;
+    });
 
-    if (!hasItems) {
-      list.innerHTML =
-        '<div class="card" style="text-align:center; color: var(--text-secondary)">No pending items. All caught up!</div>';
-    }
-
-    // Update badge in sidebar?
-    // document.getElementById('queue-badge').innerText = queue.pending_count;
+    app.state.queueItems = flatItems;
+    renderQueueList();
   } catch (err) {
     console.error("Queue init failed", err);
     document.getElementById("queue-list").innerHTML =
       `<div class="card" style="color: var(--danger-color)">Error loading queue: ${err.message}</div>`;
+  }
+}
+
+function renderQueueList() {
+  const list = document.getElementById("queue-list");
+  if (!list) {
+    return;
+  }
+  list.innerHTML = "";
+
+  const query = app.state.queueSearchQuery.toLowerCase().trim();
+  const cat = app.state.queueCategory;
+
+  let filtered = app.state.queueItems;
+
+  if (cat !== "all") {
+    filtered = filtered.filter((item) => item.category === cat);
+  }
+
+  if (query) {
+    filtered = filtered.filter((item) => item.__search_text.includes(query));
+  }
+
+  if (filtered.length > 0) {
+    filtered.forEach((item) => {
+      list.appendChild(renderQueueItem(item));
+    });
+  } else {
+    // Empty state
+    let reason = query
+      ? `No items match "${escapeHtml(query)}" in ${escapeHtml(cat)}.`
+      : `No items in ${escapeHtml(cat)}.`;
+    if (!query && cat === "all" && app.state.queueItems.length === 0) {
+      reason = "No pending items. All caught up!";
+    }
+    list.innerHTML = `
+        <div class="card" style="text-align:center; padding: 40px;">
+           <h3 style="margin-top:0">No matching items</h3>
+           <p style="color: var(--text-secondary); margin-bottom: 20px;">${reason}</p>
+           <button class="btn btn-secondary" onclick="app.handlers.clearFilters()">Clear filters</button>
+           <p style="color: var(--text-secondary); margin-top: 15px; font-size: 13px;">Tip: run Inbox/Outreach jobs from <a href="settings.html" style="color: var(--accent-color)">Settings &rarr; Job Dashboard</a></p>
+        </div>
+     `;
   }
 }
 
@@ -376,7 +487,49 @@ async function initSettings() {
 
 // Global Handlers (for onclick attributes)
 window.app = {
+  state: {
+    queueItems: [],
+    queueCategory: "all",
+    queueSearchQuery: "",
+  },
   handlers: {
+    onSearchInput: (event) => {
+      app.state.queueSearchQuery = event.target.value;
+      renderQueueList();
+    },
+    clearFilters: () => {
+      app.state.queueSearchQuery = "";
+      const searchInput = document.getElementById("queue-search");
+      if (searchInput) {
+        searchInput.value = "";
+      }
+      app.handlers.onCategoryChipClick("all");
+    },
+    onCategoryChipClick: (cat) => {
+      app.state.queueCategory = cat;
+      const chips = document.querySelectorAll("#queue-filter-chips .chip");
+      chips.forEach((el) => {
+        if (el.dataset.category === cat) {
+          el.classList.add("active");
+        } else {
+          el.classList.remove("active");
+        }
+      });
+      renderQueueList();
+    },
+    toggleInboxSummaries: (itemId) => {
+      const hiddenDiv = document.getElementById(`inbox-summaries-hidden-${itemId}`);
+      const toggleLnk = document.getElementById(`inbox-toggle-${itemId}`);
+      if (hiddenDiv && toggleLnk) {
+        if (hiddenDiv.classList.contains("hidden")) {
+          hiddenDiv.classList.remove("hidden");
+          toggleLnk.innerText = "Show less";
+        } else {
+          hiddenDiv.classList.add("hidden");
+          toggleLnk.innerText = `Show all`;
+        }
+      }
+    },
     closeImpactModal: () => {
       document.getElementById("impact-modal").classList.add("hidden");
     },

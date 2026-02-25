@@ -18,7 +18,9 @@ async function fetchQueue() {
 }
 
 async function approveItem(id) {
-  const res = await fetch(`${API_BASE}/queue/${id}/approve`, { method: "POST" });
+  const res = await fetch(`${API_BASE}/queue/${id}/approve`, {
+    method: "POST",
+  });
   return res.json();
 }
 
@@ -70,7 +72,10 @@ function renderQueueItem(item) {
     ? `<span class="badge" style="background:var(--success-color); border: 1px solid var(--border-color); color: var(--bg-color)">Drafted by ${escapeHtml(item.drafted_by_role)}</span>`
     : "";
 
-  const statusColors = { pass: "var(--success-color)", fail: "var(--danger-color)" };
+  const statusColors = {
+    pass: "var(--success-color)",
+    fail: "var(--danger-color)",
+  };
   const policyColor = statusColors[item.policy_check.status] || "var(--text-secondary)";
   const policyReasons = item.policy_check.reasons
     ? ` (${item.policy_check.reasons.join(", ")})`
@@ -113,7 +118,7 @@ function renderQueueItem(item) {
             }
 
             let excerptHtml = escapeHtml(s.excerpt);
-            if (s.source_ref && s.source_ref.startsWith("http")) {
+            if (s.source_ref?.startsWith("http")) {
               excerptHtml = `<a href="${escapeHtml(s.source_ref)}" target="_blank" style="color:var(--accent-color); text-decoration:none;">${excerptHtml}</a>`;
             }
             return `<div style="font-size:13px; margin-bottom:6px;">
@@ -138,7 +143,7 @@ function renderQueueItem(item) {
                  badgeColor = "var(--accent-color)";
                }
                let excerptHtml = escapeHtml(s.excerpt);
-               if (s.source_ref && s.source_ref.startsWith("http")) {
+               if (s.source_ref?.startsWith("http")) {
                  excerptHtml = `<a href="${escapeHtml(s.source_ref)}" target="_blank" style="color:var(--accent-color); text-decoration:none;">${excerptHtml}</a>`;
                }
                return `<div style="font-size:13px; margin-bottom:6px;">
@@ -250,7 +255,7 @@ async function initQueue() {
   console.log("Initializing Queue...");
   try {
     const queue = await fetchQueue();
-    let flatItems = [];
+    const flatItems = [];
 
     // Flatten categories
     for (const [cat, items] of Object.entries(queue.categories)) {
@@ -259,19 +264,19 @@ async function initQueue() {
         // Build search index
         let searchText = [item.title, item.preview, item.category].join(" ");
         if (item.drafted_by_role) {
-          searchText += " " + item.drafted_by_role;
+          searchText += ` ${item.drafted_by_role}`;
         }
         if (item.rationale_bullets) {
-          searchText += " " + item.rationale_bullets.join(" ");
+          searchText += ` ${item.rationale_bullets.join(" ")}`;
         }
         if (item.channel) {
-          searchText += " " + item.channel;
+          searchText += ` ${item.channel}`;
         }
         if (item.target_id) {
-          searchText += " " + item.target_id;
+          searchText += ` ${item.target_id}`;
         }
         if (item.asset_id) {
-          searchText += " " + item.asset_id;
+          searchText += ` ${item.asset_id}`;
         }
 
         if (item.interaction_summaries) {
@@ -457,8 +462,11 @@ async function initSettings() {
           // Show format "Mon 10:00" or similar
           const tz = status.timezone ? ` (${status.timezone})` : " (UTC)";
           tdNext.innerText =
-            date.toLocaleString("en-US", { weekday: "short", hour: "2-digit", minute: "2-digit" }) +
-            tz;
+            date.toLocaleString("en-US", {
+              weekday: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            }) + tz;
         } else {
           tdNext.innerText = "unknown";
         }
@@ -582,6 +590,7 @@ window.app = {
         ulNot.innerHTML = '<li style="color:var(--text-secondary)">N/A</li>';
       }
 
+      // eslint-disable-next-line unicorn/prefer-add-event-listener
       document.getElementById("impact-confirm-btn").onclick = () =>
         app.handlers.confirmApprove(item.confirm_id);
     },
@@ -593,7 +602,7 @@ window.app = {
           alert("Approved!");
           location.reload();
         } else {
-          alert("Error: " + JSON.stringify(res.error));
+          alert(`Error: ${JSON.stringify(res.error)}`);
         }
       } catch (e) {
         alert(e.message);
@@ -648,7 +657,7 @@ window.app = {
           // Ideally update local preview without reloading, but for safety reload queue
           await initQueue();
         } else {
-          alert("Save failed: " + data.error);
+          alert(`Save failed: ${data.error}`);
         }
       } catch (e) {
         console.error("Save error", e);
@@ -695,7 +704,7 @@ window.app = {
           alert("Failed to update job status");
           event.target.checked = !checked;
         }
-      } catch (err) {
+      } catch {
         alert("API Error");
         event.target.checked = !checked;
       }
@@ -728,7 +737,7 @@ window.app = {
         } else {
           alert(`Failed to trigger ${jobId}: ${json.error}`);
         }
-      } catch (err) {
+      } catch {
         alert("API Error executing job");
       }
     },
@@ -745,17 +754,17 @@ window.app = {
 
         if (json.ok) {
           if (json.already_seeded) {
-            statusSpan.innerText = "✅ " + json.message;
+            statusSpan.innerText = `✅ ${json.message}`;
             statusSpan.style.color = "var(--success-color)";
           } else {
             statusSpan.innerText = `✅ Success! Context, ${json.created.channel_profiles} channels, ${json.created.outreach_targets} targets, ${json.created.templates} templates.`;
             statusSpan.style.color = "var(--success-color)";
           }
         } else {
-          statusSpan.innerText = "❌ Error: " + (json.error?.message || "Unknown error");
+          statusSpan.innerText = `❌ Error: ${json.error?.message || "Unknown error"}`;
           statusSpan.style.color = "var(--danger-color)";
         }
-      } catch (err) {
+      } catch {
         statusSpan.innerText = "❌ API Error executing seed";
         statusSpan.style.color = "var(--danger-color)";
       } finally {

@@ -10,6 +10,7 @@ import type { Confirm, Plan, PlanStep } from "../modules/mplp-modules.js";
 import type { ContentAssetNode, InteractionNode } from "../psg/growth-nodes.js";
 import type { PSGNode } from "../psg/types.js";
 import { version } from "../../package.json";
+import { RoleRegistry } from "../agents/roles.js";
 import { executeCommand, getRuntime } from "../commands/orchestrator.js";
 import { loadConfig } from "../config.js";
 import { runnerState } from "../runner/state.js";
@@ -359,6 +360,17 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
             | string[]
             | undefined;
         }
+
+        if (!drafted_by_role) {
+          drafted_by_role = "Responder";
+        }
+        if (!rationale_bullets || rationale_bullets.length === 0) {
+          rationale_bullets = [
+            "Summarizes inbound signal",
+            "Drafts a safe response",
+            "Requires manual approval",
+          ];
+        }
       } else {
         preview = "No pending interactions found.";
       }
@@ -384,7 +396,7 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
       interaction_summaries,
       interactions: interactions_data,
       drafted_by_role,
-      rationale_bullets,
+      rationale_bullets: rationale_bullets?.slice(0, 3),
     };
 
     if (category === "outreach") {
@@ -474,6 +486,53 @@ server.post<{ Params: { id: string }; Reply: ExecuteResponse }>(
         },
       };
     }
+  },
+);
+
+// Get Roles
+server.get("/api/roles", async () => {
+  return Object.values(RoleRegistry).map((r) => ({
+    role_id: r.id,
+    name: r.name,
+    capabilities: [r.description],
+  }));
+});
+
+// Edit Draft
+server.post<{ Params: { id: string }; Body: { content: string } }>(
+  "/api/assets/:id/edit",
+  async (request, reply) => {
+    const { id } = request.params;
+    const { content } = request.body;
+    if (!content || content.trim() === "") {
+      return reply.code(400).send({ ok: false, error: "Content cannot be empty" });
+    }
+
+    const { psg } = await getRuntime();
+    const asset = await psg.getNode<ContentAssetNode>("domain:ContentAsset", id);
+    if (!asset) {
+      return reply.code(404).send({ ok: false, error: `Asset ${id} not found` });
+    }
+
+    asset.content = content;
+    if (!asset.metadata) {
+      asset.metadata = {};
+    }
+
+    const prevVersion =
+      typeof asset.metadata.edit_version === "number" ? asset.metadata.edit_version : 0;
+
+    asset.metadata.edited_by = "founder";
+    asset.metadata.edited_at = new Date().toISOString();
+    asset.metadata.edit_version = prevVersion + 1;
+
+    await psg.putNode(asset);
+
+    return {
+      ok: true,
+      asset_id: id,
+      edit_version: asset.metadata.edit_version,
+    };
   },
 );
 

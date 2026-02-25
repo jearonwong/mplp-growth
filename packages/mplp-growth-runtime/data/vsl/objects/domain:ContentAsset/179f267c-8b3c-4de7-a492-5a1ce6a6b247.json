@@ -1,0 +1,26 @@
+{
+  "type": "domain:ContentAsset",
+  "id": "179f267c-8b3c-4de7-a492-5a1ce6a6b247",
+  "context_id": "0cbed707-6968-49e7-af09-8187fd7d84a6",
+  "asset_type": "outreach_email",
+  "status": "reviewed",
+  "title": "Outreach to CNCF (Cloud Native Computing Foundation) via email",
+  "content": "Hi CNCF (Cloud Native Computing Foundation),\n\nI saw your recent work and wanted to introduce MPLP. We help technical founders build automated growth workflows. Let me know if you are open to a quick chat. [UPDATED BY FOUNDER VERIFICATION]",
+  "platform_variants": {},
+  "created_at": "2026-02-25T10:35:04.753Z",
+  "metadata": {
+    "target_id": "a731a0c1-96b2-417a-b386-235b06934fea",
+    "channel": "email",
+    "workflow": "wf06-outreach",
+    "generated_at": "2026-02-25T10:35:04.753Z",
+    "drafted_by_role": "BDWriter",
+    "rationale_bullets": [
+      "States purpose in first sentence",
+      "Includes MPLP canonical link CTA",
+      "Passes forbidden-terms scan"
+    ],
+    "edited_by": "founder",
+    "edited_at": "2026-02-25T10:40:52.524Z",
+    "edit_version": 1
+  }
+}

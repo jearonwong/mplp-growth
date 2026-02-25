@@ -40,8 +40,11 @@ describe("Phase 13 Gates — Queue Previews (v0.4.1)", () => {
         method: "GET",
         url: "/api/queue",
       });
-      expect(res.statusCode).toBe(200);
       const data = res.json();
+      if (res.statusCode !== 200) {
+        console.log(data);
+      }
+      expect(res.statusCode).toBe(200);
       expect(data.categories).toBeDefined();
 
       const allItems = [

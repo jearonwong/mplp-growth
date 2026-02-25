@@ -26,6 +26,32 @@
       <div id="queue-list" class="queue-list">
         <div class="card" style="text-align: center">Loading queue...</div>
       </div>
+      <div id="edit-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 600px">
+          <h2 style="margin-top: 0">Edit Draft</h2>
+          <input type="hidden" id="edit-asset-id" />
+          <textarea
+            id="edit-textarea"
+            rows="12"
+            style="
+              width: 100%;
+              padding: 8px;
+              margin-top: 10px;
+              margin-bottom: 20px;
+              font-family: monospace;
+              border: 1px solid var(--border-color);
+              border-radius: 4px;
+            "
+          ></textarea>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="app.handlers.closeEditModal()">
+              Cancel
+            </button>
+            <button class="btn btn-primary" onclick="app.handlers.saveEdit()">Save Draft</button>
+          </div>
+        </div>
+      </div>
+
       <div id="impact-modal" class="modal-overlay hidden">
         <div class="modal-content">
           <h2 style="margin-top: 0">Approval Impact</h2>

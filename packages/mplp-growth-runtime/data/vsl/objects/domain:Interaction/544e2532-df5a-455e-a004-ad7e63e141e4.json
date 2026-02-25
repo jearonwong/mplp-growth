@@ -1,0 +1,11 @@
+{
+  "type": "domain:Interaction",
+  "id": "544e2532-df5a-455e-a004-ad7e63e141e4",
+  "context_id": "0cbed707-6968-49e7-af09-8187fd7d84a6",
+  "platform": "email",
+  "status": "pending",
+  "content": "Outreach to CNCF (Cloud Native Computing Foundation): Introduce MPLP (Multi-Agent Lifecycle Protocol) and explore partnership opportunities",
+  "author": "MPLP (Multi-Agent Lifecycle Protocol)",
+  "received_at": "2026-02-25T10:35:04.756Z",
+  "response": "[Draft asset: 179f267c-8b3c-4de7-a492-5a1ce6a6b247]"
+}

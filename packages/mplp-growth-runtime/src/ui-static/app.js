@@ -163,12 +163,13 @@ function renderQueueItem(item) {
         </div>
       </details>
     </div>
-    <div class="actions">
+    <div class="actions" style="display:flex; gap:8px;">
       <button class="btn btn-success" onclick='app.handlers.openImpactModal(${JSON.stringify({
         ...item,
         rationale_bullets: item.rationale_bullets ? item.rationale_bullets.slice(0, 3) : undefined,
       }).replace(/'/g, "&#39;")})'>Approve</button>
       <button class="btn btn-danger" onclick="app.handlers.reject('${item.confirm_id}')">Reject</button>
+      ${item.asset_id ? `<button class="btn btn-primary" style="margin-left:auto; background:var(--bg-color); color:var(--text-primary); border:1px solid var(--border-color);" onclick='app.handlers.openEditModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Edit Draft</button>` : ""}
     </div>
   `;
   return div;
@@ -255,6 +256,26 @@ async function initSettings() {
       }
     } catch (e) {
       console.error("Failed to load config", e);
+    }
+
+    try {
+      const rRes = await fetch(`${API_BASE}/roles`);
+      const roles = await rRes.json();
+      const tbodyRoles = document.getElementById("roles-table-body");
+      if (tbodyRoles) {
+        tbodyRoles.innerHTML = "";
+        roles.forEach((r) => {
+          const tr = document.createElement("tr");
+          tr.style.borderBottom = "1px solid var(--border-color)";
+          tr.innerHTML = `
+            <td style="padding: 10px; font-weight: bold; color: var(--text-primary)">${escapeHtml(r.name)} <br/><span class="badge" style="background:var(--success-color); border: 1px solid var(--border-color); color: var(--bg-color)">${escapeHtml(r.role_id)}</span></td>
+            <td style="padding: 10px; color: var(--text-secondary); font-size: 13px;">${escapeHtml(r.capabilities.join(", "))}</td>
+          `;
+          tbodyRoles.appendChild(tr);
+        });
+      }
+    } catch (e) {
+      console.error("Failed to load roles", e);
     }
 
     const policyEl = document.getElementById("policy-display");
@@ -438,6 +459,46 @@ window.app = {
         }
       } catch (err) {
         console.error(err);
+        alert("API Error");
+      }
+    },
+    closeEditModal: () => {
+      document.getElementById("edit-modal").classList.add("hidden");
+    },
+    openEditModal: (item) => {
+      document.getElementById("edit-modal").classList.remove("hidden");
+      document.getElementById("edit-asset-id").value = item.asset_id;
+
+      // Extract draft text from item.interactions or item.preview
+      let draftText = item.preview;
+      if (item.interactions && item.interactions.length > 0) {
+        draftText = item.interactions[0].response || draftText;
+      }
+      document.getElementById("edit-textarea").value = draftText;
+    },
+    saveEdit: async () => {
+      const assetId = document.getElementById("edit-asset-id").value;
+      const content = document.getElementById("edit-textarea").value;
+      if (!content.trim()) {
+        alert("Content cannot be empty");
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/assets/${assetId}/edit`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          app.handlers.closeEditModal();
+          // Ideally update local preview without reloading, but for safety reload queue
+          await initQueue();
+        } else {
+          alert("Save failed: " + data.error);
+        }
+      } catch (e) {
+        console.error("Save error", e);
         alert("API Error");
       }
     },

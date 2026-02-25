@@ -1,0 +1,15 @@
+{
+  "type": "domain:ContentAsset",
+  "id": "a2f443c4-cab1-4347-b41d-c5102cf426c1",
+  "context_id": "7ac248db-5bfc-4ba1-a324-e11cd9b37edc",
+  "asset_type": "outreach_email",
+  "status": "draft",
+  "title": "Outreach Email Template",
+  "content": "Subject: Exploring Collaboration — MPLP × {{target_name}}\n\nDear {{target_name}} Team,\n\nI'm reaching out from the MPLP project — the POSIX for multi-agent systems.\n\n{{goal}}.\n\nWe believe {{target_name}} shares our commitment to open, interoperable AI infrastructure for {{audience}}.\n\nI'd welcome the opportunity to discuss how MPLP could complement {{target_name}}'s work.\n\nBest regards,\nMPLP Project — mplp.io\n\n[Template — customize with /create outreach_email --template <id> --topic \"...\"]",
+  "platform_variants": {
+    "email": "Standard email format"
+  },
+  "created_at": "2026-02-25T10:38:27.980Z",
+  "metadata": {},
+  "is_template": true
+}

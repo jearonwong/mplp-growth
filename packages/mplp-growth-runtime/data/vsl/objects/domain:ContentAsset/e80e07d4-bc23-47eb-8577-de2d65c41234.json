@@ -1,0 +1,12 @@
+{
+  "type": "domain:ContentAsset",
+  "id": "e80e07d4-bc23-47eb-8577-de2d65c41234",
+  "context_id": "f5f6fa33-ade8-49de-9752-294c3be29ffb",
+  "asset_type": "thread",
+  "status": "draft",
+  "title": "MPLP Introduction Thread",
+  "content": "Thread: What is MPLP?\n\n1/ MPLP (Multi-agent Project Lifecycle Protocol) is the POSIX for multi-agent systems.\n\nNot a framework. Not a product. A specification.\n\n2/ Why does this matter? Today every AI agent framework has its own interface...\n\n[Draft - to be expanded by WF-02]",
+  "platform_variants": {},
+  "created_at": "2026-02-25T10:35:04.499Z",
+  "metadata": {}
+}

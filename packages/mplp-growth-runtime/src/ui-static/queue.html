@@ -23,6 +23,73 @@
         <div class="status-badge" id="global-header-stats"></div>
       </header>
 
+      <div
+        class="queue-controls"
+        style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px"
+      >
+        <div style="display: flex; gap: 10px">
+          <input
+            type="text"
+            id="queue-search"
+            placeholder="Search: target / org / author / platform / text..."
+            style="
+              flex: 1;
+              padding: 10px;
+              border: 1px solid var(--border-color);
+              border-radius: 4px;
+              background: var(--card-bg);
+              color: var(--text-primary);
+            "
+            oninput="app.handlers.onSearchInput(event)"
+          />
+          <button class="btn btn-secondary" onclick="app.handlers.clearFilters()">Clear</button>
+        </div>
+        <div id="queue-filter-chips" style="display: flex; gap: 8px; flex-wrap: wrap">
+          <button
+            class="chip active"
+            data-category="all"
+            onclick="app.handlers.onCategoryChipClick('all')"
+          >
+            All
+          </button>
+          <button
+            class="chip"
+            data-category="outreach"
+            onclick="app.handlers.onCategoryChipClick('outreach')"
+          >
+            Outreach
+          </button>
+          <button
+            class="chip"
+            data-category="inbox"
+            onclick="app.handlers.onCategoryChipClick('inbox')"
+          >
+            Inbox
+          </button>
+          <button
+            class="chip"
+            data-category="publish"
+            onclick="app.handlers.onCategoryChipClick('publish')"
+          >
+            Publish
+          </button>
+          <button
+            class="chip"
+            data-category="review"
+            onclick="app.handlers.onCategoryChipClick('review')"
+          >
+            Review
+          </button>
+          <button
+            class="chip"
+            data-category="other"
+            onclick="app.handlers.onCategoryChipClick('other')"
+          >
+            Other
+          </button>
+        </div>
+      </div>
+
       <div id="queue-list" class="queue-list">
         <div class="card" style="text-align: center">Loading queue...</div>
       </div>

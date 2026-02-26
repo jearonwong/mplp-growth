@@ -36,6 +36,7 @@ export interface QueueItem {
   will_change?: string[];
   will_not_do?: string[];
   interactions?: {
+    id?: string;
     platform: string;
     author?: string;
     content: string;
@@ -50,6 +51,9 @@ export interface QueueItem {
   }[];
   drafted_by_role?: string;
   rationale_bullets?: string[];
+  redrafted_by_role?: string;
+  redraft_version?: number;
+  redraft_rationale_bullets?: string[];
 }
 
 export interface QueueResponse {

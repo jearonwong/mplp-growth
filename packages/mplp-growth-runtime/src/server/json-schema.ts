@@ -56,6 +56,28 @@ export interface QueueItem {
   redraft_rationale_bullets?: string[];
 }
 
+export interface BatchRequest {
+  action: "approve" | "reject" | "redraft";
+  ids: string[];
+  role_id?: string;
+  interaction_ids_map?: Record<string, string[]>;
+}
+
+export interface BatchResultItem {
+  id: string;
+  status: "ok" | "skipped" | "failed";
+  reason?: string;
+  error?: string;
+}
+
+export interface BatchResponse {
+  ok: boolean;
+  action: string;
+  processed: BatchResultItem[];
+  skipped: BatchResultItem[];
+  failed: BatchResultItem[];
+}
+
 export interface QueueResponse {
   pending_count: number;
   categories: {

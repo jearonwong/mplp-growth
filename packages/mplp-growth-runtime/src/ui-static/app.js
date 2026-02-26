@@ -68,9 +68,7 @@ function renderQueueItem(item) {
     ? `<span class="badge" style="background:var(--accent-color)">${item.channel}</span>`
     : "";
 
-  const roleBadge = item.drafted_by_role
-    ? `<span class="badge" style="background:var(--success-color); border: 1px solid var(--border-color); color: var(--bg-color)">Drafted by ${escapeHtml(item.drafted_by_role)}</span>`
-    : "";
+  const roleBadge = `<span class="badge" style="background:var(--success-color); border: 1px solid var(--border-color); color: var(--bg-color)">Drafted by ${escapeHtml(item.drafted_by_role || "Auto")}</span>`;
 
   const redraftBadge = item.redrafted_by_role
     ? `<span class="badge" style="background:#e67e22; border: 1px solid var(--border-color); color: #fff; margin-left:4px;">→ Redrafted by ${escapeHtml(item.redrafted_by_role)} v${item.redraft_version || 1}</span>`
@@ -85,10 +83,13 @@ function renderQueueItem(item) {
     ? ` (${item.policy_check.reasons.join(", ")})`
     : "";
 
+  const isChecked = app.state.selectedIds.has(item.confirm_id);
+
   div.innerHTML = `
     <div class="queue-content">
       <div class="queue-meta" style="display:flex; justify-content:space-between; width:100%;">
-        <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" class="batch-select-checkbox" data-confirm-id="${item.confirm_id}" ${isChecked ? "checked" : ""} onchange="app.handlers.toggleItemSelect('${item.confirm_id}', this.checked)" style="cursor:pointer;" />
           <span class="badge">${item.category.toUpperCase()}</span>
           ${channelBadge}
           ${roleBadge}
@@ -461,7 +462,7 @@ async function initSettings() {
         const tdRole = document.createElement("td");
         tdRole.style.padding = "10px";
         const roles = ["Responder", "BDWriter", "Editor", "Analyst"];
-        const optionsHtml = ["<option value=''>Default</option>"]
+        const optionsHtml = ["<option value=''>(Auto)</option>"]
           .concat(
             roles.map(
               (r) =>
@@ -550,6 +551,7 @@ window.app = {
     queueCategory: "all",
     queueSearchQuery: "",
     selectedInteractions: {},
+    selectedIds: new Set(),
   },
   handlers: {
     onSearchInput: (event) => {
@@ -735,7 +737,12 @@ window.app = {
       const confirmId = document.getElementById("redraft-confirm-id").value;
       const roleId = document.getElementById("redraft-role-select").value;
       if (!roleId) {
-        alert("Please select a role");
+        const hint = document.getElementById("redraft-selection-count");
+        if (hint) {
+          hint.innerText = "⚠ Select a role to redraft.";
+          hint.style.display = "block";
+          hint.style.color = "var(--danger-color)";
+        }
         return;
       }
       const btn = document.getElementById("redraft-submit-btn");
@@ -940,6 +947,134 @@ window.app = {
       } finally {
         btn.disabled = false;
       }
+    },
+    // --- Batch Actions (v0.7.2) ---
+    toggleItemSelect: (confirmId, checked) => {
+      if (checked) {
+        app.state.selectedIds.add(confirmId);
+      } else {
+        app.state.selectedIds.delete(confirmId);
+      }
+      app.handlers.updateBatchToolbar();
+    },
+    updateBatchToolbar: () => {
+      const toolbar = document.getElementById("batch-toolbar");
+      const countEl = document.getElementById("batch-count");
+      if (!toolbar || !countEl) {
+        return;
+      }
+      const n = app.state.selectedIds.size;
+      if (n > 0) {
+        toolbar.style.display = "flex";
+        countEl.innerText = `${n} selected`;
+      } else {
+        toolbar.style.display = "none";
+      }
+    },
+    clearSelection: () => {
+      app.state.selectedIds.clear();
+      document.querySelectorAll(".batch-select-checkbox").forEach((cb) => {
+        cb.checked = false;
+      });
+      app.handlers.updateBatchToolbar();
+    },
+    batchApprove: async () => {
+      await app.handlers.executeBatchAction("approve");
+    },
+    batchReject: async () => {
+      if (!confirm(`Reject ${app.state.selectedIds.size} item(s)?`)) {
+        return;
+      }
+      await app.handlers.executeBatchAction("reject");
+    },
+    openBatchRedraftModal: () => {
+      const modal = document.getElementById("batch-redraft-modal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        document.getElementById("batch-redraft-role").value = "";
+      }
+    },
+    confirmBatchRedraft: async () => {
+      const roleId = document.getElementById("batch-redraft-role").value;
+      if (!roleId) {
+        alert("Please select a role");
+        return;
+      }
+      document.getElementById("batch-redraft-modal").classList.add("hidden");
+      await app.handlers.executeBatchAction("redraft", roleId);
+    },
+    executeBatchAction: async (action, roleId) => {
+      const ids = Array.from(app.state.selectedIds);
+      if (ids.length === 0) {
+        return;
+      }
+
+      const payload = { action, ids };
+      if (roleId) {
+        payload.role_id = roleId;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/queue/batch`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        app.handlers.showBatchResult(data);
+        app.state.selectedIds.clear();
+        await initQueue();
+        app.handlers.updateBatchToolbar();
+      } catch (e) {
+        console.error("Batch error", e);
+        alert("Batch action failed");
+      }
+    },
+    showBatchResult: (data) => {
+      const modal = document.getElementById("batch-result-modal");
+      const body = document.getElementById("batch-result-body");
+      if (!modal || !body) {
+        return;
+      }
+
+      const p = data.processed || [];
+      const s = data.skipped || [];
+      const f = data.failed || [];
+
+      let html = `<div style="margin-bottom:10px;">
+        <strong>Action:</strong> ${escapeHtml(data.action || "?")}
+        &nbsp;|&nbsp;
+        <span style="color:var(--success-color)">✓ ${p.length} processed</span>
+        &nbsp;|&nbsp;
+        <span style="color:var(--text-secondary)">⊘ ${s.length} skipped</span>
+        &nbsp;|&nbsp;
+        <span style="color:var(--danger-color)">✗ ${f.length} failed</span>
+      </div>`;
+
+      if (f.length > 0) {
+        html += `<div style="margin-top:8px;"><strong>Failed:</strong><ul style="padding-left:18px; margin:4px 0;">`;
+        f.slice(0, 5).forEach((item) => {
+          html += `<li style="color:var(--danger-color)">${escapeHtml(item.id)}: ${escapeHtml(item.error || "Unknown error")}</li>`;
+        });
+        if (f.length > 5) {
+          html += `<li>...and ${f.length - 5} more</li>`;
+        }
+        html += `</ul></div>`;
+      }
+
+      if (s.length > 0) {
+        html += `<div style="margin-top:8px;"><strong>Skipped:</strong><ul style="padding-left:18px; margin:4px 0;">`;
+        s.slice(0, 5).forEach((item) => {
+          html += `<li>${escapeHtml(item.id)}: ${escapeHtml(item.reason || "Unknown")}</li>`;
+        });
+        if (s.length > 5) {
+          html += `<li>...and ${s.length - 5} more</li>`;
+        }
+        html += `</ul></div>`;
+      }
+
+      body.innerHTML = html;
+      modal.classList.remove("hidden");
     },
   },
   initDashboard,

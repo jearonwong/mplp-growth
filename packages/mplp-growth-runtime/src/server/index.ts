@@ -22,7 +22,14 @@ import {
   runAutoPublish,
 } from "../runner/tasks.js";
 import { seed } from "../seed.js";
-import { ExecuteResponse, QueueItem, QueueResponse } from "./json-schema.js";
+import {
+  ExecuteResponse,
+  QueueItem,
+  QueueResponse,
+  BatchRequest,
+  BatchResponse,
+  BatchResultItem,
+} from "./json-schema.js";
 
 // __dirname is natively available in CJS.
 // Or better: const uiRoot = path.join(process.cwd(), "packages/mplp-growth-runtime/src/ui-static");
@@ -512,6 +519,118 @@ server.post<{ Params: { id: string }; Reply: ExecuteResponse }>(
         },
       };
     }
+  },
+);
+
+// Batch Queue Actions (v0.7.2)
+server.post<{ Body: BatchRequest; Reply: BatchResponse }>(
+  "/api/queue/batch",
+  async (request, reply) => {
+    const { action, ids, role_id, interaction_ids_map } = request.body;
+
+    if (!action || !ids || !Array.isArray(ids) || ids.length === 0) {
+      return reply.code(400).send({
+        ok: false,
+        action: action || "unknown",
+        processed: [],
+        skipped: [],
+        failed: [{ id: "*", status: "failed", error: "Missing action or ids array" }],
+      });
+    }
+
+    const validActions = ["approve", "reject", "redraft"];
+    if (!validActions.includes(action)) {
+      return reply.code(400).send({
+        ok: false,
+        action,
+        processed: [],
+        skipped: [],
+        failed: [{ id: "*", status: "failed", error: `Invalid action: ${action}` }],
+      });
+    }
+
+    if (action === "redraft") {
+      const validRoles: AgentRole[] = ["Responder", "BDWriter", "Editor", "Analyst"];
+      if (!role_id || !validRoles.includes(role_id as AgentRole)) {
+        return reply.code(400).send({
+          ok: false,
+          action,
+          processed: [],
+          skipped: [],
+          failed: [
+            {
+              id: "*",
+              status: "failed",
+              error: `Redraft requires valid role_id. Valid: ${validRoles.join(", ")}`,
+            },
+          ],
+        });
+      }
+    }
+
+    const processed: BatchResultItem[] = [];
+    const skipped: BatchResultItem[] = [];
+    const failed: BatchResultItem[] = [];
+
+    for (const id of ids) {
+      try {
+        if (action === "approve") {
+          const output = await executeCommand("approve", [id]);
+          if (output) {
+            processed.push({ id, status: "ok" });
+          } else {
+            skipped.push({ id, status: "skipped", reason: "No output from approve" });
+          }
+        } else if (action === "reject") {
+          const { psg } = await getRuntime();
+          const confirm = await psg.getNode<Confirm & PSGNode>("Confirm", id);
+          if (!confirm) {
+            failed.push({ id, status: "failed", error: `Confirm ${id} not found` });
+            continue;
+          }
+          if (confirm.status !== "pending") {
+            skipped.push({ id, status: "skipped", reason: `Status is ${confirm.status}` });
+            continue;
+          }
+          confirm.status = "rejected";
+          await psg.putNode(confirm);
+          processed.push({ id, status: "ok" });
+        } else if (action === "redraft") {
+          // Simulate the single-item redraft via inject to reuse full logic
+          const payload: { role_id: string; interaction_ids?: string[] } = {
+            role_id: role_id as string,
+          };
+          if (interaction_ids_map && interaction_ids_map[id]) {
+            payload.interaction_ids = interaction_ids_map[id];
+          }
+          const res = await server.inject({
+            method: "POST",
+            url: `/api/queue/${id}/redraft`,
+            payload,
+          });
+          const data = res.json();
+          if (data.ok) {
+            processed.push({ id, status: "ok" });
+          } else {
+            failed.push({ id, status: "failed", error: data.error || "Redraft failed" });
+          }
+        }
+      } catch (err: unknown) {
+        failed.push({
+          id,
+          status: "failed",
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+
+    return {
+      ok: failed.length === 0,
+      action,
+      processed,
+      skipped,
+      failed,
+    };
   },
 );
 

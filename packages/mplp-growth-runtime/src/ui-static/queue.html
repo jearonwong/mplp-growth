@@ -90,6 +90,119 @@
         </div>
       </div>
 
+      <!-- Batch Toolbar (v0.7.2) -->
+      <div
+        id="batch-toolbar"
+        style="
+          display: none;
+          margin-bottom: 12px;
+          padding: 10px 14px;
+          background: var(--card-bg);
+          border: 1px solid var(--accent-color);
+          border-radius: 6px;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        "
+      >
+        <span
+          id="batch-count"
+          style="font-weight: bold; color: var(--accent-color); margin-right: 8px"
+          >0 selected</span
+        >
+        <button
+          class="btn btn-success"
+          style="padding: 4px 12px; font-size: 12px"
+          onclick="app.handlers.batchApprove()"
+        >
+          ✓ Approve
+        </button>
+        <button
+          class="btn btn-danger"
+          style="padding: 4px 12px; font-size: 12px"
+          onclick="app.handlers.batchReject()"
+        >
+          ✗ Reject
+        </button>
+        <button
+          class="btn btn-outline"
+          style="padding: 4px 12px; font-size: 12px"
+          onclick="app.handlers.openBatchRedraftModal()"
+        >
+          ↻ Redraft as…
+        </button>
+        <button
+          class="btn btn-secondary"
+          style="padding: 4px 12px; font-size: 12px; margin-left: auto"
+          onclick="app.handlers.clearSelection()"
+        >
+          Clear
+        </button>
+      </div>
+
+      <!-- Batch Result Modal -->
+      <div id="batch-result-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 500px">
+          <h2 style="margin-top: 0">Batch Result</h2>
+          <div
+            id="batch-result-body"
+            style="font-size: 13px; max-height: 300px; overflow-y: auto"
+          ></div>
+          <div class="modal-actions" style="margin-top: 15px">
+            <button
+              class="btn btn-primary"
+              onclick="document.getElementById('batch-result-modal').classList.add('hidden')"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch Redraft Modal -->
+      <div id="batch-redraft-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 400px">
+          <h2 style="margin-top: 0">Batch Redraft</h2>
+          <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 15px">
+            Re-draft all selected items with a different agent role.
+          </p>
+          <select
+            id="batch-redraft-role"
+            style="
+              width: 100%;
+              padding: 8px;
+              margin-bottom: 15px;
+              border: 1px solid var(--border-color);
+              border-radius: 4px;
+              background: var(--bg-color);
+              color: var(--text-primary);
+              font-size: 14px;
+            "
+          >
+            <option value="">Select a role…</option>
+            <option value="Responder">Responder</option>
+            <option value="BDWriter">BDWriter</option>
+            <option value="Editor">Editor</option>
+            <option value="Analyst">Analyst</option>
+          </select>
+          <div class="modal-actions">
+            <button
+              class="btn btn-secondary"
+              onclick="document.getElementById('batch-redraft-modal').classList.add('hidden')"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              id="batch-redraft-submit"
+              onclick="app.handlers.confirmBatchRedraft()"
+            >
+              Confirm Redraft
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div id="queue-list" class="queue-list">
         <div class="card" style="text-align: center">Loading queue...</div>
       </div>
@@ -204,6 +317,57 @@
       document.addEventListener("DOMContentLoaded", () => {
         app.initGlobalHeader();
         app.initQueue();
+
+        // Keyboard shortcuts (v0.7.2)
+        document.addEventListener("keydown", (e) => {
+          // Ignore when typing in input/textarea/select
+          const tag = document.activeElement?.tagName;
+          if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+            if (e.key === "Escape") {
+              document.activeElement.blur();
+            }
+            return;
+          }
+
+          if (e.key === "/") {
+            e.preventDefault();
+            const search = document.getElementById("queue-search");
+            if (search) search.focus();
+            return;
+          }
+
+          if (e.key === "Escape") {
+            // Close any visible modal
+            document.querySelectorAll(".modal-overlay").forEach((m) => {
+              if (!m.classList.contains("hidden")) {
+                m.classList.add("hidden");
+              }
+            });
+            return;
+          }
+
+          // A = approve first visible item, R = redraft first visible item
+          const firstCard = document.querySelector("#queue-list .queue-item");
+          if (!firstCard) return;
+          const confirmId = firstCard
+            .querySelector(".batch-select-checkbox")
+            ?.getAttribute("data-confirm-id");
+          if (!confirmId) return;
+
+          if (e.key === "a" || e.key === "A") {
+            e.preventDefault();
+            const impactBtn = firstCard.querySelector(".btn-primary[onclick*='openImpactModal']");
+            if (impactBtn) impactBtn.click();
+            return;
+          }
+
+          if (e.key === "r" || e.key === "R") {
+            e.preventDefault();
+            const redraftBtn = firstCard.querySelector(".btn-outline[onclick*='openRedraftModal']");
+            if (redraftBtn) redraftBtn.click();
+            return;
+          }
+        });
       });
     </script>
   </body>

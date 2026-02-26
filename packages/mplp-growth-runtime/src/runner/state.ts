@@ -6,7 +6,7 @@
 export interface JobConfig {
   enabled: boolean;
   schedule_cron: string;
-  run_as_role?: "Responder" | "BDWriter" | "Editor" | "Analyst";
+  run_as_role?: "Responder" | "BDWriter" | "Editor" | "Analyst" | null;
 }
 
 export interface JobRuntime {
@@ -215,11 +215,15 @@ export class StateManager {
           this.config.jobs[jobId].schedule_cron = jobUpdates.schedule_cron;
         }
         if (jobUpdates.run_as_role !== undefined) {
-          const validRoles = ["Responder", "BDWriter", "Editor", "Analyst"];
-          if (!validRoles.includes(jobUpdates.run_as_role)) {
-            throw new Error(`Invalid run_as_role: ${jobUpdates.run_as_role}`);
+          if (jobUpdates.run_as_role === null) {
+            delete this.config.jobs[jobId].run_as_role;
+          } else {
+            const validRoles = ["Responder", "BDWriter", "Editor", "Analyst"];
+            if (!validRoles.includes(jobUpdates.run_as_role)) {
+              throw new Error(`Invalid run_as_role: ${jobUpdates.run_as_role}`);
+            }
+            this.config.jobs[jobId].run_as_role = jobUpdates.run_as_role;
           }
-          this.config.jobs[jobId].run_as_role = jobUpdates.run_as_role;
         }
       }
     }

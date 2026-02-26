@@ -72,6 +72,10 @@ function renderQueueItem(item) {
     ? `<span class="badge" style="background:var(--success-color); border: 1px solid var(--border-color); color: var(--bg-color)">Drafted by ${escapeHtml(item.drafted_by_role)}</span>`
     : "";
 
+  const redraftBadge = item.redrafted_by_role
+    ? `<span class="badge" style="background:#e67e22; border: 1px solid var(--border-color); color: #fff; margin-left:4px;">→ Redrafted by ${escapeHtml(item.redrafted_by_role)} v${item.redraft_version || 1}</span>`
+    : "";
+
   const statusColors = {
     pass: "var(--success-color)",
     fail: "var(--danger-color)",
@@ -88,6 +92,7 @@ function renderQueueItem(item) {
           <span class="badge">${item.category.toUpperCase()}</span>
           ${channelBadge}
           ${roleBadge}
+          ${redraftBadge}
           <span style="margin-left:8px;font-weight:bold">${escapeHtml(item.title)}</span>
         </div>
         <span style="font-size:12px;color:var(--text-secondary)">${createdStr}</span>
@@ -162,21 +167,44 @@ function renderQueueItem(item) {
           : ""
       }
 
-      ${
-        item.rationale_bullets && item.rationale_bullets.length > 0
-          ? `
+      ${(() => {
+        const hasDraft = item.rationale_bullets && item.rationale_bullets.length > 0;
+        const hasRedraft =
+          item.redraft_rationale_bullets && item.redraft_rationale_bullets.length > 0;
+        if (!hasDraft && !hasRedraft) {
+          return "";
+        }
+        return `
       <div style="margin-top:10px; font-size:13px; color:var(--text-secondary); background: rgba(0,0,0,0.02); padding: 8px; border-radius: 4px;">
-        <strong style="display:block; margin-bottom: 4px;">Why:</strong>
-        <ul style="margin: 0; padding-left: 20px;">
-          ${item.rationale_bullets
-            .slice(0, 3)
-            .map((b) => `<li>${escapeHtml(b)}</li>`)
-            .join("")}
-        </ul>
+        ${
+          hasDraft
+            ? `
+          <strong style="display:block; margin-bottom: 4px;">Why${hasRedraft ? " (draft)" : ""}:</strong>
+          <ul style="margin: 0; padding-left: 20px;">
+            ${item.rationale_bullets
+              .slice(0, 3)
+              .map((b) => `<li>${escapeHtml(b)}</li>`)
+              .join("")}
+          </ul>
+        `
+            : ""
+        }
+        ${
+          hasRedraft
+            ? `
+          <strong style="display:block; margin-bottom: 4px; margin-top: ${hasDraft ? "8px" : "0"};">Why (redraft):</strong>
+          <ul style="margin: 0; padding-left: 20px;">
+            ${item.redraft_rationale_bullets
+              .slice(0, 3)
+              .map((b) => `<li>${escapeHtml(b)}</li>`)
+              .join("")}
+          </ul>
+        `
+            : ""
+        }
       </div>
-      `
-          : ""
-      }
+      `;
+      })()}
 
       <details style="margin-top:10px; cursor:pointer;">
         <summary style="font-weight:bold; color:var(--accent-color);">Preview Content</summary>
@@ -193,6 +221,7 @@ function renderQueueItem(item) {
                       badgeColor = "var(--accent-color)";
                     }
                     return `<div style="margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+               ${i.id ? `<label style="float:right; font-size:11px; cursor:pointer;"><input type="checkbox" class="interaction-checkbox" data-confirm-id="${item.confirm_id}" data-interaction-id="${i.id}" checked onchange="app.handlers.toggleInteractionSelect(this)" /> redraft</label>` : ""}
                <span class="badge" style="background:${badgeColor}; margin-right:5px;">${(i.platform || "unknown").toUpperCase()}</span>
                <strong>@${escapeHtml(i.author || "anonymous")}</strong><br/>
                <div style="margin-top:4px">${escapeHtml(i.content)}</div>
@@ -520,6 +549,7 @@ window.app = {
     queueItems: [],
     queueCategory: "all",
     queueSearchQuery: "",
+    selectedInteractions: {},
   },
   handlers: {
     onSearchInput: (event) => {
@@ -656,6 +686,44 @@ window.app = {
       modal.classList.remove("hidden");
       document.getElementById("redraft-confirm-id").value = confirmId;
       document.getElementById("redraft-role-select").value = "";
+      // Show selection count for inbox items
+      const sel = app.state.selectedInteractions[confirmId];
+      const countEl = document.getElementById("redraft-selection-count");
+      if (countEl) {
+        if (sel && sel.length > 0) {
+          countEl.innerText = `Redraft ${sel.length} selected interaction(s)`;
+          countEl.style.display = "block";
+        } else {
+          countEl.innerText = "Redraft all interactions";
+          countEl.style.display = "block";
+        }
+      }
+    },
+    toggleInteractionSelect: (checkbox) => {
+      const confirmId = checkbox.getAttribute("data-confirm-id");
+      const interactionId = checkbox.getAttribute("data-interaction-id");
+      if (!confirmId || !interactionId) {
+        return;
+      }
+
+      if (!app.state.selectedInteractions[confirmId]) {
+        // Initialize: collect all checkbox IDs for this confirm
+        const allBoxes = document.querySelectorAll(
+          `.interaction-checkbox[data-confirm-id="${confirmId}"]`,
+        );
+        app.state.selectedInteractions[confirmId] = Array.from(allBoxes).map((cb) =>
+          cb.getAttribute("data-interaction-id"),
+        );
+      }
+
+      const list = app.state.selectedInteractions[confirmId];
+      if (checkbox.checked) {
+        if (!list.includes(interactionId)) {
+          list.push(interactionId);
+        }
+      } else {
+        app.state.selectedInteractions[confirmId] = list.filter((id) => id !== interactionId);
+      }
     },
     closeRedraftModal: () => {
       const modal = document.getElementById("redraft-modal");
@@ -674,10 +742,15 @@ window.app = {
       btn.disabled = true;
       btn.innerText = "Re-drafting…";
       try {
+        const body = { role_id: roleId };
+        const sel = app.state.selectedInteractions[confirmId];
+        if (sel && sel.length > 0) {
+          body.interaction_ids = sel;
+        }
         const res = await fetch(`${API_BASE}/queue/${confirmId}/redraft`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ role_id: roleId }),
+          body: JSON.stringify(body),
         });
         const data = await res.json();
         if (data.ok) {
@@ -783,24 +856,11 @@ window.app = {
       try {
         const payload = {
           jobs: {
-            [jobId]: {},
+            [jobId]: {
+              run_as_role: roleVal === "" ? null : roleVal,
+            },
           },
         };
-        if (roleVal === "") {
-          // we omit run_as_role completely from config, or if we pass undefined it won't be serialized.
-          // Currently backend state.ts only triggers update `if (jobUpdates.run_as_role !== undefined)`
-          // Wait, if we want to reset to default, we might need a special null mechanism.
-          // In our `state.ts`, we didn't add delete logic, so passing undefined ignores the key.
-          // Let's rely on backend accepting it, wait actually backend doesn't delete it.
-          // Since requirements only said "Setting down to BDWriter", we will pass it.
-          // For now, let's just alert if trying to unset since config schema didn't define reset mode cleanly. Wait, we can pass null if we update backend, but let's pass undefined. Actually we will pass it as a blank string and handle it later if needed. But for v0.7.0 MVP we just need to set it to a valid role.
-          // Actually, `state.ts` throws error on invalid role, so let's prevent empty selection or pass it but wait, we only need to pass string.
-        }
-
-        // Better: let's modify the backend call just to send the valid role string if present.
-        if (roleVal) {
-          payload.jobs[jobId].run_as_role = roleVal;
-        }
 
         const res = await fetch(`${API_BASE}/runner/config`, {
           method: "POST",

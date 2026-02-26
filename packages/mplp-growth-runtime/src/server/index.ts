@@ -106,7 +106,7 @@ server.post<{
       {
         enabled?: boolean;
         schedule_cron?: string;
-        run_as_role?: "Responder" | "BDWriter" | "Editor" | "Analyst";
+        run_as_role?: "Responder" | "BDWriter" | "Editor" | "Analyst" | null;
       }
     >;
   };
@@ -261,6 +261,9 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
     let will_not_do: string[] = [];
     let drafted_by_role: string | undefined;
     let rationale_bullets: string[] | undefined;
+    let redrafted_by_role: string | undefined;
+    let redraft_version: number | undefined;
+    let redraft_rationale_bullets: string[] | undefined;
 
     if (c.target_id) {
       plan = await psg.getNode<Plan & PSGNode>("Plan", c.target_id);
@@ -331,6 +334,11 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
       if (asset?.metadata) {
         drafted_by_role = asset.metadata.drafted_by_role as string | undefined;
         rationale_bullets = asset.metadata.rationale_bullets as string[] | undefined;
+        redrafted_by_role = asset.metadata.redrafted_by_role as string | undefined;
+        redraft_version = asset.metadata.redraft_version as number | undefined;
+        redraft_rationale_bullets = asset.metadata.redraft_rationale_bullets as
+          | string[]
+          | undefined;
       }
     } else if (category === "inbox") {
       const pendingInteractions = await psg.query<InteractionNode>({
@@ -341,6 +349,7 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
         preview = "Inbox interactions ready for review.";
         interactions_count = pendingInteractions.length;
         interactions_data = pendingInteractions.map((i) => ({
+          id: i.id,
           platform: i.platform || "unknown",
           author: i.author || "anonymous",
           content: i.content,
@@ -364,6 +373,13 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
         if (pendingInteractions[0].metadata) {
           drafted_by_role = pendingInteractions[0].metadata.drafted_by_role as string | undefined;
           rationale_bullets = pendingInteractions[0].metadata.rationale_bullets as
+            | string[]
+            | undefined;
+          redrafted_by_role = pendingInteractions[0].metadata.redrafted_by_role as
+            | string
+            | undefined;
+          redraft_version = pendingInteractions[0].metadata.redraft_version as number | undefined;
+          redraft_rationale_bullets = pendingInteractions[0].metadata.redraft_rationale_bullets as
             | string[]
             | undefined;
         }
@@ -404,6 +420,9 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
       interactions: interactions_data,
       drafted_by_role,
       rationale_bullets: rationale_bullets?.slice(0, 3),
+      redrafted_by_role,
+      redraft_version,
+      redraft_rationale_bullets: redraft_rationale_bullets?.slice(0, 3),
     };
 
     if (category === "outreach") {
@@ -547,11 +566,11 @@ import type { AgentRole } from "../agents/roles.js";
 // Redraft as Role (P2 — v0.7.0)
 import { executor } from "../agents/executor.js";
 
-server.post<{ Params: { id: string }; Body: { role_id: string } }>(
+server.post<{ Params: { id: string }; Body: { role_id: string; interaction_ids?: string[] } }>(
   "/api/queue/:id/redraft",
   async (request, reply) => {
     const { id: confirmId } = request.params;
-    const { role_id } = request.body;
+    const { role_id, interaction_ids } = request.body;
 
     // Validate role_id
     const validRoles: AgentRole[] = ["Responder", "BDWriter", "Editor", "Analyst"];
@@ -626,7 +645,7 @@ server.post<{ Params: { id: string }; Body: { role_id: string } }>(
           asset.metadata.redrafted_by_role = roleId;
           asset.metadata.drafted_by_role = roleId;
           asset.metadata.redraft_version = prevVersion + 1;
-          asset.metadata.rationale_bullets = (draft.rationale_bullets || []).slice(0, 3);
+          asset.metadata.redraft_rationale_bullets = (draft.rationale_bullets || []).slice(0, 3);
           await psg.putNode(asset);
           redraftedCount++;
         }
@@ -641,6 +660,10 @@ server.post<{ Params: { id: string }; Body: { role_id: string } }>(
       // Filter to interactions that belong to this plan's scope
       // (created around the same time as the plan)
       for (const node of interactions) {
+        // If interaction_ids specified, skip unselected
+        if (interaction_ids && interaction_ids.length > 0 && !interaction_ids.includes(node.id)) {
+          continue;
+        }
         const draft = await executor.run(roleId, {
           kind: "inbox_reply",
           interaction: {
@@ -659,7 +682,7 @@ server.post<{ Params: { id: string }; Body: { role_id: string } }>(
         node.metadata.redrafted_by_role = roleId;
         node.metadata.drafted_by_role = roleId;
         node.metadata.redraft_version = prevVersion + 1;
-        node.metadata.rationale_bullets = (draft.rationale_bullets || []).slice(0, 3);
+        node.metadata.redraft_rationale_bullets = (draft.rationale_bullets || []).slice(0, 3);
         await psg.putNode(node);
         redraftedCount++;
       }

@@ -78,6 +78,19 @@ export interface BatchResponse {
   failed: BatchResultItem[];
 }
 
+export interface DailyRunRequest {
+  auto_approve?: boolean;
+  redraft_role_id?: string;
+}
+
+export interface DailyRunResponse {
+  ok: boolean;
+  inbox_result: { ok: boolean; outputs?: string; error?: string };
+  queue_count: number;
+  batch_result?: BatchResponse;
+  exports_dir?: string;
+}
+
 export interface QueueResponse {
   pending_count: number;
   categories: {

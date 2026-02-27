@@ -1,45 +1,75 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Settings - MPLP Growth Cockpit</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
 
-  <body>
-    <div class="sidebar">
-      <div class="brand">🚀 MPLP Growth</div>
-      <ul class="nav-links">
-        <li><a href="index.html">Dashboard</a></li>
-        <li><a href="queue.html">Queue</a></li>
-        <li><a href="settings.html" class="active">Settings</a></li>
-      </ul>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings - MPLP Growth Cockpit</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-    <div class="main-content">
-      <header>
-        <h1>Settings</h1>
-        <div class="status-badge" id="global-header-stats"></div>
-      </header>
+<body>
+  <div class="sidebar">
+    <div class="brand">🚀 MPLP Growth</div>
+    <ul class="nav-links">
+      <li><a href="index.html">Dashboard</a></li>
+      <li><a href="queue.html">Queue</a></li>
+      <li><a href="settings.html" class="active">Settings</a></li>
+    </ul>
+  </div>
 
-      <div class="card">
-        <h3>Runner Configuration</h3>
-        <p id="policy-display">
-          Current Policy: <span style="color: var(--accent-color)">Safe Mode</span>
+  <div class="main-content">
+    <header>
+      <h1>Settings <span style="font-size: 14px; color: var(--text-secondary); margin-left:10px;">v0.7.3</span></h1>
+      <div class="status-badge" id="global-header-stats"></div>
+    </header>
+
+    <div class="card">
+      <h3>Runner Configuration</h3>
+      <p id="policy-display">
+        Current Policy: <span style="color: var(--accent-color)">Safe Mode</span>
+      </p>
+      <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px">
+        <label>
+          <input type="checkbox" id="auto-publish-toggle" onchange="app.handlers.toggleAutoPublish(event)" />
+          Enable Auto-Publish
+        </label>
+        <span style="font-size: 12px; color: var(--text-secondary)">
+          (Requires Aggressive policy)
+        </span>
+      </div>
+      <div class="card" style="margin-top: 20px">
+        <h3>System Config (P1)</h3>
+
+        <div style="margin-bottom: 20px;">
+          <label style="font-weight: bold; display: block; margin-bottom: 5px;">Quiet Hours (Runner)</label>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+            Suspend all scheduled jobs between these UTC times.
+          </p>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="time" id="quiet-hours-start" onchange="app.handlers.updateQuietHours()"
+              style="padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-primary);" />
+            <span>to</span>
+            <input type="time" id="quiet-hours-end" onchange="app.handlers.updateQuietHours()"
+              style="padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-primary);" />
+            <button class="btn btn-outline" onclick="app.handlers.clearQuietHours()"
+              style="padding: 6px 10px;">Clear</button>
+            <span id="quiet-hours-status" style="font-size: 12px; margin-left: 10px;"></span>
+          </div>
+        </div>
+
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 5px">
+          HackerNews Keywords (via ENV or config.json)
         </p>
-        <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px">
-          <label>
-            <input
-              type="checkbox"
-              id="auto-publish-toggle"
-              onchange="app.handlers.toggleAutoPublish(event)"
-            />
-            Enable Auto-Publish
-          </label>
-          <span style="font-size: 12px; color: var(--text-secondary)">
-            (Requires Aggressive policy)
-          </span>
+        <div id="hn-keywords-display" style="
+            padding: 10px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+          ">
+          Loading...
         </div>
       </div>
 
@@ -49,10 +79,7 @@
           Manage the automated lifecycle tasks and scheduled triggers.
         </p>
         <div style="overflow-x: auto">
-          <table
-            class="data-table"
-            style="width: 100%; text-align: left; border-collapse: collapse"
-          >
+          <table class="data-table" style="width: 100%; text-align: left; border-collapse: collapse">
             <thead>
               <tr style="border-bottom: 1px solid var(--border-color)">
                 <th style="padding: 10px">Job ID</th>
@@ -65,10 +92,7 @@
             </thead>
             <tbody id="jobs-table-body">
               <tr>
-                <td
-                  colspan="6"
-                  style="padding: 15px; text-align: center; color: var(--text-secondary)"
-                >
+                <td colspan="6" style="padding: 15px; text-align: center; color: var(--text-secondary)">
                   Loading jobs...
                 </td>
               </tr>
@@ -83,10 +107,7 @@
           The deterministic multi-agent roles available in the system.
         </p>
         <div style="overflow-x: auto">
-          <table
-            class="data-table"
-            style="width: 100%; text-align: left; border-collapse: collapse"
-          >
+          <table class="data-table" style="width: 100%; text-align: left; border-collapse: collapse">
             <thead>
               <tr style="border-bottom: 1px solid var(--border-color)">
                 <th style="padding: 10px">Role</th>
@@ -95,10 +116,7 @@
             </thead>
             <tbody id="roles-table-body">
               <tr>
-                <td
-                  colspan="2"
-                  style="padding: 15px; text-align: center; color: var(--text-secondary)"
-                >
+                <td colspan="2" style="padding: 15px; text-align: center; color: var(--text-secondary)">
                   Loading roles...
                 </td>
               </tr>
@@ -108,23 +126,6 @@
       </div>
 
       <div class="card" style="margin-top: 20px">
-        <h3>System Config (P1)</h3>
-        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 5px">
-          HackerNews Keywords (via ENV or config.json)
-        </p>
-        <div
-          id="hn-keywords-display"
-          style="
-            padding: 10px;
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 13px;
-          "
-        >
-          Loading...
-        </div>
       </div>
 
       <div class="card" style="margin-top: 20px">
@@ -136,10 +137,7 @@
         <button class="btn btn-outline" onclick="app.handlers.seedData(event)" id="seed-btn">
           🌱 Seed Now
         </button>
-        <span
-          id="seed-status"
-          style="margin-left: 10px; font-size: 13px; color: var(--text-secondary)"
-        ></span>
+        <span id="seed-status" style="margin-left: 10px; font-size: 13px; color: var(--text-secondary)"></span>
       </div>
 
       <div class="card" style="margin-top: 20px">
@@ -158,5 +156,6 @@
         await app.initSettings();
       });
     </script>
-  </body>
+</body>
+
 </html>

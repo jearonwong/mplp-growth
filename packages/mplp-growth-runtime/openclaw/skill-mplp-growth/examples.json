@@ -1,0 +1,58 @@
+{
+  "skill": "mplp-growth-runtime",
+  "version": "0.7.3",
+  "examples": [
+    {
+      "name": "Daily Run (basic)",
+      "description": "Execute inbox processing and fetch queue status",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/ops/daily-run",
+        "body": {}
+      }
+    },
+    {
+      "name": "Daily Run (auto-approve)",
+      "description": "Execute inbox, then automatically approve all pending items",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/ops/daily-run",
+        "body": { "auto_approve": true }
+      }
+    },
+    {
+      "name": "Daily Run (redraft + approve)",
+      "description": "Execute inbox, redraft as Editor, then approve all",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/ops/daily-run",
+        "body": { "auto_approve": true, "redraft_role_id": "Editor" }
+      }
+    },
+    {
+      "name": "Push manual signal",
+      "description": "Add a manual inbox item for processing",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/inbox/manual",
+        "body": {
+          "content": "Saw an interesting post about AI safety",
+          "author_handle": "@founder",
+          "source_ref": "manual://note/1"
+        }
+      }
+    },
+    {
+      "name": "Batch approve selected",
+      "description": "Approve specific queue items by ID",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/queue/batch",
+        "body": {
+          "action": "approve",
+          "ids": ["<confirm_id_1>", "<confirm_id_2>"]
+        }
+      }
+    }
+  ]
+}

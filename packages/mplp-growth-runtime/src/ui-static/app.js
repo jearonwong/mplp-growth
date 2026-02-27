@@ -435,6 +435,24 @@ async function initSettings() {
       toggle.checked = !!status.auto_publish;
       toggle.disabled = status.policy_level !== "aggressive";
     }
+
+    // Populate quiet hours if any job has it (we use inbox as the source of truth for global UI simplification)
+    const inboxJob = status.jobs?.inbox;
+    const qhStartInput = document.getElementById("quiet-hours-start");
+    const qhEndInput = document.getElementById("quiet-hours-end");
+    const qhStatus = document.getElementById("quiet-hours-status");
+    if (inboxJob?.quiet_hours && qhStartInput && qhEndInput && qhStatus) {
+      qhStartInput.value = inboxJob.quiet_hours.start || "";
+      qhEndInput.value = inboxJob.quiet_hours.end || "";
+      qhStatus.innerText = "Active";
+      qhStatus.style.color = "var(--success-color)";
+    } else if (qhStartInput && qhEndInput && qhStatus) {
+      qhStartInput.value = "";
+      qhEndInput.value = "";
+      qhStatus.innerText = "Disabled";
+      qhStatus.style.color = "var(--text-secondary)";
+    }
+
     const tbody = document.getElementById("jobs-table-body");
     if (tbody && status.jobs) {
       tbody.innerHTML = "";
@@ -537,6 +555,23 @@ async function initSettings() {
         tr.appendChild(tdNext);
         tr.appendChild(tdAction);
         tbody.appendChild(tr);
+
+        // Preview row
+        if (jobData.last_outputs_preview) {
+          const previewTr = document.createElement("tr");
+          previewTr.style.background = "#f8f9fa"; // light gray background indicating connection
+          previewTr.innerHTML = `
+            <td colspan="6" style="padding: 10px;">
+              <details>
+                <summary style="cursor:pointer; color:var(--text-secondary); font-size: 13px; font-weight: bold;">
+                  View last output preview (Run ID: ${escapeHtml(jobData.last_run_id || "?")})
+                </summary>
+                <div style="margin-top: 8px; padding: 10px; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; font-family: monospace; font-size: 12px; white-space: pre-wrap; color: var(--text-primary); max-height: 200px; overflow-y: auto;">${escapeHtml(jobData.last_outputs_preview)}</div>
+              </details>
+            </td>
+          `;
+          tbody.appendChild(previewTr);
+        }
       }
     }
   } catch (err) {
@@ -922,7 +957,7 @@ window.app = {
       const btn = event.target;
       const statusSpan = document.getElementById("seed-status");
       btn.disabled = true;
-      statusSpan.innerText = "Seeding...";
+      statusSpan.innerText = "⏳ Seeding graph...";
       statusSpan.style.color = "var(--text-secondary)";
 
       try {
@@ -946,6 +981,59 @@ window.app = {
         statusSpan.style.color = "var(--danger-color)";
       } finally {
         btn.disabled = false;
+      }
+    },
+    updateQuietHours: async () => {
+      const start = document.getElementById("quiet-hours-start").value;
+      const end = document.getElementById("quiet-hours-end").value;
+
+      // Only proceed if both are filled
+      if (start && end) {
+        try {
+          // Send to all jobs for global alignment
+          const reqBody = { jobs: {} };
+          const jobsList = ["brief", "outreach-draft", "inbox", "review", "publish"];
+          jobsList.forEach((job) => {
+            reqBody.jobs[job] = { quiet_hours: { start, end } };
+          });
+
+          const res = await fetch(`${API_BASE}/runner/config`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(reqBody),
+          });
+          if (res.ok) {
+            await initSettings();
+          } else {
+            alert("Failed to update quiet hours");
+          }
+        } catch (e) {
+          alert("API Error updating quiet hours");
+        }
+      }
+    },
+    clearQuietHours: async () => {
+      document.getElementById("quiet-hours-start").value = "";
+      document.getElementById("quiet-hours-end").value = "";
+      try {
+        const reqBody = { jobs: {} };
+        const jobsList = ["brief", "outreach-draft", "inbox", "review", "publish"];
+        jobsList.forEach((job) => {
+          reqBody.jobs[job] = { quiet_hours: null };
+        });
+
+        const res = await fetch(`${API_BASE}/runner/config`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reqBody),
+        });
+        if (res.ok) {
+          await initSettings();
+        } else {
+          alert("Failed to clear quiet hours");
+        }
+      } catch (e) {
+        alert("API Error clearing quiet hours");
       }
     },
     // --- Batch Actions (v0.7.2) ---
@@ -1075,6 +1163,32 @@ window.app = {
 
       body.innerHTML = html;
       modal.classList.remove("hidden");
+    },
+    copyBatchSummary: () => {
+      const body = document.getElementById("batch-result-body");
+      if (!body) {
+        return;
+      }
+
+      const clone = body.cloneNode(true);
+      // Replace html bullet styling with plaintext formatting
+      const lis = clone.querySelectorAll("li");
+      lis.forEach((li) => {
+        // preserve the li content with a dash
+        li.innerText = `- ${li.innerText}`;
+      });
+      // Replace bolding with raw asterisks wouldn't hurt but standard innerText already does a decent job for block elements
+
+      const textToCopy = clone.innerText;
+      navigator.clipboard
+        .writeText(textToCopy)
+        .then(() => {
+          alert("Summary copied to clipboard!");
+        })
+        .catch((e) => {
+          console.error("Clipboard failed", e);
+          alert("Failed to copy. Please manually select the text.");
+        });
     },
   },
   initDashboard,

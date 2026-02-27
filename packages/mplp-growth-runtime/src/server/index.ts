@@ -29,6 +29,8 @@ import {
   BatchRequest,
   BatchResponse,
   BatchResultItem,
+  DailyRunRequest,
+  DailyRunResponse,
 } from "./json-schema.js";
 
 // __dirname is natively available in CJS.
@@ -44,6 +46,22 @@ server.register(fastifyStatic, {
   root: uiRoot,
   prefix: "/", // optional: default '/'
 });
+
+// Optional API Token Auth (v0.7.3)
+const API_TOKEN = process.env.MPLP_GROWTH_API_TOKEN;
+if (API_TOKEN) {
+  server.addHook("onRequest", async (request, reply) => {
+    const url = request.url;
+    // Exempt: health check, static files
+    if (url === "/api/health" || !url.startsWith("/api/")) {
+      return;
+    }
+    const token = request.headers["x-mplp-token"];
+    if (token !== API_TOKEN) {
+      return reply.code(401).send({ error: "Unauthorized: invalid or missing x-mplp-token" });
+    }
+  });
+}
 
 // Health Check
 server.get("/api/health", async () => {
@@ -96,8 +114,21 @@ server.post("/api/admin/seed", async () => {
 
 // Runner Status
 server.get("/api/runner/status", async () => {
+  const snapshot = runnerState.getSnapshot();
+  // B1: Enrich per-job entries with last_run_id and preview
+  const enrichedJobs: Record<string, unknown> = {};
+  for (const [jobId, jobData] of Object.entries(snapshot.jobs || {})) {
+    const jd = jobData as unknown as Record<string, unknown>;
+    enrichedJobs[jobId] = {
+      ...jd,
+      last_run_id: jd.last_run_id || null,
+      last_outputs_preview: jd.last_outputs_preview || null,
+      last_error: jd.last_error || null,
+    };
+  }
   return {
-    ...runnerState.getSnapshot(),
+    ...snapshot,
+    jobs: enrichedJobs,
     timezone: "UTC",
   };
 });
@@ -114,6 +145,7 @@ server.post<{
         enabled?: boolean;
         schedule_cron?: string;
         run_as_role?: "Responder" | "BDWriter" | "Editor" | "Analyst" | null;
+        quiet_hours?: { start: string; end: string } | null;
       }
     >;
   };
@@ -630,6 +662,70 @@ server.post<{ Body: BatchRequest; Reply: BatchResponse }>(
       processed,
       skipped,
       failed,
+    };
+  },
+);
+
+// Daily Run Composite API (v0.7.3)
+server.post<{ Body: DailyRunRequest; Reply: DailyRunResponse }>(
+  "/api/ops/daily-run",
+  async (request, _reply) => {
+    const { auto_approve, redraft_role_id } = request.body || {};
+
+    // Step 1: Execute inbox
+    let inboxResult: DailyRunResponse["inbox_result"];
+    try {
+      const output = await executeCommand("execute", ["inbox"]);
+      inboxResult = { ok: true, outputs: output?.substring(0, 500) };
+    } catch (err: unknown) {
+      inboxResult = {
+        ok: false,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+
+    // Step 2: Fetch queue
+    const queueRes = await server.inject({ method: "GET", url: "/api/queue" });
+    const queueData = queueRes.json() as QueueResponse;
+    const queueCount = queueData.pending_count || 0;
+
+    // Step 3: Optional batch actions
+    let batchResult: BatchResponse | undefined;
+    if (queueCount > 0) {
+      const allItems = [
+        ...(queueData.categories.outreach || []),
+        ...(queueData.categories.inbox || []),
+        ...(queueData.categories.publish || []),
+        ...(queueData.categories.review || []),
+        ...(queueData.categories.other || []),
+      ];
+      const ids = allItems.map((i) => i.confirm_id);
+
+      if (redraft_role_id && ids.length > 0) {
+        const redraftRes = await server.inject({
+          method: "POST",
+          url: "/api/queue/batch",
+          payload: { action: "redraft", ids, role_id: redraft_role_id },
+        });
+        // Don't assign to batchResult yet — we'll use the approve result if auto_approve
+        redraftRes.json(); // consume
+      }
+
+      if (auto_approve && ids.length > 0) {
+        const approveRes = await server.inject({
+          method: "POST",
+          url: "/api/queue/batch",
+          payload: { action: "approve", ids },
+        });
+        batchResult = approveRes.json() as BatchResponse;
+      }
+    }
+
+    return {
+      ok: inboxResult.ok,
+      inbox_result: inboxResult,
+      queue_count: queueCount,
+      batch_result: batchResult,
     };
   },
 );

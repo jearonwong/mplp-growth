@@ -19,7 +19,12 @@
 
     <div class="main-content">
       <header>
-        <h1>Approval Queue</h1>
+        <h1>
+          Approval Queue
+          <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px"
+            >v0.7.3</span
+          >
+        </h1>
         <div class="status-badge" id="global-header-stats"></div>
       </header>
 
@@ -149,6 +154,9 @@
             style="font-size: 13px; max-height: 300px; overflow-y: auto"
           ></div>
           <div class="modal-actions" style="margin-top: 15px">
+            <button class="btn btn-secondary" onclick="app.handlers.copyBatchSummary()">
+              Copy Summary
+            </button>
             <button
               class="btn btn-primary"
               onclick="document.getElementById('batch-result-modal').classList.add('hidden')"
@@ -343,6 +351,23 @@
                 m.classList.add("hidden");
               }
             });
+            return;
+          }
+
+          // Shift+A = batch approve, Shift+R = batch redraft, Shift+X = clear (v0.7.3)
+          if (e.shiftKey && (e.key === "A" || e.key === "a")) {
+            e.preventDefault();
+            if (app.state.selectedIds.size > 0) app.handlers.batchApprove();
+            return;
+          }
+          if (e.shiftKey && (e.key === "R" || e.key === "r")) {
+            e.preventDefault();
+            if (app.state.selectedIds.size > 0) app.handlers.openBatchRedraftModal();
+            return;
+          }
+          if (e.shiftKey && (e.key === "X" || e.key === "x")) {
+            e.preventDefault();
+            app.handlers.clearSelection();
             return;
           }
 

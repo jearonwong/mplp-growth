@@ -65,6 +65,34 @@ export class Scheduler {
 
   register(rule: string, taskId: string, task: TaskCallback) {
     this.clock.scheduleJob(rule, async () => {
+      // B2: Quiet Hours Check
+      const jobConfig = runnerState.getConfig().jobs[taskId];
+      if (jobConfig && jobConfig.quiet_hours) {
+        const nowTime = this.clock.now();
+        const startParts = jobConfig.quiet_hours.start.split(":").map(Number);
+        const endParts = jobConfig.quiet_hours.end.split(":").map(Number);
+
+        const startMins = startParts[0] * 60 + startParts[1];
+        const endMins = endParts[0] * 60 + endParts[1];
+        const currentMins = nowTime.getUTCHours() * 60 + nowTime.getUTCMinutes();
+
+        let inQuietHours = false;
+        if (startMins <= endMins) {
+          inQuietHours = currentMins >= startMins && currentMins <= endMins;
+        } else {
+          // Crosses midnight
+          inQuietHours = currentMins >= startMins || currentMins <= endMins;
+        }
+
+        if (inQuietHours) {
+          console.log(`[Runner] Task ${taskId} skipped (quiet hours).`);
+          if (runnerState.acquireLock(taskId)) {
+            runnerState.releaseLock(taskId, { status: "skipped", error: "Quiet hours" });
+          }
+          return;
+        }
+      }
+
       // FIX-1: Lock
       if (!runnerState.acquireLock(taskId)) {
         console.warn(`[Runner] Task ${taskId} skipped (locked).`);

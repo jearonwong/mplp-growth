@@ -1,0 +1,393 @@
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v1.6.1 /Users/jasonwang/Documents/AI_Dev/Openclaw/packages/mplp-growth-runtime
+
+ ✓ src/phase21-redraft.test.ts  (11 tests) 3ms
+ ✓ src/phase20-role-routing.test.ts  (9 tests) 3ms
+stdout | src/phase9-batch-queue.test.ts > Phase 9 Batch & Queue Gates > GATE-BATCH-OUTREACH-01: --segment generates packs for matching OTs > batch outreach creates packs for all research-status targets in segment
+ELIGIBLE COUNT: 3
+
+ ✓ src/phase6-feedback-loop.test.ts  (13 tests) 44ms
+ ✓ src/phase5-demo-readme.test.ts  (3 tests) 47ms
+{"level":30,"time":1772209794838,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"POST","url":"/api/queue/batch","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209794839,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209794841,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":400},"responseTime":2.3942500352859497,"msg":"request completed"}
+{"level":30,"time":1772209794842,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"POST","url":"/api/queue/batch","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209794842,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":400},"responseTime":0.5985000133514404,"msg":"request completed"}
+{"level":30,"time":1772209794842,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","req":{"method":"POST","url":"/api/queue/batch","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209794843,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","res":{"statusCode":400},"responseTime":0.14762496948242188,"msg":"request completed"}
+{"level":30,"time":1772209794843,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-4","req":{"method":"POST","url":"/api/queue/batch","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+ ✓ src/phase4-commands.test.ts  (8 tests) 67ms
+{"level":30,"time":1772209794843,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-4","res":{"statusCode":400},"responseTime":0.13808298110961914,"msg":"request completed"}
+{"level":30,"time":1772209794843,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-5","req":{"method":"POST","url":"/api/queue/batch","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+ ✓ src/phase10-template-review.test.ts  (7 tests) 70ms
+ ❯ src/phase2-gates.test.ts  (7 tests) 28ms
+stdout | src/phase9-batch-queue.test.ts > Phase 9 Batch & Queue Gates > GATE-DRY-RUN-01: --dry-run creates zero Confirm/Interaction > dry-run with segment produces draft + policy, zero state writes
+ELIGIBLE COUNT: 2
+
+{"level":30,"time":1772209794854,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"POST","url":"/api/admin/seed","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+stdout | src/phase14-dedup.test.ts > Phase 14 Gates — Outreach Deduplication (v0.4.1) > GATE-OUTREACH-DEDUP-METADATA-01 > deduplicates using newly added metadata properties
+HAS RECENT ASSET: 4a89ced0-872b-460f-b045-783772262dfd
+ELIGIBLE COUNT: 0
+
+stdout | src/phase14-dedup.test.ts > Phase 14 Gates — Outreach Deduplication (v0.4.1) > GATE-OUTREACH-DEDUP-FALLBACK-01 > falls back to title when metadata is absent
+HAS RECENT ASSET: 768b2f0a-f94f-428b-82b9-a2499dce64af
+ELIGIBLE COUNT: 0
+
+ ✓ src/phase14-dedup.test.ts  (2 tests) 14ms
+ ✓ src/phase7-outreach.test.ts  (13 tests) 108ms
+stdout | src/phase9-batch-queue.test.ts > Phase 9 Batch & Queue Gates > GATE-OUTREACH-SEGMENT-SKIP-01: second segment run skips already-drafted > second batch run with same segment produces 0 new packs
+ELIGIBLE COUNT: 2
+
+ ✓ src/gates.test.ts  (18 tests) 3ms
+ ✓ src/phase26-keyboard-flow.test.ts  (10 tests) 2ms
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+🌱 MPLP Growth Copilot — Seed Data (v0.2.0)
+
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+📁 VSL initialized at: /tmp/mplp-growth-test-phase11-1772209795039
+
+📝 Writing Context...
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  ✅ Context: 4eac04bf-9fdd-449a-9d20-f2e4bb318709
+
+📝 Writing ChannelProfiles...
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  ✅ x: eb6bf5de-d5e8-47cc-b226-23ad54f37028
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+  ✅ linkedin: 31de5238-08d7-4560-ab62-11fd2771dee0
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  ✅ medium: 93dcb8a5-ea7c-4512-a8ab-9e9bbb8e5273
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+  ✅ hn: 81e2ef0e-126a-4fce-8acb-e9ae7c1281f6
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+  ✅ youtube: 59fc38d6-27c9-47b2-8ac3-5b2ecf06202c
+
+📝 Writing OutreachTargets...
+
+ ✓ src/phase3-workflows.test.ts  (10 tests) 284ms
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+  ✅ Linux Foundation: 5a7f0303-c729-4a92-aeb0-47c986dc2c90
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+
+{"level":30,"time":1772209795054,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"GET","url":"/api/health","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  ✅ CNCF (Cloud Native Computing Foundation): a16bc03c-07de-46b6-8a0b-72dfb380c48f
+  📊 GraphUpdateEvent: node_created
+
+{"level":30,"time":1772209795056,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":1.4318749904632568,"msg":"request completed"}
+{"level":30,"time":1772209795057,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795057,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"GET","url":"/api/health","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  ✅ ISO/IEC JTC 1: 08d1d5e7-8bfe-48ea-bd38-013397541bc0
+
+📝 Writing Extensions...
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+  ✅ outreach-policy-default (policy): 2a085661-5268-4871-ad10-5c89f9ed7d26
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+  ✅ channel-adapter-email (integration): 447373cd-f99a-4397-91ee-20b244f5fdff
+
+📝 Writing example ContentAsset...
+  📊 GraphUpdateEvent: node_created
+
+{"level":30,"time":1772209795059,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":1.4016250371932983,"msg":"request completed"}
+{"level":30,"time":1772209795059,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"POST","url":"/api/runner/config","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795061,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":200},"responseTime":1.252208948135376,"msg":"request completed"}
+{"level":30,"time":1772209795061,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","req":{"method":"POST","url":"/api/inbox/manual","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795061,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","res":{"statusCode":200},"responseTime":0.49370789527893066,"msg":"request completed"}
+{"level":30,"time":1772209795061,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-4","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  ✅ ContentAsset: b0740901-21c5-4954-9658-181d7bacc86f
+
+📝 Writing Template Assets (v0.3.0)...
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  ✅ Thread Template: c761b969-c105-49b1-a77e-2df83978dd1f
+
+ ✓ src/phase22-default-role-reset.test.ts  (6 tests) 2ms
+{"level":30,"time":1772209795070,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795072,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"GET","url":"/api/health","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795074,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":1.450708031654358,"msg":"request completed"}
+{"level":30,"time":1772209795074,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+stdout | src/phase11-runner.test.ts > Phase 11: Runner & API (v0.4.0)
+  📊 GraphUpdateEvent: node_created
+  ✅ Outreach Email Template: 6ce4fe4a-4897-4a9b-ba68-81b624a373b6
+
+============================================================
+📊 Seed Summary
+============================================================
+Context ID: 4eac04bf-9fdd-449a-9d20-f2e4bb318709
+Brand: MPLP (Multi-Agent Lifecycle Protocol)
+Audiences: 3
+ChannelProfiles: 5
+OutreachTargets: 3
+Extensions: 2
+ContentAssets: 3 (1 example + 2 templates)
+
+✅ Seed data complete! (v0.3.0)
+📁 Data location: /tmp/mplp-growth-test-phase11-1772209795039/vsl/objects/
+
+{"level":30,"time":1772209795094,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":200},"responseTime":19.69308292865753,"msg":"request completed"}
+{"level":30,"time":1772209795095,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","req":{"method":"POST","url":"/api/cmd/execute","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795097,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","res":{"statusCode":200},"responseTime":2.4670000076293945,"msg":"request completed"}
+{"level":30,"time":1772209795098,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-4","req":{"method":"GET","url":"/api/runner/status","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795098,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-4","res":{"statusCode":200},"responseTime":0.11862492561340332,"msg":"request completed"}
+ ✓ src/phase11-runner.test.ts  (4 tests) 59ms
+{"level":30,"time":1772209795124,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"GET","url":"/api/runner/status","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+stdout | src/phase29-runner-observability.test.ts > Phase 29: Runner Observability (v0.7.3) > GATE-QUIET-HOURS-SKIP-01: scheduler obeys quiet hours config > skips task execution during quiet hours
+[Runner] Task inbox skipped (quiet hours).
+
+{"level":30,"time":1772209795125,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":1.4163339138031006,"msg":"request completed"}
+ ✓ src/phase29-runner-observability.test.ts  (3 tests) 11ms
+ ✓ src/phase9-batch-queue.test.ts  (9 tests) 371ms
+ ✓ src/phase8-seed-prod.test.ts  (5 tests) 2ms
+ ✓ src/phase27-role-ui-consistency.test.ts  (5 tests) 2ms
+ ✓ src/phase30-queue-speed-keys.test.ts  (5 tests) 1ms
+ ✓ src/scheduler.test.ts  (2 tests) 2ms
+stdout | src/scheduler.test.ts > GATE-RUNNER-SCHEDULE-01: Scheduler Abstraction > triggers task when virtual clock matches rule (simulated by explicit trigger)
+[Runner] Starting task: brief at 2026-02-27T16:29:55.246Z
+
+stderr | src/scheduler.test.ts > GATE-RUNNER-SCHEDULE-01: Scheduler Abstraction > prevents concurrent execution (Locking)
+[Runner] Task outreach-draft skipped (locked).
+
+ ✓ src/phase17-ui-attribution.test.ts  (3 tests) 72ms
+{"level":30,"time":1772209795313,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"POST","url":"/api/runner/config","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+stdout | src/phase15-policy.test.ts > Phase 15 Gates — Runner Safety Policy (v0.4.1) > GATE-RUNNER-POLICY-SAFETY-01 > skips auto-publish task when policy is safe or standard
+[Task] Auto-Publish skipped (Policy: safe, AutoPublish: true).
+
+stdout | src/phase15-policy.test.ts > Phase 15 Gates — Runner Safety Policy (v0.4.1) > GATE-RUNNER-POLICY-SAFETY-01 > skips auto-publish task when auto_publish flag is false even if aggressive
+[Task] Auto-Publish skipped (Policy: aggressive, AutoPublish: false).
+
+{"level":30,"time":1772209795316,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":2.3929160833358765,"msg":"request completed"}
+{"level":30,"time":1772209795316,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"GET","url":"/api/runner/status","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795316,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":200},"responseTime":0.15745902061462402,"msg":"request completed"}
+ ✓ src/phase15-policy.test.ts  (3 tests) 13ms
+{"level":30,"time":1772209795335,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"GET","url":"/api/health","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795337,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":1.353874921798706,"msg":"request completed"}
+{"level":30,"time":1772209795338,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"GET","url":"/api/health","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795338,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":200},"responseTime":0.11712503433227539,"msg":"request completed"}
+ ✓ src/phase12-health.test.ts  (2 tests) 10ms
+{"level":30,"time":1772209795446,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":606.5057499408722,"msg":"request completed"}
+{"level":30,"time":1772209795446,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795447,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":200},"responseTime":0.7918329238891602,"msg":"request completed"}
+{"level":30,"time":1772209795447,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795448,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","res":{"statusCode":200},"responseTime":0.6865829229354858,"msg":"request completed"}
+ ✓ src/phase23-inbox-selective-redraft.test.ts  (3 tests) 617ms
+{"level":30,"time":1772209795494,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","req":{"method":"POST","url":"/api/assets/test-edit-asset-1/edit","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795498,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":3.3392080068588257,"msg":"request completed"}
+{"level":30,"time":1772209795500,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+stdout | src/phase16-multiagent.test.ts > Phase 16 - Multi-Agent V0.6.0 MVP
+🌱 MPLP Growth Copilot — Seed Data (v0.2.0)
+
+📁 VSL initialized at: /Users/jasonwang/.openclaw/mplp-growth
+
+📝 Writing Context...
+  📊 GraphUpdateEvent: node_created
+  ✅ Context: dbcef4be-f13a-47d4-bcc9-eb17f8fb936e
+
+📝 Writing ChannelProfiles...
+
+{"level":30,"time":1772209795502,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":200},"responseTime":2.2665419578552246,"msg":"request completed"}
+stdout | src/phase16-multiagent.test.ts > Phase 16 - Multi-Agent V0.6.0 MVP
+  📊 GraphUpdateEvent: node_created
+  ✅ x: eebe381d-03fa-4c23-a3ce-9eb66e8fb61f
+  📊 GraphUpdateEvent: node_created
+  ✅ linkedin: 5f5ce65c-7991-402a-a81a-d82205459a85
+
+{"level":30,"time":1772209795503,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-5","res":{"statusCode":200},"responseTime":659.614333987236,"msg":"request completed"}
+stdout | src/phase16-multiagent.test.ts > Phase 16 - Multi-Agent V0.6.0 MVP
+  📊 GraphUpdateEvent: node_created
+  ✅ medium: 6e0fdec9-83da-43a6-bff4-83f75eda1d8a
+  📊 GraphUpdateEvent: node_created
+  ✅ hn: 4cd60da1-8d6e-453d-94bd-7cedcb08ccac
+  📊 GraphUpdateEvent: node_created
+  ✅ youtube: e4fa27d9-a39b-4711-ad18-58596a7a0e8b
+
+📝 Writing OutreachTargets...
+
+{"level":30,"time":1772209795503,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-6","req":{"method":"POST","url":"/api/queue/batch","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795503,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","req":{"method":"GET","url":"/api/roles","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795503,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","res":{"statusCode":200},"responseTime":0.15079104900360107,"msg":"request completed"}
+ ✓ src/phase18-founder-edit.test.ts  (4 tests) 658ms
+stdout | src/phase16-multiagent.test.ts > Phase 16 - Multi-Agent V0.6.0 MVP
+  📊 GraphUpdateEvent: node_created
+  ✅ Linux Foundation: 39fa9585-aebc-419c-84c6-24ff7be3e89b
+  📊 GraphUpdateEvent: node_created
+  ✅ CNCF (Cloud Native Computing Foundation): 54add9c7-f7fe-4624-ac9c-74aec557464f
+
+{"level":30,"time":1772209795504,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-6","res":{"statusCode":200},"responseTime":1.0834170579910278,"msg":"request completed"}
+{"level":30,"time":1772209795505,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-7","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+stdout | src/phase16-multiagent.test.ts > Phase 16 - Multi-Agent V0.6.0 MVP
+  📊 GraphUpdateEvent: node_created
+  ✅ ISO/IEC JTC 1: 25045add-331f-41eb-9d4b-c013c071533f
+
+📝 Writing Extensions...
+  📊 GraphUpdateEvent: node_created
+  ✅ outreach-policy-default (policy): 3039b681-3db9-4a43-a752-a2b2c737fdf8
+  📊 GraphUpdateEvent: node_created
+  ✅ channel-adapter-email (integration): 989153ea-a7bd-4c81-bbf8-d5dcceceee95
+
+📝 Writing example ContentAsset...
+
+stdout | src/phase16-multiagent.test.ts > Phase 16 - Multi-Agent V0.6.0 MVP
+  📊 GraphUpdateEvent: node_created
+  ✅ ContentAsset: 3e16d81a-0be3-4ffa-806d-945a82f7a40b
+
+📝 Writing Template Assets (v0.3.0)...
+  📊 GraphUpdateEvent: node_created
+  ✅ Thread Template: 565f6da6-514f-4dbc-b136-74aaffed866d
+
+{"level":30,"time":1772209795507,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-7","res":{"statusCode":200},"responseTime":2.114292025566101,"msg":"request completed"}
+{"level":30,"time":1772209795507,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-8","req":{"method":"POST","url":"/api/queue/batch","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795508,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":652.8478749990463,"msg":"request completed"}
+stdout | src/phase16-multiagent.test.ts > Phase 16 - Multi-Agent V0.6.0 MVP
+  📊 GraphUpdateEvent: node_created
+  ✅ Outreach Email Template: fe2f1c26-0ed8-41f9-b2e1-ce3323bd235e
+
+============================================================
+📊 Seed Summary
+============================================================
+Context ID: dbcef4be-f13a-47d4-bcc9-eb17f8fb936e
+Brand: MPLP (Multi-Agent Lifecycle Protocol)
+Audiences: 3
+ChannelProfiles: 5
+OutreachTargets: 3
+Extensions: 2
+ContentAssets: 3 (1 example + 2 templates)
+
+✅ Seed data complete! (v0.3.0)
+📁 Data location: /Users/jasonwang/.openclaw/mplp-growth/vsl/objects/
+
+{"level":30,"time":1772209795511,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-8","res":{"statusCode":200},"responseTime":3.3748749494552612,"msg":"request completed"}
+{"level":30,"time":1772209795511,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-9","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795512,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-9","res":{"statusCode":200},"responseTime":1.601915955543518,"msg":"request completed"}
+{"level":30,"time":1772209795513,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-a","req":{"method":"POST","url":"/api/queue/batch","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795513,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-a","res":{"statusCode":200},"responseTime":0.4790830612182617,"msg":"request completed"}
+{"level":30,"time":1772209795513,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-b","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795514,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-b","res":{"statusCode":200},"responseTime":0.5004580020904541,"msg":"request completed"}
+ ✓ src/phase25-batch-actions.test.ts  (9 tests) 685ms
+ ✓ src/phase19-queue-search-filter.test.ts  (8 tests) 113ms
+{"level":30,"time":1772209795611,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":200},"responseTime":554.5592920780182,"msg":"request completed"}
+{"level":30,"time":1772209795612,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","req":{"method":"POST","url":"/api/ops/daily-run","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795613,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-4","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795613,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-4","res":{"statusCode":200},"responseTime":0.6550420522689819,"msg":"request completed"}
+{"level":30,"time":1772209795613,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","res":{"statusCode":200},"responseTime":1.9518340826034546,"msg":"request completed"}
+{"level":30,"time":1772209795614,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-5","req":{"method":"POST","url":"/api/ops/daily-run","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795614,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-6","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795615,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-6","res":{"statusCode":200},"responseTime":0.6628329753875732,"msg":"request completed"}
+{"level":30,"time":1772209795615,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-5","res":{"statusCode":200},"responseTime":1.1833750009536743,"msg":"request completed"}
+{"level":30,"time":1772209795615,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-7","req":{"method":"POST","url":"/api/ops/daily-run","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795615,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-8","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795615,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-4","res":{"statusCode":200},"responseTime":553.975790977478,"msg":"request completed"}
+{"level":30,"time":1772209795616,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-8","res":{"statusCode":200},"responseTime":0.5611250400543213,"msg":"request completed"}
+{"level":30,"time":1772209795616,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-7","res":{"statusCode":200},"responseTime":0.8538750410079956,"msg":"request completed"}
+{"level":30,"time":1772209795616,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-9","req":{"method":"POST","url":"/api/ops/daily-run","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795617,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-a","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795616,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-5","req":{"method":"POST","url":"/api/runner/config","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795616,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-5","res":{"statusCode":200},"responseTime":0.18145906925201416,"msg":"request completed"}
+{"level":30,"time":1772209795616,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-6","req":{"method":"GET","url":"/api/runner/status","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795616,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-6","res":{"statusCode":200},"responseTime":0.10249996185302734,"msg":"request completed"}
+ ✓ src/phase24-api-only-rc2.test.ts  (5 tests) 567ms
+{"level":30,"time":1772209795617,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-a","res":{"statusCode":200},"responseTime":0.540416955947876,"msg":"request completed"}
+{"level":30,"time":1772209795617,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-9","res":{"statusCode":200},"responseTime":0.8392499685287476,"msg":"request completed"}
+ ✓ src/phase28-openclaw-bridge.test.ts  (6 tests) 573ms
+{"level":30,"time":1772209795620,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-1","res":{"statusCode":200},"responseTime":549.0022920370102,"msg":"request completed"}
+{"level":30,"time":1772209795620,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209795621,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":200},"responseTime":0.5603749752044678,"msg":"request completed"}
+ ✓ src/phase13-queue.test.ts  (2 tests) 558ms
+{"level":30,"time":1772209797049,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209797052,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-2","res":{"statusCode":200},"responseTime":3.2945839166641235,"msg":"request completed"}
+stdout | src/phase16-multiagent.test.ts > Phase 16 - Multi-Agent V0.6.0 MVP > GATE-QUEUE-ROLE-SURFACE-01 & GATE-QUEUE-RATIONALE-SURFACE-01
+ELIGIBLE COUNT: 1
+
+{"level":30,"time":1772209798605,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","req":{"method":"GET","url":"/api/queue","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1772209798608,"pid":64087,"hostname":"JasondeMacBook-Pro.local","reqId":"req-3","res":{"statusCode":200},"responseTime":3.3485419750213623,"msg":"request completed"}
+stdout | src/phase16-multiagent.test.ts > Phase 16 - Multi-Agent V0.6.0 MVP > GATE-QUEUE-ROLE-SURFACE-01 & GATE-QUEUE-RATIONALE-SURFACE-01
+QDATA OUTREACH: [
+  {
+    "id": "4ab27208-fbf8-4caf-a0c1-477d382d3ccd",
+    "confirm_id": "4ab27208-fbf8-4caf-a0c1-477d382d3ccd",
+    "title": "Outreach — Clean Valid Test Target via email",
+    "preview": "Hi Clean Valid Test Target,\n\nI saw your recent work and wanted to introduce MPLP. We help technical founders build automated growth workflows. Let me know if you are open to a quick chat.",
+    "category": "outreach",
+    "asset_id": "af8989c1-8cc1-4757-9956-4ad52b4e6d57",
+    "channel": "email",
+    "target_id": "clean-target-test-1",
+    "policy_check": {
+      "status": "pass",
+      "reasons": [
+        "No forbidden terms found"
+      ]
+    },
+    "impact_level": "high",
+    "impact_summary": "Outreach execution will advance state and generate tracking packages.",
+    "will_change": [
+      "Target drafted→contacted",
+      "Interaction pending→responded",
+      "Export pack available"
+    ],
+    "will_not_do": [
+      "Will NOT send email automatically",
+      "Will NOT post to social media"
+    ],
+    "interactions_count": 0,
+    "drafted_by_role": "BDWriter",
+    "rationale_bullets": [
+      "States purpose in first sentence",
+      "Includes MPLP canonical link CTA",
+      "Passes forbidden-terms scan"
+    ]
+  }
+]
+
+ ✓ src/phase16-multiagent.test.ts  (4 tests) 3764ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/phase2-gates.test.ts > Phase 2 Gates — Seed Data Integrity
+SyntaxError: Unexpected end of JSON input
+ ❯ FileVSL.get src/vsl/file-vsl.ts:51:19
+     49|     try {
+     50|       const content = await fs.readFile(filePath, "utf-8");
+     51|       return JSON.parse(content) as T;
+       |                   ^
+     52|     } catch (error) {
+     53|       if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+ ❯ src/phase2-gates.test.ts:34:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed | 30 passed (31)
+      Tests  192 passed (199)
+   Start at  00:29:54
+   Duration  4.08s (transform 509ms, setup 0ms, collect 2.64s, tests 8.75s, environment 238ms, prepare 1.27s)
+

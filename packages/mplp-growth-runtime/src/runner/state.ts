@@ -7,6 +7,7 @@ export interface JobConfig {
   enabled: boolean;
   schedule_cron: string;
   run_as_role?: "Responder" | "BDWriter" | "Editor" | "Analyst" | null;
+  quiet_hours?: { start: string; end: string } | null;
 }
 
 export interface JobRuntime {
@@ -223,6 +224,20 @@ export class StateManager {
               throw new Error(`Invalid run_as_role: ${jobUpdates.run_as_role}`);
             }
             this.config.jobs[jobId].run_as_role = jobUpdates.run_as_role;
+          }
+        }
+        if (jobUpdates.quiet_hours !== undefined) {
+          if (jobUpdates.quiet_hours === null) {
+            delete this.config.jobs[jobId].quiet_hours;
+          } else {
+            const q = jobUpdates.quiet_hours;
+            if (
+              !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(q.start || "") ||
+              !/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(q.end || "")
+            ) {
+              throw new Error(`Invalid quiet_hours format (HH:MM required)`);
+            }
+            this.config.jobs[jobId].quiet_hours = { start: q.start, end: q.end };
           }
         }
       }

@@ -10,6 +10,7 @@ import type { Confirm, Plan, PlanStep } from "../modules/mplp-modules.js";
 import type { ContentAssetNode, InteractionNode } from "../psg/growth-nodes.js";
 import type { PSGNode } from "../psg/types.js";
 import { version } from "../../package.json";
+import { createSnapshot, listSnapshots, restoreSnapshot } from "../admin/snapshot.js";
 import { RoleRegistry } from "../agents/roles.js";
 import { executeCommand, getRuntime } from "../commands/orchestrator.js";
 import { loadConfig } from "../config.js";
@@ -109,6 +110,48 @@ server.post("/api/admin/seed", async () => {
         message: err instanceof Error ? err.message : String(err),
       },
     };
+  }
+});
+
+// --- Admin Snapshot / Restore (v0.7.4) ---
+server.post<{ Body: { label?: string } }>("/api/admin/snapshot", async (request, reply) => {
+  try {
+    const config = loadConfig();
+    const stateDir = config.storage_dir;
+    const meta = await createSnapshot(stateDir, request.body?.label);
+    return { ok: true, ...meta };
+  } catch (err: unknown) {
+    reply.status(500);
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
+});
+
+server.get("/api/admin/snapshots", async (request, reply) => {
+  try {
+    const config = loadConfig();
+    const stateDir = config.storage_dir;
+    const snaps = await listSnapshots(stateDir);
+    return { ok: true, snapshots: snaps };
+  } catch (err: unknown) {
+    reply.status(500);
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
+});
+
+server.post<{ Body: { snapshot_id: string } }>("/api/admin/restore", async (request, reply) => {
+  try {
+    const { snapshot_id } = request.body;
+    if (!snapshot_id) {
+      reply.status(400);
+      return { ok: false, error: "Missing snapshot_id" };
+    }
+    const config = loadConfig();
+    const stateDir = config.storage_dir;
+    await restoreSnapshot(stateDir, snapshot_id);
+    return { ok: true, restored_snapshot_id: snapshot_id };
+  } catch (err: unknown) {
+    reply.status(500);
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
 });
 

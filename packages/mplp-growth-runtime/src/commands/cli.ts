@@ -17,6 +17,8 @@
  */
 
 import { version } from "../../package.json";
+import { createSnapshot, listSnapshots, restoreSnapshot } from "../admin/snapshot.js";
+import { loadConfig } from "../config.js";
 import { runnerDaemon } from "../runner/daemon.js";
 import { seed } from "../seed.js";
 import { startServer } from "../server/index.js";
@@ -51,6 +53,9 @@ Usage:
   cli approve <confirm_id>                                 - Approve pending confirm
   cli approve --list                                       - List pending confirms
   cli approve --all                                        - Batch approve all pending
+  cli snapshot                                             - Create a state snapshot
+  cli snapshots                                            - List all snapshots
+  cli restore <snapshot_id>                                - Restore state from snapshot
   cli serve                                                - Start Cockpit (API + Runner + UI)
 
 Examples:
@@ -88,6 +93,38 @@ Examples:
     case "approve":
       output = await cmdApprove(args);
       break;
+    case "snapshot": {
+      const stateDir = loadConfig().storage_dir;
+      const meta = await createSnapshot(stateDir, "CLI Snapshot");
+      output = `[Snapshot] Created ${meta.snapshot_id} (${(meta.bytes / 1024 / 1024).toFixed(2)} MB)`;
+      break;
+    }
+    case "snapshots": {
+      const stateDir = loadConfig().storage_dir;
+      const snaps = await listSnapshots(stateDir);
+      output =
+        snaps.length === 0
+          ? "[Snapshot] No snapshots found."
+          : snaps
+              .map(
+                (s) =>
+                  `  - ${s.snapshot_id} | ${s.created_at} | ${(s.bytes / 1024 / 1024).toFixed(2)} MB`,
+              )
+              .join("\n");
+      break;
+    }
+    case "restore": {
+      const id = args[0];
+      if (!id) {
+        console.error("Usage: cli restore <snapshot_id>");
+        process.exit(1);
+      }
+      const stateDir = loadConfig().storage_dir;
+      console.log(`[Snapshot] Restoring ${id}...`);
+      await restoreSnapshot(stateDir, id);
+      output = `[Snapshot] Successfully restored ${id}. Runner is now OFF.`;
+      break;
+    }
     case "seed":
       await seed();
       return;

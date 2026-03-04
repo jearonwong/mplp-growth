@@ -277,8 +277,112 @@ async function initDashboard() {
       ? new Date(status.last_tick_at).toLocaleString()
       : "Never";
     document.getElementById("policy-level").innerText = status.policy_level;
+
+    // Failure Playbook (T5-T7) -- Scan for failed jobs
+    const alertContainer = document.getElementById("runner-alert-container");
+    if (alertContainer) {
+      let hasFailedJobs = false;
+      let alertHtml = "";
+      if (status.jobs) {
+        for (const [jobId, jobData] of Object.entries(status.jobs)) {
+          if (jobData.last_status === "failed") {
+            hasFailedJobs = true;
+            alertHtml += `
+              <div class="card" style="border-left: 4px solid var(--danger-color); background: rgba(239, 68, 68, 0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                  <div>
+                    <h3 style="color: var(--danger-color); margin-top: 0;">🚨 Runner Alert: ${escapeHtml(jobId)} failed</h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+                      Last run encountered an error at ${jobData.last_tick_at ? new Date(jobData.last_tick_at).toLocaleString() : "Unknown time"}
+                    </p>
+                    <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; font-family: monospace; font-size: 11px; color: #ff8a8a; white-space: pre-wrap; margin-bottom: 12px; max-height: 100px; overflow-y: auto;">${escapeHtml(jobData.last_error || "Unknown error")}</div>
+                  </div>
+                  <div>
+                    <button class="btn btn-outline" style="border-color: var(--accent-color); color: var(--accent-color); font-size: 12px; display: flex; align-items: center; gap: 6px;" onclick="app.handlers.createSnapshot(event)">
+                      📸 Snapshot Now
+                    </button>
+                    <span id="snapshot-status" style="display:block; font-size: 11px; margin-top: 4px; text-align: right;"></span>
+                  </div>
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                  <strong>Quick Remedy:</strong> Snapshot the current state before modifying the queue or investigating with OpenClaw. 
+                  View the Runs Timeline below for full context.
+                </div>
+              </div>
+            `;
+          }
+        }
+      }
+
+      if (hasFailedJobs) {
+        alertContainer.innerHTML = alertHtml;
+        alertContainer.style.display = "block";
+      } else {
+        alertContainer.style.display = "none";
+      }
+    }
+
+    // Render Recent Runs Timeline (T4)
+    const runsBody = document.getElementById("runs-table-body");
+    const emptyState = document.getElementById("runs-empty-state");
+    if (runsBody && emptyState) {
+      if (!status.runs || status.runs.length === 0) {
+        emptyState.style.display = "block";
+        runsBody.parentElement.style.display = "none";
+      } else {
+        emptyState.style.display = "none";
+        runsBody.parentElement.style.display = "table";
+        runsBody.innerHTML = status.runs
+          .slice(0, 20)
+          .map((run) => {
+            const badgeClass = run.status === "success" ? "badge" : "badge";
+            const badgeStyle =
+              run.status === "success"
+                ? "background: var(--success-color); color: var(--bg-color);"
+                : "background: var(--danger-color); color: #fff;";
+
+            let errorSnippet = "";
+            if (run.error) {
+              errorSnippet = `<div style="color:var(--danger-color); font-size:11px; margin-top: 4px; font-family:monospace; white-space:pre-wrap; max-height: 100px; overflow-y:auto;">${escapeHtml(run.error)}</div>`;
+            }
+
+            let previewSnippet = "";
+            if (run.outputs_preview) {
+              previewSnippet = `<div style="color:var(--text-secondary); font-size:11px; margin-top: 4px; border-left: 2px solid var(--border-color); padding-left: 8px; white-space:pre-wrap; max-height: 100px; overflow-y:auto;">${escapeHtml(run.outputs_preview)}</div>`;
+            }
+
+            const start = new Date(run.start_time);
+            const end = new Date(run.end_time);
+            const dur = ((end - start) / 1000).toFixed(1);
+
+            return `
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 10px; font-family: monospace; font-size: 11px;">${escapeHtml(run.run_id)}</td>
+              <td style="padding: 10px; font-weight: 500;">${escapeHtml(run.job)}</td>
+              <td style="padding: 10px;">
+                <span class="${badgeClass}" style="${badgeStyle}">${run.status.toUpperCase()}</span>
+              </td>
+              <td style="padding: 10px; font-size: 12px; color: var(--text-secondary);">
+                ${start.toLocaleString()}<br/>
+                <span style="font-size:10px;">(${dur}s)</span>
+              </td>
+              <td style="padding: 10px; font-size: 12px;">
+                ${previewSnippet}
+                ${errorSnippet}
+              </td>
+            </tr>
+          `;
+          })
+          .join("");
+      }
+    }
   } catch (err) {
     console.error("Dashboard init failed", err);
+  }
+
+  // Load Exports List (T10)
+  if (app.handlers && app.handlers.loadExportsList) {
+    app.handlers.loadExportsList();
   }
 }
 

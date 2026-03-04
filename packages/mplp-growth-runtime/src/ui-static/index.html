@@ -24,11 +24,13 @@
         <h1>
           Dashboard
           <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px"
-            >v0.7.4</span
+            >v0.8.0</span
           >
         </h1>
         <div class="status-badge" id="global-header-stats"></div>
       </header>
+
+      <div id="runner-alert-container" style="display: none; margin-bottom: 20px"></div>
 
       <div class="grid">
         <div class="card">
@@ -48,7 +50,74 @@
 
       <div class="card">
         <h3>Recent Activity</h3>
-        <p style="color: var(--text-secondary)">Runner logs will appear here in future updates.</p>
+        <p id="runs-empty-state" style="color: var(--text-secondary); display: none">
+          No runner activity recorded yet.
+        </p>
+        <div style="overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 10px">
+            <thead>
+              <tr
+                style="
+                  border-bottom: 2px solid var(--border-color);
+                  color: var(--text-secondary);
+                  font-size: 12px;
+                  text-transform: uppercase;
+                "
+              >
+                <th style="padding: 10px; font-weight: 600">Run ID</th>
+                <th style="padding: 10px; font-weight: 600">Job / Task</th>
+                <th style="padding: 10px; font-weight: 600">Status</th>
+                <th style="padding: 10px; font-weight: 600">Time</th>
+                <th style="padding: 10px; font-weight: 600">Preview</th>
+              </tr>
+            </thead>
+            <tbody id="runs-table-body">
+              <!-- JS Populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 20px">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h3 style="margin: 0">Export Packs</h3>
+          <button
+            class="btn btn-outline"
+            style="font-size: 11px; padding: 4px 8px"
+            onclick="app.handlers.loadExportsList()"
+          >
+            Refresh
+          </button>
+        </div>
+        <div style="overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 10px">
+            <thead>
+              <tr
+                style="
+                  border-bottom: 2px solid var(--border-color);
+                  color: var(--text-secondary);
+                  font-size: 12px;
+                  text-transform: uppercase;
+                "
+              >
+                <th style="padding: 10px; font-weight: 600">Filename</th>
+                <th style="padding: 10px; font-weight: 600">Generated At</th>
+                <th style="padding: 10px; font-weight: 600">Size</th>
+                <th style="padding: 10px; font-weight: 600">Download</th>
+              </tr>
+            </thead>
+            <tbody id="exports-table-body">
+              <tr>
+                <td
+                  colspan="4"
+                  style="padding: 10px; color: var(--text-secondary); text-align: center"
+                >
+                  Loading existing packs...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 

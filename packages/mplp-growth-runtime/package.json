@@ -1,6 +1,6 @@
 {
   "name": "@openclaw/mplp-growth-runtime",
-  "version": "0.7.4",
+  "version": "0.8.0",
   "description": "MPLP Growth Engine Runtime Core (TypeScript)",
   "keywords": [
     "ael",

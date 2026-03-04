@@ -10,7 +10,7 @@ import { runnerState } from "./state.js";
 
 export async function runWeeklyBrief() {
   console.log("[Task] Running Weekly Brief...");
-  await executeCommand("brief", []);
+  return await executeCommand("brief", []);
 }
 
 export async function runDailyOutreachDraft() {
@@ -20,7 +20,7 @@ export async function runDailyOutreachDraft() {
   if (roleId) {
     args.push("--role-id", roleId);
   }
-  await executeCommand("outreach", args);
+  return await executeCommand("outreach", args);
 }
 
 export async function runHourlyInbox() {
@@ -49,14 +49,16 @@ export async function runHourlyInbox() {
 
     const out = await executeCommand("inbox", args);
     console.log(`[Task] Inbox execution result: \n${out}`);
+    return out;
   } else {
     console.log("[Task] Inbox: No new signals from connectors.");
+    return "No new signals from connectors.";
   }
 }
 
 export async function runWeeklyReview() {
   console.log("[Task] Running Weekly Review...");
-  await executeCommand("review", ["--since-last"]);
+  return await executeCommand("review", ["--since-last"]);
 }
 
 export async function runAutoPublish() {
@@ -92,5 +94,5 @@ export async function runAutoPublish() {
   // `cmdPublish` checks if asset is valid.
 
   // If policy is aggressive, we assume user wants to publish reviewed content automatically.
-  await executeCommand("publish", ["--latest", "x"]); // 'x' channel placeholder
+  return await executeCommand("publish", ["--latest", "x"]); // 'x' channel placeholder
 }

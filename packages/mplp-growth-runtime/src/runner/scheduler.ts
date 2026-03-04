@@ -6,7 +6,7 @@
 import schedule from "node-schedule";
 import { runnerState } from "./state.js";
 
-type TaskCallback = () => Promise<void>;
+type TaskCallback = () => Promise<string | void>;
 
 export interface Clock {
   scheduleJob(rule: string, callback: TaskCallback): void;
@@ -100,15 +100,27 @@ export class Scheduler {
       }
 
       console.log(`[Runner] Starting task: ${taskId} at ${this.clock.now().toISOString()}`);
-      const start = new Date().toISOString();
-
+      const startIso = this.clock.now().toISOString();
       const startTime = Date.now();
 
+      const ts = startIso.replace(/[:\-T]/g, "").slice(0, 14);
+      const hex = Math.random().toString(16).slice(2, 10);
+      const runId = `run-${ts}-${hex}`;
+
       try {
-        await task();
+        const out = await task();
+        const outputs_preview = typeof out === "string" ? out.substring(0, 1000) : undefined;
         runnerState.releaseLock(taskId, {
           status: "success",
           duration_ms: Date.now() - startTime,
+        });
+        runnerState.addRunRecord({
+          run_id: runId,
+          job: taskId,
+          start_time: startIso,
+          end_time: new Date().toISOString(),
+          status: "success",
+          outputs_preview,
         });
       } catch (err: any) {
         console.error(`[Runner] Task ${taskId} failed:`, err);
@@ -116,6 +128,14 @@ export class Scheduler {
           status: "failed",
           error: err.message,
           duration_ms: Date.now() - startTime,
+        });
+        runnerState.addRunRecord({
+          run_id: runId,
+          job: taskId,
+          start_time: startIso,
+          end_time: new Date().toISOString(),
+          status: "failed",
+          error: err.stack || err.message,
         });
       }
     });

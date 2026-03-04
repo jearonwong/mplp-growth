@@ -5,6 +5,7 @@
 
 import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
+import fs from "node:fs/promises";
 import path from "node:path";
 import type { Confirm, Plan, PlanStep } from "../modules/mplp-modules.js";
 import type { ContentAssetNode, InteractionNode } from "../psg/growth-nodes.js";
@@ -155,6 +156,74 @@ server.post<{ Body: { snapshot_id: string } }>("/api/admin/restore", async (requ
   }
 });
 
+// List Export Packs
+server.get("/api/admin/exports", async (request, reply) => {
+  try {
+    const config = loadConfig();
+    const exportDir = path.join(config.storage_dir, "exports");
+
+    try {
+      await fs.access(exportDir);
+    } catch {
+      return { ok: true, exports: [] }; // No exports yet
+    }
+
+    const files = await fs.readdir(exportDir);
+    const packs = [];
+    for (const file of files) {
+      if (file.endsWith(".md") || file.endsWith(".zip")) {
+        const stat = await fs.stat(path.join(exportDir, file));
+        packs.push({
+          filename: file,
+          bytes: stat.size,
+          created_at: stat.mtime.toISOString(),
+        });
+      }
+    }
+
+    // Sort descending by created_at
+    packs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return { ok: true, exports: packs };
+  } catch (err: unknown) {
+    reply.status(500);
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
+});
+
+// Download Export Pack
+server.get<{ Params: { filename: string } }>(
+  "/api/admin/exports/:filename",
+  async (request, reply) => {
+    try {
+      const { filename } = request.params;
+      // Sanitize path securely
+      const cleanFilename = path.basename(filename);
+
+      const config = loadConfig();
+      const filePath = path.join(config.storage_dir, "exports", cleanFilename);
+
+      try {
+        await fs.access(filePath);
+      } catch {
+        reply.status(404);
+        return { ok: false, error: "File not found" };
+      }
+
+      const data = await fs.readFile(filePath);
+      if (cleanFilename.endsWith(".zip")) {
+        reply.header("Content-Type", "application/zip");
+      } else {
+        reply.header("Content-Type", "text/markdown");
+      }
+      reply.header("Content-Disposition", `attachment; filename="${cleanFilename}"`);
+      reply.send(data);
+    } catch (err: unknown) {
+      reply.status(500);
+      return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    }
+  },
+);
+
 // Runner Status
 server.get("/api/runner/status", async () => {
   const snapshot = runnerState.getSnapshot();
@@ -219,10 +288,11 @@ server.post<{ Body: { task_id: string } }>("/api/runner/execute", async (request
   }
 
   const run_id = `run-${Date.now()}`;
+  const startIso = new Date().toISOString();
   const startTime = Date.now();
 
   // Map task string to function
-  const taskMap: Record<string, () => Promise<void>> = {
+  const taskMap: Record<string, () => Promise<string | void>> = {
     brief: runWeeklyBrief,
     "outreach-draft": runDailyOutreachDraft,
     inbox: runHourlyInbox,
@@ -237,10 +307,19 @@ server.post<{ Body: { task_id: string } }>("/api/runner/execute", async (request
   Promise.resolve()
     .then(async () => {
       console.log(`[Manual Trigger] Executing ${task_id}`);
-      await taskFn();
+      const out = await taskFn();
+      const outputs_preview = typeof out === "string" ? out.substring(0, 1000) : undefined;
       runnerState.releaseLock(task_id, {
         status: "success",
         duration_ms: Date.now() - startTime,
+      });
+      runnerState.addRunRecord({
+        run_id,
+        job: task_id,
+        start_time: startIso,
+        end_time: new Date().toISOString(),
+        status: "success",
+        outputs_preview,
       });
     })
     .catch((err: unknown) => {
@@ -249,6 +328,14 @@ server.post<{ Body: { task_id: string } }>("/api/runner/execute", async (request
         status: "failed",
         error: err instanceof Error ? err.message : String(err),
         duration_ms: Date.now() - startTime,
+      });
+      runnerState.addRunRecord({
+        run_id,
+        job: task_id,
+        start_time: startIso,
+        end_time: new Date().toISOString(),
+        status: "failed",
+        error: err instanceof Error ? err.stack || err.message : String(err),
       });
     });
 

@@ -18,11 +18,23 @@ export interface JobRuntime {
   last_duration_ms?: number;
 }
 
+export interface RunRecord {
+  run_id: string; // snap-<ts>-<hex>
+  job: string;
+  start_time: string; // ISO
+  end_time: string; // ISO
+  status: "success" | "failed";
+  outputs_preview?: string;
+  error?: string;
+  related_queue_ids?: string[];
+}
+
 export interface RunnerConfig {
   runner_enabled: boolean;
   policy_level: "safe" | "standard" | "aggressive";
   auto_publish: boolean;
   jobs: Record<string, JobConfig>;
+  runs?: RunRecord[];
 }
 
 export interface RunnerRuntime {
@@ -50,6 +62,7 @@ export class StateManager {
       review: { enabled: true, schedule_cron: "0 17 * * 5" }, // Friday 5pm
       publish: { enabled: false, schedule_cron: "*/15 * * * *" }, // Every 15m
     },
+    runs: [],
   };
 
   private runtime: RunnerRuntime = {
@@ -138,7 +151,21 @@ export class StateManager {
       is_running: this.runtime.is_running,
       active_task: this.runtime.active_task,
       jobs: unifiedJobs,
+      runs: this.config.runs || [],
     };
+  }
+
+  /**
+   * Append a completed run to history (bounded to 50)
+   */
+  addRunRecord(record: RunRecord) {
+    if (!this.config.runs) {
+      this.config.runs = [];
+    }
+    this.config.runs.unshift(record);
+    if (this.config.runs.length > 50) {
+      this.config.runs = this.config.runs.slice(0, 50);
+    }
   }
 
   /**

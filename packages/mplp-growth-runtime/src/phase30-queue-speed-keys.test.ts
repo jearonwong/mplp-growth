@@ -51,7 +51,7 @@ describe("Phase 30: Queue Speed Keys (v0.7.3)", () => {
 
     it("app.js has copyBatchSummary handler", () => {
       expect(appJs).toContain("copyBatchSummary:");
-      expect(appJs).toContain("navigator.clipboard.writeText");
+      expect(appJs).toMatch(/navigator\.clipboard[\s\S]*\.writeText/);
     });
   });
 });

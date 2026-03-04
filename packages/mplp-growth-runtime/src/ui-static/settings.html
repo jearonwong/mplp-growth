@@ -20,7 +20,7 @@
 
   <div class="main-content">
     <header>
-      <h1>Settings <span style="font-size: 14px; color: var(--text-secondary); margin-left:10px;">v0.7.3</span></h1>
+      <h1>Settings <span style="font-size: 14px; color: var(--text-secondary); margin-left:10px;">v0.7.4</span></h1>
       <div class="status-badge" id="global-header-stats"></div>
     </header>
 
@@ -126,6 +126,37 @@
       </div>
 
       <div class="card" style="margin-top: 20px">
+        <h3>Snapshots (P0)</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 5px">
+          Snapshot/Restore affects local state only; no external sending; runner remains off.
+        </p>
+
+        <div style="margin-top: 15px; margin-bottom: 15px">
+          <button class="btn btn-primary" onclick="app.handlers.createSnapshot(event)" id="snapshot-btn">
+            📸 Snapshot Now
+          </button>
+          <span id="snapshot-status" style="margin-left: 10px; font-size: 13px; color: var(--text-secondary);"></span>
+        </div>
+
+        <div style="overflow-x: auto">
+          <table class="data-table" style="width: 100%; text-align: left; border-collapse: collapse">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border-color)">
+                <th style="padding: 10px">Snapshot ID</th>
+                <th style="padding: 10px">Created At</th>
+                <th style="padding: 10px">Size</th>
+                <th style="padding: 10px">Action</th>
+              </tr>
+            </thead>
+            <tbody id="snapshots-table-body">
+              <tr>
+                <td colspan="4" style="padding: 15px; text-align: center; color: var(--text-secondary)">
+                  Loading snapshots...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="card" style="margin-top: 20px">

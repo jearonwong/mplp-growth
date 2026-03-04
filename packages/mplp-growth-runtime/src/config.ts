@@ -4,20 +4,25 @@ import path from "node:path";
 
 export interface SystemConfig {
   hn_keywords: string[];
+  storage_dir: string;
 }
 
 const DEFAULT_CONFIG: SystemConfig = {
   hn_keywords: ["opensource", "mplp", "openclaw"],
+  storage_dir: "",
 };
 
 export function loadConfig(stateDir?: string): SystemConfig {
-  const config = { ...DEFAULT_CONFIG };
-
-  // 1. File config
   const basePath =
     stateDir ||
     process.env.MPLP_GROWTH_STATE_DIR ||
     path.join(os.homedir(), ".openclaw", "mplp-growth");
+
+  const config: SystemConfig = {
+    ...DEFAULT_CONFIG,
+    storage_dir: basePath,
+  };
+
   const configPath = path.join(basePath, "config.json");
 
   try {

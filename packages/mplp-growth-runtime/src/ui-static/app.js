@@ -579,6 +579,52 @@ async function initSettings() {
   }
 }
 
+async function loadSnapshotsList() {
+  const tbody = document.getElementById("snapshots-table-body");
+  if (!tbody) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/snapshots`);
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Unknown");
+    }
+
+    const snaps = data.snapshots || [];
+    tbody.innerHTML = "";
+
+    if (snaps.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="padding: 15px; text-align: center; color: var(--text-secondary)">No snapshots available.</td></tr>`;
+      return;
+    }
+
+    snaps.forEach((snap) => {
+      const tr = document.createElement("tr");
+      tr.style.borderBottom = "1px solid var(--border-color)";
+
+      const mb = (snap.bytes / 1024 / 1024).toFixed(2);
+      const dateStr = new Date(snap.created_at).toLocaleString();
+
+      tr.innerHTML = `
+        <td style="padding: 10px; font-family: monospace; font-size: 13px;">${escapeHtml(snap.snapshot_id)}</td>
+        <td style="padding: 10px; font-size: 13px;">${dateStr}</td>
+        <td style="padding: 10px; font-size: 13px;">${mb} MB</td>
+        <td style="padding: 10px;">
+          <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px; color: var(--danger-color); border-color: var(--danger-color);" onclick="app.handlers.restoreSnapshot('${snap.snapshot_id}')">
+            Restore
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Failed to load snapshots list", err);
+    tbody.innerHTML = `<tr><td colspan="4" style="padding: 15px; text-align: center; color: var(--danger-color)">Error loading snapshots</td></tr>`;
+  }
+}
+
 // Global Handlers (for onclick attributes)
 window.app = {
   state: {
@@ -1189,6 +1235,75 @@ window.app = {
           console.error("Clipboard failed", e);
           alert("Failed to copy. Please manually select the text.");
         });
+    },
+    // --- Admin Snapshots (v0.7.4) ---
+    createSnapshot: async (event) => {
+      const btn = event.target;
+      const statusSpan = document.getElementById("snapshot-status");
+      btn.disabled = true;
+      if (statusSpan) {
+        statusSpan.innerText = "⏳ Creating snapshot...";
+        statusSpan.style.color = "var(--text-secondary)";
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/admin/snapshot`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ label: "Manual Snapshot" }),
+        });
+        if (res.ok) {
+          if (statusSpan) {
+            statusSpan.innerText = "✅ Snapshot created";
+            statusSpan.style.color = "var(--success-color)";
+          }
+          await initSettings(); // reload list
+        } else {
+          const data = await res.json();
+          alert("Snapshot failed: " + (data.error || "Unknown error"));
+          if (statusSpan) {
+            statusSpan.innerText = "❌ Failed";
+          }
+        }
+      } catch (e) {
+        console.error("API error", e);
+        if (statusSpan) {
+          statusSpan.innerText = "❌ API Error";
+        }
+      } finally {
+        btn.disabled = false;
+        setTimeout(() => {
+          if (statusSpan && statusSpan.innerText.includes("✅")) {
+            statusSpan.innerText = "";
+          }
+        }, 3000);
+      }
+    },
+    restoreSnapshot: async (snapshotId) => {
+      if (
+        !confirm(
+          `WARNING: Restoring ${snapshotId} will overwrite current application state.\nThe runner will be turned OFF.\n\nProceed?`,
+        )
+      ) {
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/admin/restore`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ snapshot_id: snapshotId }),
+        });
+        if (res.ok) {
+          alert("State restored successfully. The application UI will now refresh.");
+          window.location.reload();
+        } else {
+          const data = await res.json();
+          alert("Restore failed: " + (data.error || "Unknown error"));
+        }
+      } catch (e) {
+        console.error("API Error", e);
+        alert("API Error attempting restore.");
+      }
     },
   },
   initDashboard,

@@ -1,6 +1,6 @@
 {
   "name": "@openclaw/mplp-growth-runtime",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "MPLP Growth Engine Runtime Core (TypeScript)",
   "keywords": [
     "ael",
@@ -34,11 +34,13 @@
     "@fastify/static": "^9.0.0",
     "fastify": "^5.7.4",
     "node-schedule": "^2.1.1",
+    "tar": "^7.5.9",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/node-schedule": "^2.1.8",
+    "@types/tar": "^6.1.13",
     "@types/uuid": "^9.0.8",
     "jsdom": "^28.1.0",
     "typescript": "^5.0.0",

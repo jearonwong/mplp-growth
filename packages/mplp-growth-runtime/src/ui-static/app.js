@@ -5,10 +5,18 @@
 
 const API_BASE = "/api";
 
-// --- Auth Helper (v1.0.1) ---
+// --- Auth Helper (v1.0.2) ---
+// Only uses localStorage token. Dev-mode fallback is gated behind
+// window.__MPLP_DEV_MODE__ which is set from /api/health.policy_level.
 function getAuthHeaders() {
-  const token = localStorage.getItem("mplp_ops_token") || "ops-token-dev";
-  return { Authorization: `Bearer ${token}` };
+  const token = localStorage.getItem("mplp_ops_token");
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
+  }
+  if (window.__MPLP_DEV_MODE__ === true) {
+    return { Authorization: "Bearer ops-token-dev" };
+  }
+  return {};
 }
 
 // --- API Client ---
@@ -26,7 +34,7 @@ async function fetchQueue() {
 async function approveItem(id) {
   const res = await fetch(`${API_BASE}/queue/${id}/approve`, {
     method: "POST",
-    headers: { ...getAuthHeaders() },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
   });
   return res.json();
 }
@@ -34,7 +42,7 @@ async function approveItem(id) {
 async function rejectItem(id) {
   const res = await fetch(`${API_BASE}/queue/${id}/reject`, {
     method: "POST",
-    headers: { ...getAuthHeaders() },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
   });
   return res.json();
 }
@@ -45,6 +53,10 @@ async function initGlobalHeader() {
   try {
     const res = await fetch(`${API_BASE}/health`);
     const health = await res.json();
+
+    // Set dev-mode flag for auth fallback (v1.0.2)
+    window.__MPLP_DEV_MODE__ = health.policy_level === "dev";
+
     const badge = document.getElementById("global-header-stats");
     if (!badge) {
       return;

@@ -817,6 +817,41 @@ server.post<{ Body: BatchRequest; Reply: BatchResponse }>(
   },
 );
 
+// Run Record Evidence Extraction API (v1.0.0)
+server.get<{ Params: { run_id: string } }>(
+  "/api/runner/runs/:run_id/evidence",
+  async (request, reply) => {
+    const { run_id } = request.params;
+    const records = runnerState.getConfig().runs || [];
+    const runNode = records.find((r) => r.run_id === run_id);
+
+    if (!runNode) {
+      reply.status(404);
+      return { ok: false, error: `evidence tracking for run_id ${run_id} not found` };
+    }
+
+    if (!runNode.input || !runNode.output) {
+      reply.status(400);
+      return {
+        ok: false,
+        error: `run_id ${run_id} lacks structured immutability bindings. Only OpenClaw autonomous executions (v0.9.2+) support evidence grades.`,
+        legacy_context: runNode,
+      };
+    }
+
+    return {
+      run_id: runNode.run_id,
+      input: runNode.input,
+      output: runNode.output,
+      affected_ids: {
+        created_ids: runNode.created_ids || [],
+        consumed_ids: runNode.consumed_ids || [],
+      },
+      snapshot_ref: runNode.snapshot_ref || null,
+    };
+  },
+);
+
 // OpenClaw Autonomous Landing Telemetry Endpoint (v0.9.0)
 server.post<{ Body: { task: string } }>("/api/ops/openclaw/execute", async (request, reply) => {
   const { task } = request.body || {};
@@ -850,16 +885,6 @@ server.post<{ Body: { task: string } }>("/api/ops/openclaw/execute", async (requ
 
     const outStr = await executeCommand(cmd, [...args, "--source", "openclaw"], run_id);
     outputs_preview = outStr.substring(0, 1000);
-
-    runnerState.addRunRecord({
-      run_id,
-      job: task,
-      start_time: startIso,
-      end_time: new Date().toISOString(),
-      status: "success",
-      outputs_preview,
-      source: "openclaw",
-    });
   } catch (err: unknown) {
     console.error(`[OpenClaw] Autonomous task ${task} failed:`, err);
     runnerState.addRunRecord({
@@ -870,6 +895,11 @@ server.post<{ Body: { task: string } }>("/api/ops/openclaw/execute", async (requ
       status: "failed",
       error: err instanceof Error ? err.stack || err.message : String(err),
       source: "openclaw",
+      input: {
+        source: "openclaw",
+        command: task,
+        timestamp: startIso,
+      },
     });
     reply.status(500);
     return { ok: false, error: String(err) };
@@ -903,23 +933,44 @@ server.post<{ Body: { task: string } }>("/api/ops/openclaw/execute", async (requ
   const catBefore = getCat(queueBeforeData);
   const catAfter = getCat(queueAfterData);
 
+  const queue_delta = {
+    before: { pending_total: queueBeforeData.pending_count, by_category: catBefore },
+    after: { pending_total: queueAfterData.pending_count, by_category: catAfter },
+    diff: {
+      pending_total: queueAfterData.pending_count - queueBeforeData.pending_count,
+      by_category: {
+        inbox: catAfter.inbox - catBefore.inbox,
+        outreach: catAfter.outreach - catBefore.outreach,
+        publish: catAfter.publish - catBefore.publish,
+        review: catAfter.review - catBefore.review,
+        other: catAfter.other - catBefore.other,
+      },
+    },
+  };
+
+  runnerState.addRunRecord({
+    run_id,
+    job: task,
+    start_time: startIso,
+    end_time: new Date().toISOString(),
+    status: "success",
+    outputs_preview,
+    source: "openclaw",
+    input: {
+      source: "openclaw",
+      command: task,
+      timestamp: startIso,
+    },
+    output: { queue_delta },
+    created_ids,
+    consumed_ids,
+    snapshot_ref: null,
+  });
+
   return {
     ok: true,
     run_id,
-    queue_delta: {
-      before: { pending_total: queueBeforeData.pending_count, by_category: catBefore },
-      after: { pending_total: queueAfterData.pending_count, by_category: catAfter },
-      diff: {
-        pending_total: queueAfterData.pending_count - queueBeforeData.pending_count,
-        by_category: {
-          inbox: catAfter.inbox - catBefore.inbox,
-          outreach: catAfter.outreach - catBefore.outreach,
-          publish: catAfter.publish - catBefore.publish,
-          review: catAfter.review - catBefore.review,
-          other: catAfter.other - catBefore.other,
-        },
-      },
-    },
+    queue_delta,
     created_ids,
     consumed_ids,
     source: "openclaw",

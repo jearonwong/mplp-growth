@@ -1,0 +1,123 @@
+openapi: 3.1.0
+info:
+  title: MPLP Growth API Contract Manifest
+  description: Explicit contract declarations for frozen and stable API endpoints ensuring telemetry algorithms and execution scopes do not drift across versions.
+  version: 1.0.0
+
+x-mplp-definitions:
+  baseline-version: 0.9.2
+  owning-gates:
+    - GATE-OPENCLAW-DELTA-CONTRACT-01
+    - GATE-OPENCLAW-DELTA-ALG-01
+    - GATE-AUTH-BLOCKS-OPS-01
+
+paths:
+  /api/ops/openclaw/execute:
+    post:
+      summary: OpenClaw Autonomous Landing Telemetry Endpoint
+      operationId: executeOpenClaw
+      x-stability: frozen
+      security:
+        - BearerAuth: []
+        - HeaderToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - task
+              properties:
+                task:
+                  type: string
+                  description: "The autonomous task command (e.g., '/inbox --platform test --content foo')"
+      responses:
+        "200":
+          description: Successful execution yielding explicit metrics delta.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - ok
+                  - run_id
+                  - queue_delta
+                  - created_ids
+                  - consumed_ids
+                  - source
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+                  run_id:
+                    type: string
+                    description: Unique identifier for the orchestrated execution run.
+                  queue_delta:
+                    type: object
+                    description: Explicit algebraic boundary metrics representing before/after states.
+                    required:
+                      - before
+                      - after
+                      - diff
+                    properties:
+                      before:
+                        $ref: "#/components/schemas/QueueMetricSnapshot"
+                      after:
+                        $ref: "#/components/schemas/QueueMetricSnapshot"
+                      diff:
+                        $ref: "#/components/schemas/QueueMetricSnapshot"
+                  created_ids:
+                    type: array
+                    items:
+                      type: string
+                    description: IDs of exactly the nodes newly created during this run.
+                  consumed_ids:
+                    type: array
+                    items:
+                      type: string
+                    description: IDs of exactly the nodes completely consumed or closed during this run.
+                  source:
+                    type: string
+                    const: openclaw
+                    description: Explicit attribution tracer applied downstream.
+        "400":
+          description: Missing or malformed parameters.
+        "401":
+          description: Strict unauthenticated response due to missing or invalid operations token.
+        "500":
+          description: Internal execution or parsing error.
+
+components:
+  schemas:
+    QueueMetricSnapshot:
+      type: object
+      required:
+        - pending_total
+        - by_category
+      properties:
+        pending_total:
+          type: integer
+          description: The absolute sum of all pending un-archived entities.
+        by_category:
+          type: object
+          required:
+            - inbox
+            - outreach
+            - publish
+            - review
+            - other
+          properties:
+            inbox: { type: integer }
+            outreach: { type: integer }
+            publish: { type: integer }
+            review: { type: integer }
+            other: { type: integer }
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    HeaderToken:
+      type: apiKey
+      in: header
+      name: x-mplp-token

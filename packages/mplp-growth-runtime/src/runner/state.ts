@@ -28,6 +28,16 @@ export interface RunRecord {
   error?: string;
   related_queue_ids?: string[];
   source?: string;
+  // v1.0 Evidence-grade Run Record
+  input?: {
+    source: string;
+    command: string;
+    timestamp: string;
+  };
+  output?: Record<string, unknown>;
+  created_ids?: string[];
+  consumed_ids?: string[];
+  snapshot_ref?: string | null;
 }
 
 export interface RunnerConfig {

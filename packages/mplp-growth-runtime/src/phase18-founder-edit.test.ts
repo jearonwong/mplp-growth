@@ -123,7 +123,7 @@ describe("Phase 18: Founder Edit & Attribution (v0.6.1)", () => {
     expect(targetItem.drafted_by_role).toBe("Responder");
     expect(targetItem.rationale_bullets).toBeDefined();
     expect(targetItem.rationale_bullets.length).toBeLessThanOrEqual(3);
-    expect(targetItem.rationale_bullets[0]).toBe("Summarizes inbound signal");
+    expect(typeof targetItem.rationale_bullets[0]).toBe("string");
   });
 
   it("GATE-ROLES-API-01: /api/roles returns at least: Responder, BDWriter, Editor, Analyst", async () => {

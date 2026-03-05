@@ -51,4 +51,42 @@ describe("Phase 39: Attribution Wrapper (v0.9.1)", () => {
       // (The queue API already passes triggered_by but not trigger_run_id explicitly, so let's just check the DB if needed).
     });
   });
+
+  describe("GATE-ALS-ISOLATION-01", () => {
+    it("isolates context across concurrent executions and only tags Domain Nodes", async () => {
+      // Execute two asynchronous commands concurrently with DIFFERENT sources
+      const runId1 = "concurrent-run-001";
+      const runId2 = "concurrent-run-002";
+
+      const [out1, out2] = await Promise.all([
+        executeCommand(
+          "inbox",
+          ["--platform", "manual", "--content", "Isolation A", "--source", "agent-alpha"],
+          runId1,
+        ),
+        executeCommand(
+          "inbox",
+          ["--platform", "manual", "--content", "Isolation B", "--source", "agent-beta"],
+          runId2,
+        ),
+      ]);
+
+      expect(out1).toContain("Inbox:");
+      expect(out2).toContain("Inbox:");
+
+      // Fetch queue items to inspect Confirm nodes
+      const queueRes = await server.inject({ method: "GET", url: "/api/queue" });
+      const inboxItems = queueRes.json().categories.inbox;
+
+      const itemA = inboxItems.find((i: any) => i.triggered_by === "agent-alpha");
+      const itemB = inboxItems.find((i: any) => i.triggered_by === "agent-beta");
+
+      expect(itemA).toBeDefined();
+      expect(itemB).toBeDefined();
+
+      // Verify strict isolation
+      expect(itemA.triggered_by).toBe("agent-alpha");
+      expect(itemB.triggered_by).toBe("agent-beta");
+    });
+  });
 });

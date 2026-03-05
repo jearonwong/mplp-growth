@@ -28,8 +28,7 @@ describe("Phase 35: OpenClaw Cockpit Mode (v0.9.0)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/ops/openclaw/execute",
-        headers: { "x-mplp-token": "ops-token-dev" },
-        headers: { authorization: "Bearer ops-token-dev" },
+        headers: { "x-mplp-token": "ops-token-dev", authorization: "Bearer ops-token-dev" },
         payload: { task: "/inbox --platform x --content 'hello openclaw telemetry test'" },
       });
 
@@ -63,6 +62,47 @@ describe("Phase 35: OpenClaw Cockpit Mode (v0.9.0)", () => {
       // Look for the newly created item (which should have triggered_by: "openclaw")
       const hasOpenclawTriggered = allItems.some((i: any) => i.triggered_by === "openclaw");
       expect(hasOpenclawTriggered).toBe(true);
+    });
+  });
+
+  describe("GATE-OPENCLAW-DELTA-ALG-01", () => {
+    it("handles queue_delta math correctly for boundary conditions", async () => {
+      // 1. Get exact before state
+      const beforeRes = await server.inject({ method: "GET", url: "/api/queue" });
+      const beforeData = beforeRes.json();
+
+      // 2. Trigger task
+      const res = await server.inject({
+        method: "POST",
+        url: "/api/ops/openclaw/execute",
+        headers: { "x-mplp-token": "ops-token-dev" },
+        payload: { task: "/inbox --platform math-test --content math" },
+      });
+
+      const data = res.json();
+
+      // 3. Verify math algorithms
+      const afterRes = await server.inject({ method: "GET", url: "/api/queue" });
+      const afterData = afterRes.json();
+
+      // Exactly matches category counts algebraically
+      expect(data.queue_delta.diff.by_category.inbox).toBe(
+        afterData.categories.inbox.length - beforeData.categories.inbox.length,
+      );
+
+      expect(data.queue_delta.diff.pending_total).toBe(
+        afterData.pending_count - beforeData.pending_count,
+      );
+
+      // created_ids length should match the growth of the queue (assuming 0 consumption)
+      expect(data.created_ids.length).toBe(data.queue_delta.diff.pending_total);
+
+      // The arrays should explicitly contain the new items
+      const newItems = afterData.categories.inbox.filter(
+        (i: any) => !beforeData.categories.inbox.find((b: any) => b.id === i.id),
+      );
+
+      expect(data.created_ids).toContain(newItems[0].id);
     });
   });
 });

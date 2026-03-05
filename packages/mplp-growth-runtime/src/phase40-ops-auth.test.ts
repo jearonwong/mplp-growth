@@ -54,4 +54,23 @@ describe("Phase 40: API Security Hardening (v0.9.1)", () => {
       expect(res.json().queue_delta).toBeDefined();
     });
   });
+
+  describe("GATE-AUTH-COVERAGE-01", () => {
+    it("protects all critical mutative endpoints across namespaces", async () => {
+      const endpoints = [
+        "/api/admin/seed",
+        "/api/admin/snapshot",
+        "/api/admin/restore",
+        "/api/runner/config",
+        "/api/runner/execute",
+        "/api/ops/daily-run",
+        "/api/ops/batch/action",
+      ];
+
+      for (const ep of endpoints) {
+        const res = await server.inject({ method: "POST", url: ep, payload: {} });
+        expect(res.statusCode, `Endpoint ${ep} should be protected`).toBe(401);
+      }
+    });
+  });
 });

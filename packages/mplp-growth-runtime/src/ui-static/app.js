@@ -5,6 +5,12 @@
 
 const API_BASE = "/api";
 
+// --- Auth Helper (v1.0.1) ---
+function getAuthHeaders() {
+  const token = localStorage.getItem("mplp_ops_token") || "ops-token-dev";
+  return { Authorization: `Bearer ${token}` };
+}
+
 // --- API Client ---
 
 async function fetchStatus() {
@@ -20,12 +26,16 @@ async function fetchQueue() {
 async function approveItem(id) {
   const res = await fetch(`${API_BASE}/queue/${id}/approve`, {
     method: "POST",
+    headers: { ...getAuthHeaders() },
   });
   return res.json();
 }
 
 async function rejectItem(id) {
-  const res = await fetch(`${API_BASE}/queue/${id}/reject`, { method: "POST" });
+  const res = await fetch(`${API_BASE}/queue/${id}/reject`, {
+    method: "POST",
+    headers: { ...getAuthHeaders() },
+  });
   return res.json();
 }
 
@@ -957,7 +967,7 @@ window.app = {
         }
         const res = await fetch(`${API_BASE}/queue/${confirmId}/redraft`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify(body),
         });
         const data = await res.json();
@@ -996,7 +1006,7 @@ window.app = {
       try {
         const res = await fetch(`${API_BASE}/assets/${assetId}/edit`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ content }),
         });
         const data = await res.json();
@@ -1017,7 +1027,7 @@ window.app = {
       try {
         const res = await fetch(`${API_BASE}/runner/config`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ auto_publish: checked }),
         });
         if (res.ok) {
@@ -1039,7 +1049,7 @@ window.app = {
       try {
         const res = await fetch(`${API_BASE}/runner/config`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({
             jobs: {
               [jobId]: { enabled: checked },
@@ -1072,7 +1082,7 @@ window.app = {
 
         const res = await fetch(`${API_BASE}/runner/config`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify(payload),
         });
         if (res.ok) {
@@ -1091,7 +1101,7 @@ window.app = {
       try {
         const res = await fetch(`${API_BASE}/runner/execute`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ task_id: jobId }),
         });
         const json = await res.json();
@@ -1127,7 +1137,10 @@ window.app = {
       statusSpan.style.color = "var(--text-secondary)";
 
       try {
-        const res = await fetch(`${API_BASE}/admin/seed`, { method: "POST" });
+        const res = await fetch(`${API_BASE}/admin/seed`, {
+          method: "POST",
+          headers: { ...getAuthHeaders() },
+        });
         const json = await res.json();
 
         if (json.ok) {
@@ -1165,7 +1178,7 @@ window.app = {
 
           const res = await fetch(`${API_BASE}/runner/config`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
             body: JSON.stringify(reqBody),
           });
           if (res.ok) {
@@ -1190,7 +1203,7 @@ window.app = {
 
         const res = await fetch(`${API_BASE}/runner/config`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify(reqBody),
         });
         if (res.ok) {
@@ -1271,7 +1284,7 @@ window.app = {
       try {
         const res = await fetch(`${API_BASE}/queue/batch`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify(payload),
         });
         const data = await res.json();
@@ -1369,7 +1382,7 @@ window.app = {
       try {
         const res = await fetch(`${API_BASE}/admin/snapshot`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ label: "Manual Snapshot" }),
         });
         if (res.ok) {
@@ -1410,7 +1423,7 @@ window.app = {
       try {
         const res = await fetch(`${API_BASE}/admin/restore`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ snapshot_id: snapshotId }),
         });
         if (res.ok) {

@@ -817,7 +817,14 @@ window.app = {
     closeImpactModal: () => {
       document.getElementById("impact-modal").classList.add("hidden");
     },
+    // Close ALL modals before opening a new one (v1.0.2 mutual exclusion)
+    closeAllModals: () => {
+      document.querySelectorAll(".modal-overlay").forEach((m) => {
+        m.classList.add("hidden");
+      });
+    },
     openImpactModal: (item) => {
+      app.handlers.closeAllModals();
       document.getElementById("impact-modal").classList.remove("hidden");
 
       const badge = document.getElementById("impact-badge");
@@ -904,6 +911,7 @@ window.app = {
       document.getElementById("edit-modal").classList.add("hidden");
     },
     openRedraftModal: (confirmId) => {
+      app.handlers.closeAllModals();
       const modal = document.getElementById("redraft-modal");
       if (!modal) {
         return;
@@ -998,6 +1006,7 @@ window.app = {
       }
     },
     openEditModal: (item) => {
+      app.handlers.closeAllModals();
       document.getElementById("edit-modal").classList.remove("hidden");
       document.getElementById("edit-asset-id").value = item.asset_id;
 
@@ -1267,6 +1276,7 @@ window.app = {
       await app.handlers.executeBatchAction("reject");
     },
     openBatchRedraftModal: () => {
+      app.handlers.closeAllModals();
       const modal = document.getElementById("batch-redraft-modal");
       if (modal) {
         modal.classList.remove("hidden");

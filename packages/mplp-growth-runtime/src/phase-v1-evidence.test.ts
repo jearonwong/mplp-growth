@@ -59,13 +59,20 @@ describe("Phase D: Evidence-grade Run Record (v1.0.0)", () => {
         data.queue_delta.diff.pending_total,
       );
 
+      // Verify strict algebraic category existence (schema enforcement)
+      const categories = Object.keys(evidence.output.queue_delta.diff.by_category);
+      expect(categories).toEqual(
+        expect.arrayContaining(["inbox", "outreach", "publish", "review", "other"]),
+      );
+
       // Affected references verification
       expect(evidence.affected_ids).toBeDefined();
       expect(Array.isArray(evidence.affected_ids.created_ids)).toBe(true);
       expect(Array.isArray(evidence.affected_ids.consumed_ids)).toBe(true);
       expect(evidence.affected_ids.created_ids.length).toBe(data.created_ids.length);
 
-      // Snapshot ref
+      // Snapshot ref existence
+      expect(evidence).toHaveProperty("snapshot_ref");
       expect(evidence.snapshot_ref === null || typeof evidence.snapshot_ref === "string").toBe(
         true,
       );

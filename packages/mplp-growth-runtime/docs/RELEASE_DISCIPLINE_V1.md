@@ -8,8 +8,8 @@ As established by the **v0.9.1 Contract Freeze** and **v0.9.2 Gate Hardening Pat
 
 All human-facing and registry references must strictly align on the designated semantic version.
 
-1. `package.json` updated cleanly.
-2. `src/ui-static/index.html`, `queue.html`, and `settings.html` header `<span>` elements bumped.
+1. `packages/mplp-growth-runtime/package.json` updated cleanly.
+2. `packages/mplp-growth-runtime/src/ui-static/index.html`, `queue.html`, and `settings.html` header `<span>` elements bumped.
 
 ### RC-2: Founder 3-Minute Sanity Audit
 

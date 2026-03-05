@@ -49,21 +49,38 @@ server.register(fastifyStatic, {
   prefix: "/", // optional: default '/'
 });
 
-// Optional API Token Auth (v0.7.3)
-const API_TOKEN = process.env.MPLP_GROWTH_API_TOKEN;
-if (API_TOKEN) {
-  server.addHook("onRequest", async (request, reply) => {
-    const url = request.url;
-    // Exempt: health check, static files
-    if (url === "/api/health" || !url.startsWith("/api/")) {
-      return;
+// Unified OPS & Mutative API Token Auth (v0.9.1)
+const OPS_TOKEN = process.env.OPS_TOKEN || process.env.MPLP_GROWTH_API_TOKEN || "ops-token-dev";
+
+server.addHook("onRequest", async (request, reply) => {
+  const url = request.url;
+  const method = request.method;
+
+  // Exempt public/health and static UI
+  if (url === "/api/health" || !url.startsWith("/api/")) {
+    return;
+  }
+
+  // Protect mutative routes and all /api/ops/* endpoints
+  const isOps = url.startsWith("/api/ops/");
+  const isMutative = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+
+  if (isOps || isMutative) {
+    const authHeader = request.headers["authorization"];
+    const headerToken = request.headers["x-mplp-token"];
+
+    let tokenStr = "";
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      tokenStr = authHeader.substring(7);
+    } else if (headerToken) {
+      tokenStr = Array.isArray(headerToken) ? headerToken[0] : headerToken;
     }
-    const token = request.headers["x-mplp-token"];
-    if (token !== API_TOKEN) {
-      return reply.code(401).send({ error: "Unauthorized: invalid or missing x-mplp-token" });
+
+    if (!tokenStr || tokenStr !== OPS_TOKEN) {
+      return reply.code(401).send({ ok: false, error: "Unauthorized: invalid or missing token" });
     }
-  });
-}
+  }
+});
 
 // Health Check
 server.get("/api/health", async () => {
@@ -320,6 +337,7 @@ server.post<{ Body: { task_id: string } }>("/api/runner/execute", async (request
         end_time: new Date().toISOString(),
         status: "success",
         outputs_preview,
+        source: "manual",
       });
     })
     .catch((err: unknown) => {
@@ -336,6 +354,7 @@ server.post<{ Body: { task_id: string } }>("/api/runner/execute", async (request
         end_time: new Date().toISOString(),
         status: "failed",
         error: err instanceof Error ? err.stack || err.message : String(err),
+        source: "manual",
       });
     });
 
@@ -347,19 +366,20 @@ server.post<{ Body: { command: string; args: string[] }; Reply: ExecuteResponse 
   "/api/cmd/execute",
   async (request, _reply) => {
     const { command, args } = request.body;
+    const run_id = "run-" + Date.now();
     try {
-      const output = await executeCommand(command, args);
+      const output = await executeCommand(command, args, run_id);
       return {
         ok: true,
         command: `${command} ${args.join(" ")}`,
-        run_id: "run-" + Date.now(),
+        run_id,
         outputs: output,
       };
     } catch (err: unknown) {
       return {
         ok: false,
         command: `${command} ${args.join(" ")}`,
-        run_id: "run-" + Date.now(),
+        run_id,
         outputs: "",
         error: {
           code: "internal" as const,
@@ -592,6 +612,7 @@ server.get<{ Reply: QueueResponse }>("/api/queue", async () => {
       redrafted_by_role,
       redraft_version,
       redraft_rationale_bullets: redraft_rationale_bullets?.slice(0, 3),
+      triggered_by: c.metadata?.triggered_by as string | undefined,
     };
 
     if (category === "outreach") {
@@ -795,6 +816,116 @@ server.post<{ Body: BatchRequest; Reply: BatchResponse }>(
     };
   },
 );
+
+// OpenClaw Autonomous Landing Telemetry Endpoint (v0.9.0)
+server.post<{ Body: { task: string } }>("/api/ops/openclaw/execute", async (request, reply) => {
+  const { task } = request.body || {};
+  if (!task) {
+    reply.status(400);
+    return { ok: false, error: "Missing 'task' parameter" };
+  }
+
+  // Capture queue metric before
+  const queueBeforeRes = await server.inject({ method: "GET", url: "/api/queue" });
+  const queueBeforeData = queueBeforeRes.json() as QueueResponse;
+  const queueBeforeIds = new Set([
+    ...queueBeforeData.categories.inbox.map((i) => i.id),
+    ...queueBeforeData.categories.outreach.map((i) => i.id),
+    ...queueBeforeData.categories.publish.map((i) => i.id),
+    ...queueBeforeData.categories.review.map((i) => i.id),
+    ...queueBeforeData.categories.other.map((i) => i.id),
+  ]);
+
+  const run_id = `run-${Date.now()}`;
+  const startIso = new Date().toISOString();
+  let outputs_preview: string | undefined;
+
+  try {
+    console.log(`[OpenClaw] Executing autonomous task: ${task}`);
+
+    // Basic argument parser to handle quoted strings
+    const taskArgs = task.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
+    const cmd = (taskArgs[0] || "").replace(/^\//, "");
+    const args = taskArgs.slice(1).map((a) => a.replace(/^["']|["']$/g, ""));
+
+    const outStr = await executeCommand(cmd, [...args, "--source", "openclaw"], run_id);
+    outputs_preview = outStr.substring(0, 1000);
+
+    runnerState.addRunRecord({
+      run_id,
+      job: task,
+      start_time: startIso,
+      end_time: new Date().toISOString(),
+      status: "success",
+      outputs_preview,
+      source: "openclaw",
+    });
+  } catch (err: unknown) {
+    console.error(`[OpenClaw] Autonomous task ${task} failed:`, err);
+    runnerState.addRunRecord({
+      run_id,
+      job: task,
+      start_time: startIso,
+      end_time: new Date().toISOString(),
+      status: "failed",
+      error: err instanceof Error ? err.stack || err.message : String(err),
+      source: "openclaw",
+    });
+    reply.status(500);
+    return { ok: false, error: String(err) };
+  }
+
+  // Capture queue metric after
+  const queueAfterRes = await server.inject({ method: "GET", url: "/api/queue" });
+  const queueAfterData = queueAfterRes.json() as QueueResponse;
+  const queueAfterIds = [
+    ...queueAfterData.categories.inbox.map((i) => i.id),
+    ...queueAfterData.categories.outreach.map((i) => i.id),
+    ...queueAfterData.categories.publish.map((i) => i.id),
+    ...queueAfterData.categories.review.map((i) => i.id),
+    ...queueAfterData.categories.other.map((i) => i.id),
+  ];
+
+  const created_ids = queueAfterIds.filter((id) => !queueBeforeIds.has(id)).slice(0, 20);
+  const afterIdsSet = new Set(queueAfterIds);
+  const consumed_ids = Array.from(queueBeforeIds)
+    .filter((id) => !afterIdsSet.has(id))
+    .slice(0, 20);
+
+  const getCat = (d: QueueResponse) => ({
+    inbox: d.categories.inbox.length,
+    outreach: d.categories.outreach.length,
+    publish: d.categories.publish.length,
+    review: d.categories.review.length,
+    other: d.categories.other.length,
+  });
+
+  const catBefore = getCat(queueBeforeData);
+  const catAfter = getCat(queueAfterData);
+
+  return {
+    ok: true,
+    run_id,
+    queue_delta: {
+      before: { pending_total: queueBeforeData.pending_count, by_category: catBefore },
+      after: { pending_total: queueAfterData.pending_count, by_category: catAfter },
+      diff: {
+        pending_total: queueAfterData.pending_count - queueBeforeData.pending_count,
+        by_category: {
+          inbox: catAfter.inbox - catBefore.inbox,
+          outreach: catAfter.outreach - catBefore.outreach,
+          publish: catAfter.publish - catBefore.publish,
+          review: catAfter.review - catBefore.review,
+          other: catAfter.other - catBefore.other,
+        },
+      },
+    },
+    created_ids,
+    consumed_ids,
+    source: "openclaw",
+    output: outputs_preview,
+  };
+});
 
 // Daily Run Composite API (v0.7.3)
 server.post<{ Body: DailyRunRequest; Reply: DailyRunResponse }>(

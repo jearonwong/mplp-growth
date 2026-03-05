@@ -344,12 +344,15 @@ export interface Confirm {
   message?: string;
   /** ISO timestamp when the confirm was created */
   created_at?: string;
+  /** Optional metadata properties, e.g. triggered_by */
+  metadata?: Record<string, any>;
 }
 
 export interface CreateConfirmInput {
   target_type: ConfirmTargetType;
   target_id: string;
   requested_by_role: string;
+  metadata?: Record<string, any>;
 }
 
 export function createConfirm(input: CreateConfirmInput): Confirm {
@@ -371,6 +374,9 @@ export function createConfirm(input: CreateConfirmInput): Confirm {
     status: "pending",
     requested_by_role: input.requested_by_role,
     requested_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    message: "",
+    metadata: input.metadata,
   };
 }
 

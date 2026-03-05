@@ -36,6 +36,7 @@ describe("Phase 15 Gates — Runner Safety Policy (v0.4.1)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/runner/config",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: {
           policy_level: "aggressive",
           auto_publish: true,

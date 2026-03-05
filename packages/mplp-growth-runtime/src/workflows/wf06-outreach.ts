@@ -154,14 +154,24 @@ export async function runOutreach(
       asset_type: "outreach_email",
       title: `Outreach to ${target.name} via ${input.channel}`,
       content: draftContent,
-      metadata: {
-        target_id: input.target_id,
-        channel: input.channel,
-        workflow: "wf06-outreach",
-        generated_at: new Date().toISOString(),
-        drafted_by_role: input.role_id || "BDWriter",
-        rationale_bullets: draft.rationale_bullets,
-      },
+      metadata: input.source
+        ? {
+            target_id: input.target_id,
+            channel: input.channel,
+            workflow: "wf06-outreach",
+            generated_at: new Date().toISOString(),
+            drafted_by_role: input.role_id || "BDWriter",
+            rationale_bullets: draft.rationale_bullets,
+            triggered_by: input.source,
+          }
+        : {
+            target_id: input.target_id,
+            channel: input.channel,
+            workflow: "wf06-outreach",
+            generated_at: new Date().toISOString(),
+            drafted_by_role: input.role_id || "BDWriter",
+            rationale_bullets: draft.rationale_bullets,
+          },
     });
     asset.status = "reviewed"; // Draft complete, awaiting confirm
     await psg.putNode(asset);

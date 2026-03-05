@@ -121,6 +121,7 @@ export class Scheduler {
           end_time: new Date().toISOString(),
           status: "success",
           outputs_preview,
+          source: "cron",
         });
       } catch (err: any) {
         console.error(`[Runner] Task ${taskId} failed:`, err);
@@ -136,6 +137,7 @@ export class Scheduler {
           end_time: new Date().toISOString(),
           status: "failed",
           error: err.stack || err.message,
+          source: "cron",
         });
       }
     });

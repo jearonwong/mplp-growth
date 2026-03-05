@@ -27,6 +27,7 @@ export interface RunRecord {
   outputs_preview?: string;
   error?: string;
   related_queue_ids?: string[];
+  source?: string;
 }
 
 export interface RunnerConfig {

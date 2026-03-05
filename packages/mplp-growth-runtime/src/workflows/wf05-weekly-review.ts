@@ -279,6 +279,15 @@ export async function runWeeklyReview(
     await ctx.psg.putNode(plan as any);
     graphUpdateCount++;
 
+    // Create Confirm for the plan
+    const confirm: Confirm = createConfirm({
+      target_type: "plan",
+      target_id: plan.plan_id,
+      requested_by_role: input.role_id || "Analyst",
+    });
+    await ctx.psg.putNode(confirm as any);
+    graphUpdateCount++;
+
     // Create Trace
     const trace: Trace = createTrace({
       context_id: input.context_id,

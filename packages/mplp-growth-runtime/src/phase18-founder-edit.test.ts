@@ -46,6 +46,7 @@ describe("Phase 18: Founder Edit & Attribution (v0.6.1)", () => {
     const response = await server.inject({
       method: "POST",
       url: "/api/assets/test-edit-asset-1/edit",
+      headers: { "x-mplp-token": "ops-token-dev" },
       body: { content: "Revised Draft Content" },
     });
 

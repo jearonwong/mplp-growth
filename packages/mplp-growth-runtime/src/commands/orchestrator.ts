@@ -323,8 +323,18 @@ export async function cmdPublish(args: string[]): Promise<string> {
     const { psg, vsl, eventEmitter, contextId, basePath } = await init();
 
     // v0.3.0: --latest mode
-    let assetId: string;
-    let channel: ChannelProfileNode["platform"];
+    let assetId: string | undefined;
+    let channel: ChannelProfileNode["platform"] | undefined;
+    let source: string | undefined;
+
+    // Pluck --source
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === "--source" && args[i + 1]) {
+        source = args[i + 1];
+        args.splice(i, 2);
+        i--;
+      }
+    }
 
     if (args[0] === "--latest") {
       channel = args[1] as ChannelProfileNode["platform"];
@@ -341,7 +351,9 @@ export async function cmdPublish(args: string[]): Promise<string> {
       });
       // Filter: exclude templates, require channel variant
       const eligible = reviewedAssets.filter(
-        (a) => !a.is_template && a.platform_variants[channel] !== undefined,
+        (a) =>
+          !a.is_template &&
+          a.platform_variants[channel as ChannelProfileNode["platform"]] !== undefined,
       );
       if (eligible.length === 0) {
         const reason =
@@ -389,8 +401,9 @@ export async function cmdPublish(args: string[]): Promise<string> {
     const result = await runPublishPack(
       {
         context_id: contextId,
-        asset_id: assetId,
-        channel,
+        asset_id: assetId!,
+        channel: channel!,
+        source,
       },
       { psg, vsl, eventEmitter, basePath },
     );
@@ -425,6 +438,7 @@ export async function cmdInbox(args: string[]): Promise<string> {
     // Parse arguments — support JSON or flag-based input
     let interactions: InboxHandlerInput["interactions"] = [];
     let roleId: AgentRole | undefined;
+    let source: string | undefined;
 
     if (args[0]?.startsWith("[")) {
       // JSON array input
@@ -453,6 +467,8 @@ export async function cmdInbox(args: string[]): Promise<string> {
           author = args[++i];
         } else if (args[i] === "--role-id" && args[i + 1]) {
           roleId = args[++i] as AgentRole;
+        } else if (args[i] === "--source" && args[i + 1]) {
+          source = args[++i];
         }
       }
 
@@ -469,7 +485,7 @@ export async function cmdInbox(args: string[]): Promise<string> {
     }
 
     const result = await runInboxHandler(
-      { context_id: contextId, interactions, role_id: roleId },
+      { context_id: contextId, interactions, role_id: roleId, source },
       { psg, vsl, eventEmitter },
     );
 
@@ -495,16 +511,19 @@ export async function cmdReview(args: string[]): Promise<string> {
 
     let weekStart: string | undefined;
     let sinceLast = false;
+    let source: string | undefined;
     for (let i = 0; i < args.length; i++) {
       if (args[i] === "--week" && args[i + 1]) {
         weekStart = args[++i];
       } else if (args[i] === "--since-last") {
         sinceLast = true;
+      } else if (args[i] === "--source" && args[i + 1]) {
+        source = args[++i];
       }
     }
 
     const result = await runWeeklyReview(
-      { context_id: contextId, week_start: weekStart, since_last: sinceLast },
+      { context_id: contextId, week_start: weekStart, since_last: sinceLast, source },
       { psg, vsl, eventEmitter },
     );
 
@@ -536,6 +555,7 @@ export async function cmdOutreach(args: string[]): Promise<string> {
     let goal: string | undefined;
     let tone: string | undefined;
     let roleId: AgentRole | undefined;
+    let source: string | undefined;
     const positional: string[] = [];
 
     for (let i = 0; i < args.length; i++) {
@@ -553,6 +573,8 @@ export async function cmdOutreach(args: string[]): Promise<string> {
         tone = args[++i];
       } else if (args[i] === "--role-id" && args[i + 1]) {
         roleId = args[++i] as AgentRole;
+      } else if (args[i] === "--source" && args[i + 1]) {
+        source = args[++i];
       } else {
         positional.push(args[i]);
       }
@@ -661,6 +683,7 @@ export async function cmdOutreach(args: string[]): Promise<string> {
             tone,
             dry_run: dryRun,
             role_id: roleId,
+            source,
           },
           { psg, vsl, eventEmitter },
         );
@@ -712,6 +735,7 @@ export async function cmdOutreach(args: string[]): Promise<string> {
         tone,
         dry_run: dryRun,
         role_id: roleId,
+        source,
       },
       { psg, vsl, eventEmitter },
     );
@@ -956,28 +980,39 @@ export async function cmdApprove(args: string[]): Promise<string> {
   }
 }
 
+import { executionContext } from "../runner/context.js";
+
 /**
  * Programmatic entry point for API/Runner
  */
-export async function executeCommand(command: string, args: string[]): Promise<string> {
+export async function executeCommand(
+  command: string,
+  args: string[],
+  runId?: string,
+): Promise<string> {
   await init();
 
-  switch (command) {
-    case "brief":
-      return cmdBrief();
-    case "create":
-      return cmdCreate(args);
-    case "publish":
-      return cmdPublish(args);
-    case "inbox":
-      return cmdInbox(args);
-    case "review":
-      return cmdReview(args);
-    case "outreach":
-      return cmdOutreach(args);
-    case "approve":
-      return cmdApprove(args);
-    default:
-      return renderCardToMarkdown(formatErrorCard("System", `Unknown command: ${command}`));
-  }
+  const sourceIdx = args.indexOf("--source");
+  const source = sourceIdx >= 0 ? args[sourceIdx + 1] : undefined;
+
+  return executionContext.run({ source, run_id: runId }, async () => {
+    switch (command) {
+      case "brief":
+        return cmdBrief();
+      case "create":
+        return cmdCreate(args);
+      case "publish":
+        return cmdPublish(args);
+      case "inbox":
+        return cmdInbox(args);
+      case "review":
+        return cmdReview(args);
+      case "outreach":
+        return cmdOutreach(args);
+      case "approve":
+        return cmdApprove(args);
+      default:
+        return renderCardToMarkdown(formatErrorCard("System", `Unknown command: ${command}`));
+    }
+  });
 }

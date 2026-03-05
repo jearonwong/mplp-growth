@@ -85,7 +85,13 @@ function renderQueueItem(item) {
 
   const isChecked = app.state.selectedIds.has(item.confirm_id);
 
+  const openclawBadge =
+    item.triggered_by === "openclaw"
+      ? `<span class="badge" style="background:var(--success-color); color:var(--bg-color); margin-bottom:8px; display:inline-block;">🤖 Triggered by OpenClaw</span><br/>`
+      : "";
+
   div.innerHTML = `
+    ${openclawBadge}
     <div class="queue-content">
       <div class="queue-meta" style="display:flex; justify-content:space-between; width:100%;">
         <div style="display:flex; align-items:center; gap:8px;">
@@ -341,6 +347,13 @@ async function initDashboard() {
                 ? "background: var(--success-color); color: var(--bg-color);"
                 : "background: var(--danger-color); color: #fff;";
 
+            const sourceBadge =
+              run.source === "openclaw"
+                ? `<span class="badge" style="background:var(--success-color); color:var(--bg-color); margin-left: 8px;">🤖 OpenClaw</span>`
+                : run.source
+                  ? `<span class="badge" style="background:var(--border-color); color:var(--text-secondary); margin-left: 8px;">${run.source === "cron" ? "⏱️ Cron" : "👤 Manual"}</span>`
+                  : "";
+
             let errorSnippet = "";
             if (run.error) {
               errorSnippet = `<div style="color:var(--danger-color); font-size:11px; margin-top: 4px; font-family:monospace; white-space:pre-wrap; max-height: 100px; overflow-y:auto;">${escapeHtml(run.error)}</div>`;
@@ -358,7 +371,10 @@ async function initDashboard() {
             return `
             <tr style="border-bottom: 1px solid var(--border-color);">
               <td style="padding: 10px; font-family: monospace; font-size: 11px;">${escapeHtml(run.run_id)}</td>
-              <td style="padding: 10px; font-weight: 500;">${escapeHtml(run.job)}</td>
+              <td style="padding: 10px; font-weight: 500;">
+                ${escapeHtml(run.job)}
+                ${sourceBadge}
+              </td>
               <td style="padding: 10px;">
                 <span class="${badgeClass}" style="${badgeStyle}">${run.status.toUpperCase()}</span>
               </td>

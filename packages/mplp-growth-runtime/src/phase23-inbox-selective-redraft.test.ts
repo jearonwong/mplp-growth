@@ -68,6 +68,7 @@ describe("Phase 23: Inbox Selective Redraft (v0.7.1)", () => {
       const queueRes = await server.inject({
         method: "GET",
         url: "/api/queue",
+        headers: { "x-mplp-token": "ops-token-dev" },
       });
       const queueData = queueRes.json();
       const inboxItems = queueData.categories?.inbox || [];
@@ -98,6 +99,7 @@ describe("Phase 23: Inbox Selective Redraft (v0.7.1)", () => {
       const queueRes = await server.inject({
         method: "GET",
         url: "/api/queue",
+        headers: { "x-mplp-token": "ops-token-dev" },
       });
       const queueData = queueRes.json();
       const outreachItems = queueData.categories?.outreach || [];
@@ -128,6 +130,7 @@ describe("Phase 23: Inbox Selective Redraft (v0.7.1)", () => {
       const afterRes = await server.inject({
         method: "GET",
         url: "/api/queue",
+        headers: { "x-mplp-token": "ops-token-dev" },
       });
       const afterData = afterRes.json();
       const updated = afterData.categories?.outreach?.find(

@@ -8,6 +8,7 @@
 import type { EventEmitter, GraphUpdateEvent } from "../glue/event-emitter.js";
 import type { ValueStateLayer } from "../vsl/types.js";
 import type { ProjectSemanticGraph, PSGNode, PSGOptions, GraphQuery } from "./types.js";
+import { executionContext } from "../runner/context.js";
 
 /**
  * Extract ID from a node based on its type.
@@ -99,6 +100,26 @@ export class InMemoryPSG implements ProjectSemanticGraph {
       throw new Error(
         "MetricSnapshot is immutable: cannot update existing snapshot (GATE-METRICS-IMMUTABLE-01)",
       );
+    }
+
+    // Single-point Attribution Wrapper (Phase 39)
+    // Only apply to domain nodes (e.g. Confirm, ContentAsset) avoiding core graph nodes.
+    const ctx = executionContext.getStore();
+    if (
+      ctx?.source &&
+      ctx?.run_id &&
+      (node.type.startsWith("domain:") ||
+        node.type === "Confirm" ||
+        node.type === "Plan" ||
+        node.type === "Trace")
+    ) {
+      const nodeObj = node as any;
+      nodeObj.metadata = {
+        ...nodeObj.metadata,
+        triggered_by: ctx.source,
+        trigger_run_id: ctx.run_id,
+        triggered_at: nodeObj.metadata?.triggered_at || new Date().toISOString(),
+      };
     }
 
     // Update cache

@@ -54,6 +54,7 @@ export interface QueueItem {
   redrafted_by_role?: string;
   redraft_version?: number;
   redraft_rationale_bullets?: string[];
+  triggered_by?: string;
 }
 
 export interface BatchRequest {
@@ -100,6 +101,34 @@ export interface QueueResponse {
     review: QueueItem[];
     other: QueueItem[];
   };
+}
+
+export interface QueueDeltaCategory {
+  inbox: number;
+  outreach: number;
+  publish: number;
+  review: number;
+  other: number;
+}
+
+export interface QueueDelta {
+  before: { pending_total: number; by_category: QueueDeltaCategory };
+  after: { pending_total: number; by_category: QueueDeltaCategory };
+  diff: {
+    pending_total: number;
+    by_category: QueueDeltaCategory;
+  };
+}
+
+export interface OpenClawTelemetryResponse {
+  ok: boolean;
+  run_id: string;
+  queue_delta: QueueDelta;
+  created_ids: string[];
+  consumed_ids: string[];
+  source: "openclaw";
+  output?: string;
+  error?: string;
 }
 
 export interface RunnerStatusResponse {

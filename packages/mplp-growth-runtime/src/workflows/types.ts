@@ -28,6 +28,7 @@ export interface WorkflowRunResult {
 export interface WorkflowInput {
   context_id: string;
   role_id?: AgentRole;
+  source?: string;
 }
 
 /** WF-03 Publish Pack Input */

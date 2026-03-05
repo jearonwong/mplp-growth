@@ -32,6 +32,7 @@ describe("Phase 24: API-only RC-2 Closure (v0.7.1)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/runner/config",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: {
           jobs: { inbox: { run_as_role: "Responder" } },
         },
@@ -45,6 +46,7 @@ describe("Phase 24: API-only RC-2 Closure (v0.7.1)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/inbox/manual",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: {
           content: "v0.7.1 RC-2 E2E test signal",
           author_handle: "@e2e-test",
@@ -88,6 +90,7 @@ describe("Phase 24: API-only RC-2 Closure (v0.7.1)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/runner/config",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: {
           jobs: { inbox: { run_as_role: null } },
         },

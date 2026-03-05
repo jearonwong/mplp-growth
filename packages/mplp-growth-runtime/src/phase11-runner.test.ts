@@ -53,6 +53,7 @@ describe("Phase 11: Runner & API (v0.4.0)", () => {
     const response = await server.inject({
       method: "POST",
       url: "/api/cmd/execute",
+      headers: { "x-mplp-token": "ops-token-dev" },
       payload: {
         command: "unknown-cmd",
         args: [],

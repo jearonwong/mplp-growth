@@ -15,7 +15,11 @@ describe("Phase 16 - Multi-Agent V0.6.0 MVP", () => {
     await server.ready();
 
     // Seed data
-    await server.inject({ method: "POST", url: "/api/admin/seed" });
+    await server.inject({
+      method: "POST",
+      url: "/api/admin/seed",
+      headers: { "x-mplp-token": "ops-token-dev" },
+    });
   });
 
   afterAll(async () => {

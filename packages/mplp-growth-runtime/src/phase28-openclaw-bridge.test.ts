@@ -36,6 +36,7 @@ describe("Phase 28: OpenClaw Bridge (v0.7.3)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/ops/daily-run",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: {},
       });
       expect(res.statusCode).toBe(200);
@@ -48,6 +49,7 @@ describe("Phase 28: OpenClaw Bridge (v0.7.3)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/ops/daily-run",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { auto_approve: true },
       });
       expect(res.statusCode).toBe(200);
@@ -61,6 +63,7 @@ describe("Phase 28: OpenClaw Bridge (v0.7.3)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/ops/daily-run",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { redraft_role_id: "Editor" },
       });
       expect(res.statusCode).toBe(200);
@@ -74,6 +77,7 @@ describe("Phase 28: OpenClaw Bridge (v0.7.3)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/ops/daily-run",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: {},
       });
       const data = res.json();

@@ -26,6 +26,7 @@ describe("Phase 25: Batch Queue Actions (v0.7.2)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/queue/batch",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { ids: ["abc"] },
       });
       expect(res.statusCode).toBe(400);
@@ -35,6 +36,7 @@ describe("Phase 25: Batch Queue Actions (v0.7.2)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/queue/batch",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { action: "approve", ids: [] },
       });
       expect(res.statusCode).toBe(400);
@@ -44,6 +46,7 @@ describe("Phase 25: Batch Queue Actions (v0.7.2)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/queue/batch",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { action: "delete", ids: ["abc"] },
       });
       expect(res.statusCode).toBe(400);
@@ -55,6 +58,7 @@ describe("Phase 25: Batch Queue Actions (v0.7.2)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/queue/batch",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { action: "redraft", ids: ["abc"] },
       });
       expect(res.statusCode).toBe(400);
@@ -68,6 +72,7 @@ describe("Phase 25: Batch Queue Actions (v0.7.2)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/queue/batch",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { action: "reject", ids: ["nonexistent-id-1", "nonexistent-id-2"] },
       });
       expect(res.statusCode).toBe(200);
@@ -83,6 +88,7 @@ describe("Phase 25: Batch Queue Actions (v0.7.2)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/queue/batch",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { action: "approve", ids: ["nonexistent-approve-1"] },
       });
       const data = res.json();
@@ -113,6 +119,7 @@ describe("Phase 25: Batch Queue Actions (v0.7.2)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/queue/batch",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { action: "approve", ids },
       });
       const data = res.json();
@@ -139,6 +146,7 @@ describe("Phase 25: Batch Queue Actions (v0.7.2)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/queue/batch",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { action: "reject", ids },
       });
       const data = res.json();
@@ -164,6 +172,7 @@ describe("Phase 25: Batch Queue Actions (v0.7.2)", () => {
       const res = await server.inject({
         method: "POST",
         url: "/api/queue/batch",
+        headers: { "x-mplp-token": "ops-token-dev" },
         payload: { action: "redraft", ids, role_id: "Editor" },
       });
       const data = res.json();

@@ -6,15 +6,12 @@
 const API_BASE = "/api";
 
 // --- Auth Helper (v1.0.2) ---
-// Only uses localStorage token. Dev-mode fallback is gated behind
-// window.__MPLP_DEV_MODE__ which is set from /api/health.policy_level.
+// Reads token from localStorage. Token is auto-set by initGlobalHeader
+// from /api/health.ops_token on page load (local-first cockpit).
 function getAuthHeaders() {
   const token = localStorage.getItem("mplp_ops_token");
   if (token) {
     return { Authorization: `Bearer ${token}` };
-  }
-  if (window.__MPLP_DEV_MODE__ === true) {
-    return { Authorization: "Bearer ops-token-dev" };
   }
   return {};
 }
@@ -54,8 +51,10 @@ async function initGlobalHeader() {
     const res = await fetch(`${API_BASE}/health`);
     const health = await res.json();
 
-    // Set dev-mode flag for auth fallback (v1.0.2)
-    window.__MPLP_DEV_MODE__ = health.policy_level === "dev";
+    // Auto-store server ops_token for local-first UI auth (v1.0.2)
+    if (health.ops_token && !localStorage.getItem("mplp_ops_token")) {
+      localStorage.setItem("mplp_ops_token", health.ops_token);
+    }
 
     const badge = document.getElementById("global-header-stats");
     if (!badge) {

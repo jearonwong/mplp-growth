@@ -91,6 +91,8 @@ server.get("/api/health", async () => {
     uptime: process.uptime(),
     policy_level: state.policy_level,
     runner_enabled: state.runner_enabled,
+    // Expose ops_token for local-first UI auto-auth (localhost-only cockpit)
+    ops_token: OPS_TOKEN,
   };
 });
 

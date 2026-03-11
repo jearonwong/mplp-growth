@@ -32,6 +32,7 @@ async function approveItem(id) {
   const res = await fetch(`${API_BASE}/queue/${id}/approve`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify({}),
   });
   return res.json();
 }
@@ -40,6 +41,7 @@ async function rejectItem(id) {
   const res = await fetch(`${API_BASE}/queue/${id}/reject`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    body: JSON.stringify({}),
   });
   return res.json();
 }

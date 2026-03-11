@@ -1111,127 +1111,136 @@ server.post<{ Params: { id: string }; Body: { role_id: string; interaction_ids?:
     }
     const roleId = role_id as AgentRole;
 
-    const { psg } = await getRuntime();
+    try {
+      const { psg } = await getRuntime();
 
-    // 1. Resolve confirm → plan
-    const confirm = await psg.getNode<Confirm & PSGNode>("Confirm", confirmId);
-    if (!confirm) {
-      return reply.code(404).send({ ok: false, error: `Queue item ${confirmId} not found` });
-    }
-    if (confirm.status !== "pending") {
-      return reply
-        .code(400)
-        .send({ ok: false, error: `Cannot redraft: item status is ${confirm.status}` });
-    }
-
-    const plan = confirm.target_id
-      ? await psg.getNode<Plan & PSGNode>("Plan", confirm.target_id)
-      : null;
-    if (!plan) {
-      return reply.code(404).send({ ok: false, error: `Plan not found for confirm ${confirmId}` });
-    }
-
-    // 2. Determine category and linked documents
-    const stepDescs = (plan.steps || []).map((s: PlanStep) => s.description || "").join(" ");
-    const isOutreach =
-      stepDescs.includes("outreach") ||
-      (stepDescs.includes("Draft") && stepDescs.includes("Policy compliance"));
-    const isInbox =
-      stepDescs.includes("inbox") ||
-      stepDescs.includes("Ingest interactions") ||
-      stepDescs.includes("Generate draft replies");
-
-    let redraftedCount = 0;
-
-    if (isOutreach) {
-      // Outreach: find linked ContentAsset
-      const assetId = plan.steps[1]?.reference_id || plan.steps[1]?.target_node_id;
-      if (assetId) {
-        const asset = await psg.getNode<ContentAssetNode>("domain:ContentAsset", assetId);
-        if (asset) {
-          // Resolve target name from metadata
-          const targetName = asset.metadata?.target_id
-            ? (
-                await psg.getNode<ContentAssetNode & PSGNode>(
-                  "domain:OutreachTarget",
-                  asset.metadata.target_id as string,
-                )
-              )?.title || "there"
-            : "there";
-
-          const draft = await executor.run(roleId, {
-            kind: "outreach_draft",
-            target: { name: targetName },
-            channel: (asset.metadata?.channel as string) || "email",
-          });
-
-          asset.content = draft.content;
-          if (!asset.metadata) {
-            asset.metadata = {};
-          }
-          const prevVersion =
-            typeof asset.metadata.redraft_version === "number" ? asset.metadata.redraft_version : 0;
-          asset.metadata.redrafted_by_role = roleId;
-          asset.metadata.drafted_by_role = roleId;
-          asset.metadata.redraft_version = prevVersion + 1;
-          asset.metadata.redraft_rationale_bullets = (draft.rationale_bullets || []).slice(0, 3);
-          await psg.putNode(asset);
-          redraftedCount++;
-        }
+      // 1. Resolve confirm → plan
+      const confirm = await psg.getNode<Confirm & PSGNode>("Confirm", confirmId);
+      if (!confirm) {
+        return reply.code(404).send({ ok: false, error: `Queue item ${confirmId} not found` });
       }
-    } else if (isInbox) {
-      // Inbox: find linked Interactions via plan reference
-      const interactions = await psg.query<InteractionNode>({
-        type: "domain:Interaction",
-        filter: { status: "pending" },
-      });
+      if (confirm.status !== "pending") {
+        return reply
+          .code(400)
+          .send({ ok: false, error: `Cannot redraft: item status is ${confirm.status}` });
+      }
 
-      // Filter to interactions that belong to this plan's scope
-      // (created around the same time as the plan)
-      for (const node of interactions) {
-        // If interaction_ids specified, skip unselected
-        if (interaction_ids && interaction_ids.length > 0 && !interaction_ids.includes(node.id)) {
-          continue;
+      const plan = confirm.target_id
+        ? await psg.getNode<Plan & PSGNode>("Plan", confirm.target_id)
+        : null;
+      if (!plan) {
+        return reply
+          .code(404)
+          .send({ ok: false, error: `Plan not found for confirm ${confirmId}` });
+      }
+
+      // 2. Determine category and linked documents
+      const stepDescs = (plan.steps || []).map((s: PlanStep) => s.description || "").join(" ");
+      const isOutreach =
+        stepDescs.includes("outreach") ||
+        (stepDescs.includes("Draft") && stepDescs.includes("Policy compliance"));
+      const isInbox =
+        stepDescs.includes("inbox") ||
+        stepDescs.includes("Ingest interactions") ||
+        stepDescs.includes("Generate draft replies");
+
+      let redraftedCount = 0;
+
+      if (isOutreach) {
+        // Outreach: find linked ContentAsset
+        const assetId = plan.steps[1]?.reference_id || plan.steps[1]?.target_node_id;
+        if (assetId) {
+          const asset = await psg.getNode<ContentAssetNode>("domain:ContentAsset", assetId);
+          if (asset) {
+            // Resolve target name from metadata
+            const targetName = asset.metadata?.target_id
+              ? (
+                  await psg.getNode<ContentAssetNode & PSGNode>(
+                    "domain:OutreachTarget",
+                    asset.metadata.target_id as string,
+                  )
+                )?.title || "there"
+              : "there";
+
+            const draft = await executor.run(roleId, {
+              kind: "outreach_draft",
+              target: { name: targetName },
+              channel: (asset.metadata?.channel as string) || "email",
+            });
+
+            asset.content = draft.content;
+            if (!asset.metadata) {
+              asset.metadata = {};
+            }
+            const prevVersion =
+              typeof asset.metadata.redraft_version === "number"
+                ? asset.metadata.redraft_version
+                : 0;
+            asset.metadata.redrafted_by_role = roleId;
+            asset.metadata.drafted_by_role = roleId;
+            asset.metadata.redraft_version = prevVersion + 1;
+            asset.metadata.redraft_rationale_bullets = (draft.rationale_bullets || []).slice(0, 3);
+            await psg.putNode(asset);
+            redraftedCount++;
+          }
         }
-        const draft = await executor.run(roleId, {
-          kind: "inbox_reply",
-          interaction: {
-            platform: node.platform,
-            author: node.author || "Unknown",
-            content: node.content,
-          },
+      } else if (isInbox) {
+        // Inbox: find linked Interactions via plan reference
+        const interactions = await psg.query<InteractionNode>({
+          type: "domain:Interaction",
+          filter: { status: "pending" },
         });
 
-        node.response = draft.content;
-        if (!node.metadata) {
-          node.metadata = {};
+        // Filter to interactions that belong to this plan's scope
+        // (created around the same time as the plan)
+        for (const node of interactions) {
+          // If interaction_ids specified, skip unselected
+          if (interaction_ids && interaction_ids.length > 0 && !interaction_ids.includes(node.id)) {
+            continue;
+          }
+          const draft = await executor.run(roleId, {
+            kind: "inbox_reply",
+            interaction: {
+              platform: node.platform,
+              author: node.author || "Unknown",
+              content: node.content,
+            },
+          });
+
+          node.response = draft.content;
+          if (!node.metadata) {
+            node.metadata = {};
+          }
+          const prevVersion =
+            typeof node.metadata.redraft_version === "number" ? node.metadata.redraft_version : 0;
+          node.metadata.redrafted_by_role = roleId;
+          node.metadata.drafted_by_role = roleId;
+          node.metadata.redraft_version = prevVersion + 1;
+          node.metadata.redraft_rationale_bullets = (draft.rationale_bullets || []).slice(0, 3);
+          await psg.putNode(node);
+          redraftedCount++;
         }
-        const prevVersion =
-          typeof node.metadata.redraft_version === "number" ? node.metadata.redraft_version : 0;
-        node.metadata.redrafted_by_role = roleId;
-        node.metadata.drafted_by_role = roleId;
-        node.metadata.redraft_version = prevVersion + 1;
-        node.metadata.redraft_rationale_bullets = (draft.rationale_bullets || []).slice(0, 3);
-        await psg.putNode(node);
-        redraftedCount++;
+      } else {
+        return reply.code(400).send({
+          ok: false,
+          error: `Redraft not supported for this queue item category`,
+        });
       }
-    } else {
-      return reply.code(400).send({
-        ok: false,
-        error: `Redraft not supported for this queue item category`,
-      });
+
+      // 3. Update plan agent_role (no state advance)
+      plan.agent_role = roleId;
+      await psg.putNode(plan as unknown as PSGNode);
+
+      return {
+        ok: true,
+        confirm_id: confirmId,
+        role_id: roleId,
+        redrafted_count: redraftedCount,
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return reply.code(400).send({ ok: false, error: message });
     }
-
-    // 3. Update plan agent_role (no state advance)
-    plan.agent_role = roleId;
-    await psg.putNode(plan as unknown as PSGNode);
-
-    return {
-      ok: true,
-      confirm_id: confirmId,
-      role_id: roleId,
-      redrafted_count: redraftedCount,
-    };
   },
 );
 
